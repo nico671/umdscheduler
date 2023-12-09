@@ -6,7 +6,7 @@ res = []
 seen = set()
 
 
-def backtracking(assignment):
+def backtracking(assignment, variables, res, seen, domains):
     if len(variables) == len(assignment):
         seen_string = ""
         for c in assignment.values():
@@ -15,20 +15,20 @@ def backtracking(assignment):
             res.append(assignment.copy())
         return
     
-    var = get_unused_var(assignment)
-    for value in domains_values(var, assignment):
+    var = get_unused_var(assignment, variables, domains)
+    for value in domains_values(var, assignment, domains):
         validity = is_valid(value, assignment)
         if validity:
             assignment[var] = value
-            backtracking(assignment)
+            backtracking(assignment, variables, res, seen, domains)
         assignment.pop(var, None)
 
-def get_unused_var(assignment):
+def get_unused_var(assignment, variables, domains):
     unassigned_vars = [var for var in variables if var not in assignment]
     res = min(unassigned_vars, key=lambda var: len(domains[var]))
     return res
 
-def domains_values(var, assignment):
+def domains_values(var, assignment, domains):
     return [domain for domain in domains[var] if domain not in assignment.values()]
 
 def check_overlap(sect1, sect2):
@@ -61,34 +61,39 @@ def is_valid(value, assignment):
 
     return True
 
-variables = ["ENGL142", "TLPL443", "WEID139T"]
+def create_schedule(wanted_classes, restrictions):
+    # Initialize your variables, res, and seen here
+    variables = wanted_classes
+    res = []
+    seen = set()
+    domains = {}
+    no_open_sections = []
+    # Call your backtracking function with the input data
+    for course in variables:
+        sections = get_sections(course, "202401", restrictions)
+        if len(sections) == 0:
+            print("No possible sections for " + course)
+            no_open_sections.append(course)
+        else:
+            domains[course] = sections
 
-domains = {}
-no_open_sections = []
+    if len(no_open_sections) == len(variables):
+        print("No open sections for any classes.")
+    elif no_open_sections:
+        print("Classes with no open sections: " + ', '.join(no_open_sections))
+    backtracking({}, variables, res, seen, domains)
 
-restrictions = {"minSeats": 0, "prohibitedInstructors": [""], "prohibitedTimes": {}}
+    # Return the result
+    return res
 
-for course in variables:
-    sections = get_sections(course, "202401", restrictions)
-    if len(sections) == 0:
-        print("No possible sections for " + course)
-        no_open_sections.append(course)
-    else:
-        domains[course] = sections
-
-if len(no_open_sections) == len(variables):
-    print("No open sections for any classes.")
-elif no_open_sections:
-    print("Classes with no open sections: " + ', '.join(no_open_sections))
-
-backtracking({})
-if len(res) <= 0:
-    print("No valid schedules created.")
-else:
-    json_object = json.dumps(res, indent=4)
-    with open("test.json", "w") as outfile:
-        outfile.write(json_object)
-
-json_obj = json.dumps(domains, indent=4)
-with open("domains.json", "w") as outfile:
-        outfile.write(json_obj)
+# # Test case
+# variables = ["ENGL142", "TLPL443", "WEID139T"]
+# restrictions = {"minSeats": 0, "prohibitedInstructors": [""], "prohibitedTimes": {}}
+# popper = create_schedule(variables, restrictions)
+# print(len(popper))
+# if len(popper) <= 0:
+#     print("No valid schedules created.")
+# else:
+#     json_object = json.dumps(popper, indent=4)
+#     with open("test.json", "w") as outfile:
+#         outfile.write(json_object)
