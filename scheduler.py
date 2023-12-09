@@ -6,13 +6,15 @@ res = []
 seen = set()
 
 
-def backtracking(assignment, variables, res, seen, domains):
+def backtracking(assignment, variables, res, seen, domains, required_classes):
     if len(variables) == len(assignment):
         seen_string = ""
         for c in assignment.values():
             seen_string += c['courseCode'] + c['sectionID']
         if seen_string not in seen:
-            res.append(assignment.copy())
+            # Check if all required classes are in the assignment
+            if all(req_class in assignment for req_class in required_classes):
+                res.append(assignment.copy())
         return
     
     var = get_unused_var(assignment, variables, domains)
@@ -20,7 +22,7 @@ def backtracking(assignment, variables, res, seen, domains):
         validity = is_valid(value, assignment)
         if validity:
             assignment[var] = value
-            backtracking(assignment, variables, res, seen, domains)
+            backtracking(assignment, variables, res, seen, domains, required_classes)
         assignment.pop(var, None)
 
 def get_unused_var(assignment, variables, domains):
@@ -68,6 +70,8 @@ def create_schedule(wanted_classes, restrictions):
     seen = set()
     domains = {}
     no_open_sections = []
+    required_classes = restrictions.get('required_classes', [])
+
     # Call your backtracking function with the input data
     for course in variables:
         sections = get_sections(course, "202401", restrictions)
@@ -81,19 +85,19 @@ def create_schedule(wanted_classes, restrictions):
         print("No open sections for any classes.")
     elif no_open_sections:
         print("Classes with no open sections: " + ', '.join(no_open_sections))
-    backtracking({}, variables, res, seen, domains)
+    backtracking({}, variables, res, seen, domains, required_classes)
 
     # Return the result
     return res
 
-# # Test case
-# variables = ["ENGL142", "TLPL443", "WEID139T"]
-# restrictions = {"minSeats": 0, "prohibitedInstructors": [""], "prohibitedTimes": {}}
-# popper = create_schedule(variables, restrictions)
-# print(len(popper))
-# if len(popper) <= 0:
-#     print("No valid schedules created.")
-# else:
-#     json_object = json.dumps(popper, indent=4)
-#     with open("test.json", "w") as outfile:
-#         outfile.write(json_object)
+# Test case
+variables = ["ENGL142", "TLPL443", "WEID139T"]
+restrictions = {"minSeats": 0, "prohibitedInstructors": [""], "prohibitedTimes": {}, "required_classes": ["ENGL142", "TLPL443", "WEID139T"]}
+popper = create_schedule(variables, restrictions)
+print(len(popper))
+if len(popper) <= 0:
+    print("No valid schedules created.")
+else:
+    json_object = json.dumps(popper, indent=4)
+    with open("test.json", "w") as outfile:
+        outfile.write(json_object)
