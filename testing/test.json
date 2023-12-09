@@ -1,0 +1,464 @@
+[
+    {
+        "ENGL142": {
+            "course": "ENGL142",
+            "section_id": "ENGL142-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "7",
+            "meetings": [
+                {
+                    "days": "MW",
+                    "room": "0310",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "1:00pm",
+                    "end_time": "1:50pm"
+                },
+                {
+                    "days": "F",
+                    "room": "1106",
+                    "building": "TWS",
+                    "classtype": "Discussion",
+                    "start_time": "10:00am",
+                    "end_time": "10:50am"
+                }
+            ],
+            "open_seats": "2",
+            "waitlist": "0",
+            "instructors": [
+                "Blake Wilder"
+            ]
+        },
+        "TLPL443": {
+            "course": "TLPL443",
+            "section_id": "TLPL443-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "25",
+            "meetings": [
+                {
+                    "days": "W",
+                    "room": "0221",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "5:00pm",
+                    "end_time": "7:45pm"
+                }
+            ],
+            "open_seats": "21",
+            "waitlist": "0",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ]
+        },
+        "WEID139T": {
+            "course": "WEID139T",
+            "section_id": "WEID139T-0201",
+            "semester": "202401",
+            "number": "0201",
+            "seats": "45",
+            "meetings": [
+                {
+                    "days": "Tu",
+                    "room": "",
+                    "building": "TBA",
+                    "classtype": "",
+                    "start_time": "5:30pm",
+                    "end_time": "7:30pm"
+                }
+            ],
+            "open_seats": "37",
+            "waitlist": "0",
+            "instructors": [
+                "Jazmin Pichardo",
+                "Sarah Scriven"
+            ]
+        }
+    },
+    {
+        "ENGL142": {
+            "course": "ENGL142",
+            "section_id": "ENGL142-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "7",
+            "meetings": [
+                {
+                    "days": "MW",
+                    "room": "0310",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "1:00pm",
+                    "end_time": "1:50pm"
+                },
+                {
+                    "days": "F",
+                    "room": "1106",
+                    "building": "TWS",
+                    "classtype": "Discussion",
+                    "start_time": "10:00am",
+                    "end_time": "10:50am"
+                }
+            ],
+            "open_seats": "2",
+            "waitlist": "0",
+            "instructors": [
+                "Blake Wilder"
+            ]
+        },
+        "WEID139T": {
+            "course": "WEID139T",
+            "section_id": "WEID139T-0201",
+            "semester": "202401",
+            "number": "0201",
+            "seats": "45",
+            "meetings": [
+                {
+                    "days": "Tu",
+                    "room": "",
+                    "building": "TBA",
+                    "classtype": "",
+                    "start_time": "5:30pm",
+                    "end_time": "7:30pm"
+                }
+            ],
+            "open_seats": "37",
+            "waitlist": "0",
+            "instructors": [
+                "Jazmin Pichardo",
+                "Sarah Scriven"
+            ]
+        },
+        "TLPL443": {
+            "course": "TLPL443",
+            "section_id": "TLPL443-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "25",
+            "meetings": [
+                {
+                    "days": "W",
+                    "room": "0221",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "5:00pm",
+                    "end_time": "7:45pm"
+                }
+            ],
+            "open_seats": "21",
+            "waitlist": "0",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ]
+        }
+    },
+    {
+        "TLPL443": {
+            "course": "TLPL443",
+            "section_id": "TLPL443-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "25",
+            "meetings": [
+                {
+                    "days": "W",
+                    "room": "0221",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "5:00pm",
+                    "end_time": "7:45pm"
+                }
+            ],
+            "open_seats": "21",
+            "waitlist": "0",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ]
+        },
+        "ENGL142": {
+            "course": "ENGL142",
+            "section_id": "ENGL142-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "7",
+            "meetings": [
+                {
+                    "days": "MW",
+                    "room": "0310",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "1:00pm",
+                    "end_time": "1:50pm"
+                },
+                {
+                    "days": "F",
+                    "room": "1106",
+                    "building": "TWS",
+                    "classtype": "Discussion",
+                    "start_time": "10:00am",
+                    "end_time": "10:50am"
+                }
+            ],
+            "open_seats": "2",
+            "waitlist": "0",
+            "instructors": [
+                "Blake Wilder"
+            ]
+        },
+        "WEID139T": {
+            "course": "WEID139T",
+            "section_id": "WEID139T-0201",
+            "semester": "202401",
+            "number": "0201",
+            "seats": "45",
+            "meetings": [
+                {
+                    "days": "Tu",
+                    "room": "",
+                    "building": "TBA",
+                    "classtype": "",
+                    "start_time": "5:30pm",
+                    "end_time": "7:30pm"
+                }
+            ],
+            "open_seats": "37",
+            "waitlist": "0",
+            "instructors": [
+                "Jazmin Pichardo",
+                "Sarah Scriven"
+            ]
+        }
+    },
+    {
+        "TLPL443": {
+            "course": "TLPL443",
+            "section_id": "TLPL443-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "25",
+            "meetings": [
+                {
+                    "days": "W",
+                    "room": "0221",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "5:00pm",
+                    "end_time": "7:45pm"
+                }
+            ],
+            "open_seats": "21",
+            "waitlist": "0",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ]
+        },
+        "WEID139T": {
+            "course": "WEID139T",
+            "section_id": "WEID139T-0201",
+            "semester": "202401",
+            "number": "0201",
+            "seats": "45",
+            "meetings": [
+                {
+                    "days": "Tu",
+                    "room": "",
+                    "building": "TBA",
+                    "classtype": "",
+                    "start_time": "5:30pm",
+                    "end_time": "7:30pm"
+                }
+            ],
+            "open_seats": "37",
+            "waitlist": "0",
+            "instructors": [
+                "Jazmin Pichardo",
+                "Sarah Scriven"
+            ]
+        },
+        "ENGL142": {
+            "course": "ENGL142",
+            "section_id": "ENGL142-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "7",
+            "meetings": [
+                {
+                    "days": "MW",
+                    "room": "0310",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "1:00pm",
+                    "end_time": "1:50pm"
+                },
+                {
+                    "days": "F",
+                    "room": "1106",
+                    "building": "TWS",
+                    "classtype": "Discussion",
+                    "start_time": "10:00am",
+                    "end_time": "10:50am"
+                }
+            ],
+            "open_seats": "2",
+            "waitlist": "0",
+            "instructors": [
+                "Blake Wilder"
+            ]
+        }
+    },
+    {
+        "WEID139T": {
+            "course": "WEID139T",
+            "section_id": "WEID139T-0201",
+            "semester": "202401",
+            "number": "0201",
+            "seats": "45",
+            "meetings": [
+                {
+                    "days": "Tu",
+                    "room": "",
+                    "building": "TBA",
+                    "classtype": "",
+                    "start_time": "5:30pm",
+                    "end_time": "7:30pm"
+                }
+            ],
+            "open_seats": "37",
+            "waitlist": "0",
+            "instructors": [
+                "Jazmin Pichardo",
+                "Sarah Scriven"
+            ]
+        },
+        "ENGL142": {
+            "course": "ENGL142",
+            "section_id": "ENGL142-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "7",
+            "meetings": [
+                {
+                    "days": "MW",
+                    "room": "0310",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "1:00pm",
+                    "end_time": "1:50pm"
+                },
+                {
+                    "days": "F",
+                    "room": "1106",
+                    "building": "TWS",
+                    "classtype": "Discussion",
+                    "start_time": "10:00am",
+                    "end_time": "10:50am"
+                }
+            ],
+            "open_seats": "2",
+            "waitlist": "0",
+            "instructors": [
+                "Blake Wilder"
+            ]
+        },
+        "TLPL443": {
+            "course": "TLPL443",
+            "section_id": "TLPL443-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "25",
+            "meetings": [
+                {
+                    "days": "W",
+                    "room": "0221",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "5:00pm",
+                    "end_time": "7:45pm"
+                }
+            ],
+            "open_seats": "21",
+            "waitlist": "0",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ]
+        }
+    },
+    {
+        "WEID139T": {
+            "course": "WEID139T",
+            "section_id": "WEID139T-0201",
+            "semester": "202401",
+            "number": "0201",
+            "seats": "45",
+            "meetings": [
+                {
+                    "days": "Tu",
+                    "room": "",
+                    "building": "TBA",
+                    "classtype": "",
+                    "start_time": "5:30pm",
+                    "end_time": "7:30pm"
+                }
+            ],
+            "open_seats": "37",
+            "waitlist": "0",
+            "instructors": [
+                "Jazmin Pichardo",
+                "Sarah Scriven"
+            ]
+        },
+        "TLPL443": {
+            "course": "TLPL443",
+            "section_id": "TLPL443-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "25",
+            "meetings": [
+                {
+                    "days": "W",
+                    "room": "0221",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "5:00pm",
+                    "end_time": "7:45pm"
+                }
+            ],
+            "open_seats": "21",
+            "waitlist": "0",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ]
+        },
+        "ENGL142": {
+            "course": "ENGL142",
+            "section_id": "ENGL142-0101",
+            "semester": "202401",
+            "number": "0101",
+            "seats": "7",
+            "meetings": [
+                {
+                    "days": "MW",
+                    "room": "0310",
+                    "building": "TWS",
+                    "classtype": "",
+                    "start_time": "1:00pm",
+                    "end_time": "1:50pm"
+                },
+                {
+                    "days": "F",
+                    "room": "1106",
+                    "building": "TWS",
+                    "classtype": "Discussion",
+                    "start_time": "10:00am",
+                    "end_time": "10:50am"
+                }
+            ],
+            "open_seats": "2",
+            "waitlist": "0",
+            "instructors": [
+                "Blake Wilder"
+            ]
+        }
+    }
+]

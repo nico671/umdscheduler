@@ -1,7 +1,8 @@
-from scraper import *
+from ifonlyiknewumdioexistedbeforeiwrotethiswholefileandnowidontwanttodeleteiteventhoughitsbadjustbcittookalotoftimebciveneverusedbs4before.scraper import *
 import unittest
-import api
+import api.api as api
 import json
+
 
 class APITestCase(unittest.TestCase):
     def setUp(self):
@@ -16,12 +17,13 @@ class APITestCase(unittest.TestCase):
                 'minSeats': 0,
                 'prohibitedInstructors': [''],
                 'prohibitedTimes': {},
-                'required_classes': ['ENGL142', 'TLPL443', 'WEID139T']
+                'required_classes': []
             }
         }
 
         # Send a POST request to the /schedule endpoint
-        response = self.app.post('/schedule', data=json.dumps(input_data), content_type='application/json')
+        response = self.app.post(
+            '/schedule', data=json.dumps(input_data), content_type='application/json')
 
         # Check the response status code
         self.assertEqual(response.status_code, 200)
@@ -29,6 +31,8 @@ class APITestCase(unittest.TestCase):
         # Check the response data
         response_data = json.loads(response.get_data())
         self.assertIsInstance(response_data, list)
+        self.assertEqual(len(response_data), 3)
+
 
 if __name__ == '__main__':
     unittest.main()

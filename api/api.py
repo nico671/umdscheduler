@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
-import scheduler
+import src.scheduler as scheduler
 
 app = Flask(__name__)
+
 
 @app.route('/schedule', methods=['POST'])
 def create_schedule():
@@ -17,6 +18,6 @@ def create_schedule():
     # Return the result as JSON
     return jsonify(result)
 
+
 if __name__ == '__main__':
     app.run(debug=True)
-
