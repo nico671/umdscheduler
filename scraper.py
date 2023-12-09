@@ -73,7 +73,7 @@ def get_sections(course_code, term, restrictions):
     credits = int(response.find('span', class_="course-min-credits").text)
     for s in response.find_all('div', class_='section'):
         open_seats = int(s.find('span', class_='open-seats-count').text)
-        if open_seats < restrictions["minSeats"]:
+        if open_seats <= restrictions["minSeats"]:
             continue
         instructors = []
         for instructor in s.find_all('span', class_='section-instructor'):

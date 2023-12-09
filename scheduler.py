@@ -1,13 +1,13 @@
 from collections import OrderedDict
-from datetime import datetime
-import os
 from scraper import *
 import json
 
 res = []
 seen = set()
+
+
 def backtracking(assignment):
-    if len(assignment) == len(variables):
+    if len(variables) == len(assignment):
         seen_string = ""
         for c in assignment.values():
             seen_string += c['courseCode'] + c['sectionID']
@@ -16,20 +16,20 @@ def backtracking(assignment):
         return
     
     var = get_unused_var(assignment)
-    for value in domains_values(var): 
+    for value in domains_values(var, assignment):
         validity = is_valid(value, assignment)
-        if validity == True:
-            assignment[var] = value 
-            backtracking(assignment) 
+        if validity:
+            assignment[var] = value
+            backtracking(assignment)
         assignment.pop(var, None)
 
 def get_unused_var(assignment):
-    unassigned_vars = [var for var in variables if var not in assignment] 
+    unassigned_vars = [var for var in variables if var not in assignment]
     res = min(unassigned_vars, key=lambda var: len(domains[var]))
     return res
 
-def domains_values(var):
-    return domains[var]
+def domains_values(var, assignment):
+    return [domain for domain in domains[var] if domain not in assignment.values()]
 
 def check_overlap(sect1, sect2):
     for times in sect1["classInfo"]:
@@ -39,45 +39,56 @@ def check_overlap(sect1, sect2):
                     has_overlap = check_overlap_helper(times['days'][k], other_times['days'][k])
                     if has_overlap:
                         return True
-    else:
-        return False
+    return False
 
-def check_overlap_helper(first_inter,second_inter):
-    if (first_inter['startTime'] < second_inter['startTime'] < first_inter['endTime']) or (first_inter['startTime'] < second_inter['endTime'] < first_inter['endTime']) or (second_inter['startTime'] <= first_inter['startTime'] and second_inter['endTime'] >= first_inter['endTime']): 
+def check_overlap_helper(first_inter, second_inter):
+    if (first_inter['startTime'] < second_inter['startTime'] < first_inter['endTime']) or (first_inter['startTime'] < second_inter['endTime'] < first_inter['endTime']) or (second_inter['startTime'] <= first_inter['startTime'] and second_inter['endTime'] >= first_inter['endTime']):
         return True
     elif (second_inter['startTime'] < first_inter['startTime'] < second_inter['endTime']) or (second_inter['startTime'] < first_inter['endTime'] < second_inter['endTime']) or (first_inter['startTime'] <= second_inter['startTime'] and first_inter['endTime'] >= second_inter['endTime']):
         return True
     return False
 
-def is_valid(value, assignment): 
-    if len(assignment) == 0:
-        return True
-    total_credits = 0
-    for s in assignment.values():
-        has_overlap = check_overlap(value,s)
-        if has_overlap == True:
+def is_valid(value, assignment):
+    # Check for overlap
+    for assigned_value in assignment.values():
+        if check_overlap(value, assigned_value):
             return False
-        total_credits += s['credits']
-    # TODO: add dynamic credit limit
-    if total_credits > 18:
+
+    # Check for credit limit
+    total_credits = sum([course['credits'] for course in assignment.values()]) + value['credits']
+    if total_credits > 20:
         return False
+
     return True
 
-
-variables = {"CMSC132" : True, "MATH141" : True, "ASTR101" : False, "ANTH222" : False, "ECON200" : False}
+variables = ["ENGL142", "TLPL443", "WEID139T"]
 
 domains = {}
+no_open_sections = []
 
-restrictions = {"minSeats" : 0, "prohibitedInstructors" : [""], "prohibitedTimes" : {}}
-
+restrictions = {"minSeats": 0, "prohibitedInstructors": [""], "prohibitedTimes": {}}
 
 for course in variables:
     sections = get_sections(course, "202401", restrictions)
     if len(sections) == 0:
         print("No possible sections for " + course)
-    domains[course] = sections
+        no_open_sections.append(course)
+    else:
+        domains[course] = sections
 
-backtracking(OrderedDict())
-json_object = json.dumps(res, indent=4)
-with open("test.json", "w") as outfile:
-    outfile.write(json_object)
+if len(no_open_sections) == len(variables):
+    print("No open sections for any classes.")
+elif no_open_sections:
+    print("Classes with no open sections: " + ', '.join(no_open_sections))
+
+backtracking({})
+if len(res) <= 0:
+    print("No valid schedules created.")
+else:
+    json_object = json.dumps(res, indent=4)
+    with open("test.json", "w") as outfile:
+        outfile.write(json_object)
+
+json_obj = json.dumps(domains, indent=4)
+with open("domains.json", "w") as outfile:
+        outfile.write(json_obj)

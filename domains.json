@@ -1,53 +1,6 @@
-[
-    {
-        "TLPL443": {
-            "courseCode": "TLPL443",
-            "instructors": [
-                "Astrid Sierra Mejia"
-            ],
-            "totalSeats": 25,
-            "openSeats": 5,
-            "sectionID": "0101",
-            "waitlistCount": 0,
-            "classInfo": [
-                {
-                    "days": {
-                        "W": {
-                            "startTime": "17:00:00",
-                            "endTime": "19:45:00"
-                        }
-                    },
-                    "building": "TWS0221",
-                    "classType": ""
-                }
-            ],
-            "credits": 3
-        },
-        "WEID139T": {
-            "courseCode": "WEID139T",
-            "instructors": [
-                "Sarah Scriven",
-                "Jazmin Pichardo"
-            ],
-            "totalSeats": 45,
-            "openSeats": 6,
-            "sectionID": "0201",
-            "waitlistCount": 0,
-            "classInfo": [
-                {
-                    "days": {
-                        "Tu": {
-                            "startTime": "17:30:00",
-                            "endTime": "19:30:00"
-                        }
-                    },
-                    "building": "TBA",
-                    "classType": ""
-                }
-            ],
-            "credits": 1
-        },
-        "ENGL142": {
+{
+    "ENGL142": [
+        {
             "courseCode": "ENGL142",
             "instructors": [
                 "Blake Wilder"
@@ -83,57 +36,8 @@
                 }
             ],
             "credits": 3
-        }
-    },
-    {
-        "TLPL443": {
-            "courseCode": "TLPL443",
-            "instructors": [
-                "Astrid Sierra Mejia"
-            ],
-            "totalSeats": 25,
-            "openSeats": 5,
-            "sectionID": "0101",
-            "waitlistCount": 0,
-            "classInfo": [
-                {
-                    "days": {
-                        "W": {
-                            "startTime": "17:00:00",
-                            "endTime": "19:45:00"
-                        }
-                    },
-                    "building": "TWS0221",
-                    "classType": ""
-                }
-            ],
-            "credits": 3
         },
-        "WEID139T": {
-            "courseCode": "WEID139T",
-            "instructors": [
-                "Sarah Scriven",
-                "Jazmin Pichardo"
-            ],
-            "totalSeats": 45,
-            "openSeats": 6,
-            "sectionID": "0201",
-            "waitlistCount": 0,
-            "classInfo": [
-                {
-                    "days": {
-                        "Tu": {
-                            "startTime": "17:30:00",
-                            "endTime": "19:30:00"
-                        }
-                    },
-                    "building": "TBA",
-                    "classType": ""
-                }
-            ],
-            "credits": 1
-        },
-        "ENGL142": {
+        {
             "courseCode": "ENGL142",
             "instructors": [
                 "Blake Wilder"
@@ -169,57 +73,8 @@
                 }
             ],
             "credits": 3
-        }
-    },
-    {
-        "TLPL443": {
-            "courseCode": "TLPL443",
-            "instructors": [
-                "Astrid Sierra Mejia"
-            ],
-            "totalSeats": 25,
-            "openSeats": 5,
-            "sectionID": "0101",
-            "waitlistCount": 0,
-            "classInfo": [
-                {
-                    "days": {
-                        "W": {
-                            "startTime": "17:00:00",
-                            "endTime": "19:45:00"
-                        }
-                    },
-                    "building": "TWS0221",
-                    "classType": ""
-                }
-            ],
-            "credits": 3
         },
-        "WEID139T": {
-            "courseCode": "WEID139T",
-            "instructors": [
-                "Sarah Scriven",
-                "Jazmin Pichardo"
-            ],
-            "totalSeats": 45,
-            "openSeats": 6,
-            "sectionID": "0201",
-            "waitlistCount": 0,
-            "classInfo": [
-                {
-                    "days": {
-                        "Tu": {
-                            "startTime": "17:30:00",
-                            "endTime": "19:30:00"
-                        }
-                    },
-                    "building": "TBA",
-                    "classType": ""
-                }
-            ],
-            "credits": 1
-        },
-        "ENGL142": {
+        {
             "courseCode": "ENGL142",
             "instructors": [
                 "Blake Wilder"
@@ -256,5 +111,56 @@
             ],
             "credits": 3
         }
-    }
-]
+    ],
+    "TLPL443": [
+        {
+            "courseCode": "TLPL443",
+            "instructors": [
+                "Astrid Sierra Mejia"
+            ],
+            "totalSeats": 25,
+            "openSeats": 5,
+            "sectionID": "0101",
+            "waitlistCount": 0,
+            "classInfo": [
+                {
+                    "days": {
+                        "W": {
+                            "startTime": "17:00:00",
+                            "endTime": "19:45:00"
+                        }
+                    },
+                    "building": "TWS0221",
+                    "classType": ""
+                }
+            ],
+            "credits": 3
+        }
+    ],
+    "WEID139T": [
+        {
+            "courseCode": "WEID139T",
+            "instructors": [
+                "Sarah Scriven",
+                "Jazmin Pichardo"
+            ],
+            "totalSeats": 45,
+            "openSeats": 6,
+            "sectionID": "0201",
+            "waitlistCount": 0,
+            "classInfo": [
+                {
+                    "days": {
+                        "Tu": {
+                            "startTime": "17:30:00",
+                            "endTime": "19:30:00"
+                        }
+                    },
+                    "building": "TBA",
+                    "classType": ""
+                }
+            ],
+            "credits": 1
+        }
+    ]
+}
