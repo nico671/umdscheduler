@@ -1,6 +1,6 @@
-from ifonlyiknewumdioexistedbeforeiwrotethiswholefileandnowidontwanttodeleteiteventhoughitsbadjustbcittookalotoftimebciveneverusedbs4before.scraper import *
+
 import unittest
-import api.api as api
+import api as api
 import json
 
 
@@ -31,7 +31,7 @@ class APITestCase(unittest.TestCase):
         # Check the response data
         response_data = json.loads(response.get_data())
         self.assertIsInstance(response_data, list)
-        self.assertEqual(len(response_data), 3)
+        self.assertEqual(len(response_data), 6)
 
 
 if __name__ == '__main__':

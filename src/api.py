@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import src.scheduler as scheduler
+import scheduler as scheduler
 
 app = Flask(__name__)
 

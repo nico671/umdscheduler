@@ -21,8 +21,7 @@ def backtracking(assignment, variables, res, domains):
                 if is_valid(value, assignment):
                     assignment[var] = value
                     backtracking(assignment, variables, res,
-                                 domains, required_classes)
-
+                                 domains)
                 # Remove the assignment
                 del assignment[var]
 
