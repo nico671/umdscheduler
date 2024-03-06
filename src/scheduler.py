@@ -13,9 +13,11 @@ def backtracking(assignment, variables, res, domains):
 
     # Select an unassigned variable
     for var in variables:
+        # print(var)
         if var not in assignment:
             # Try all values in the domain of the variable
             for value in domains[var]:
+                print(value)
 
                 # If the assignment is valid, recurse on the remaining variables
                 if is_valid(value, assignment):
@@ -41,6 +43,7 @@ def check_overlap(course1, course2):
         parts = time_str[:-2].split(':')
         return int(parts[0]) * 60 + int(parts[1])
 
+    # print(course1)
     for meeting1 in course1["meetings"]:
         for meeting2 in course2["meetings"]:
             # Check if the days are the same
@@ -95,8 +98,7 @@ def create_schedule(wanted_classes, restrictions):
         parameters = {
             "course_id": course,
             # TODO: need to make this based on restrictions
-            "open_seats": "1|geq",
-            "semester": "202401"
+            "semester": "202408"
         }
 
         sections = requests.get(
@@ -106,7 +108,7 @@ def create_schedule(wanted_classes, restrictions):
             no_open_sections.append(course)
         else:
             domains[course] = sections
-
+    print(domains)
     if len(no_open_sections) == len(variables):
         print("No open sections for any classes.")
     elif no_open_sections:
@@ -115,3 +117,18 @@ def create_schedule(wanted_classes, restrictions):
 
     # Return the result
     return res
+
+
+print('here')
+
+wanted_classes = ['MATH240', 'CMSC216', 'CMSC250']
+restrictions = {
+                'minSeats': 0,
+                'prohibitedInstructors': ['Wiseley Wong', 'Raluca Rosca', 'Paul Kline', 'Mohammad Nayeem Teli', 'Ilchul Yoon'],
+                'prohibitedTimes': {},
+                'required_classes': []
+            }
+
+# Call your scheduling function with the input data
+result = create_schedule(wanted_classes, restrictions)
+print(result)
