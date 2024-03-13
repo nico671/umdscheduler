@@ -24,8 +24,8 @@ def backtracking(assignment, variables, res, domains):
                     assignment[var] = value
                     backtracking(assignment, variables, res,
                                  domains)
-                # Remove the assignment
-                del assignment[var]
+                    # # Remove the assignment
+                    # del assignment[var]
 
 
 def get_unused_var(assignment, variables, domains):
@@ -72,14 +72,13 @@ def is_valid(value, assignment):
 
     return True
 
-# def clean_sections(response, restrictions):
-#     sections = response.json()
-#     res = []
-#     for section in sections:
-#         if section['instructors'][0] not in restrictions['prohibitedInstructors']:
-#             if section['section_id'] not in restrictions['prohibitedTimes']:
-#                 res.append(section)
-#     return res
+def clean_sections(sections, restrictions):
+    res = []
+    for section in sections:
+        if section['instructors'][0] not in restrictions['prohibitedInstructors']:
+            if section['section_id'] not in restrictions['prohibitedTimes']:
+                res.append(section)
+    return res
 
 
 def create_schedule(wanted_classes, restrictions):
@@ -101,14 +100,14 @@ def create_schedule(wanted_classes, restrictions):
             "semester": "202408"
         }
 
-        sections = requests.get(
-            "https://api.umd.io/v1/courses/sections", params=parameters).json()
+        sections = clean_sections(requests.get(
+            "https://api.umd.io/v1/courses/sections", params=parameters).json(), restrictions)
         if len(sections) == 0:
             print("No possible sections for " + course)
             no_open_sections.append(course)
         else:
             domains[course] = sections
-    print(domains)
+    print(domains.keys())
     if len(no_open_sections) == len(variables):
         print("No open sections for any classes.")
     elif no_open_sections:
@@ -118,17 +117,14 @@ def create_schedule(wanted_classes, restrictions):
     # Return the result
     return res
 
+# wanted_classes = ['MATH240', 'CMSC216', 'CMSC250']
+# restrictions = {
+#                 'minSeats': 0,
+#                 'prohibitedInstructors': ['Wiseley Wong', 'Raluca Rosca', 'Paul Kline', 'Mohammad Nayeem Teli', 'Ilchul Yoon'],
+#                 'prohibitedTimes': {},
+#                 'required_classes': []
+#             }
 
-print('here')
-
-wanted_classes = ['MATH240', 'CMSC216', 'CMSC250']
-restrictions = {
-                'minSeats': 0,
-                'prohibitedInstructors': ['Wiseley Wong', 'Raluca Rosca', 'Paul Kline', 'Mohammad Nayeem Teli', 'Ilchul Yoon'],
-                'prohibitedTimes': {},
-                'required_classes': []
-            }
-
-# Call your scheduling function with the input data
-result = create_schedule(wanted_classes, restrictions)
-print(result)
+# # Call your scheduling function with the input data
+# result = create_schedule(wanted_classes, restrictions)
+# print(result)

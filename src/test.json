@@ -1,464 +1,370 @@
 [
     {
-        "ENGL142": {
-            "course": "ENGL142",
-            "section_id": "ENGL142-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "7",
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Christopher Kauffman"
+            ],
             "meetings": [
                 {
-                    "days": "MW",
-                    "room": "0310",
-                    "building": "TWS",
+                    "building": "IRB",
                     "classtype": "",
-                    "start_time": "1:00pm",
-                    "end_time": "1:50pm"
+                    "days": "TuTh",
+                    "end_time": "10:45am",
+                    "room": "0324",
+                    "start_time": "9:30am"
                 },
                 {
-                    "days": "F",
-                    "room": "1106",
-                    "building": "TWS",
+                    "building": "CSI",
                     "classtype": "Discussion",
-                    "start_time": "10:00am",
-                    "end_time": "10:50am"
+                    "days": "MW",
+                    "end_time": "8:50am",
+                    "room": "1122",
+                    "start_time": "8:00am"
                 }
             ],
-            "open_seats": "2",
-            "waitlist": "0",
-            "instructors": [
-                "Blake Wilder"
-            ]
-        },
-        "TLPL443": {
-            "course": "TLPL443",
-            "section_id": "TLPL443-0101",
-            "semester": "202401",
             "number": "0101",
-            "seats": "25",
-            "meetings": [
-                {
-                    "days": "W",
-                    "room": "0221",
-                    "building": "TWS",
-                    "classtype": "",
-                    "start_time": "5:00pm",
-                    "end_time": "7:45pm"
-                }
-            ],
-            "open_seats": "21",
-            "waitlist": "0",
-            "instructors": [
-                "Astrid Sierra Mejia"
-            ]
+            "open_seats": "36",
+            "seats": "36",
+            "section_id": "CMSC216-0101",
+            "semester": "202408",
+            "waitlist": "0"
         },
-        "WEID139T": {
-            "course": "WEID139T",
-            "section_id": "WEID139T-0201",
-            "semester": "202401",
-            "number": "0201",
-            "seats": "45",
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
             "meetings": [
                 {
-                    "days": "Tu",
-                    "room": "",
-                    "building": "TBA",
+                    "building": "ESJ",
                     "classtype": "",
-                    "start_time": "5:30pm",
-                    "end_time": "7:30pm"
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "2:50pm",
+                    "room": "3120",
+                    "start_time": "2:00pm"
                 }
             ],
-            "open_seats": "37",
-            "waitlist": "0",
+            "number": "0403",
+            "open_seats": "35",
+            "seats": "35",
+            "section_id": "CMSC250-0403",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
             "instructors": [
-                "Jazmin Pichardo",
-                "Sarah Scriven"
-            ]
+                "Allan Yashinski"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "12:50pm",
+                    "room": "0131",
+                    "start_time": "12:00pm"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "0106",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0211",
+            "open_seats": "25",
+            "seats": "25",
+            "section_id": "MATH240-0211",
+            "semester": "202408",
+            "waitlist": "0"
         }
     },
     {
-        "ENGL142": {
-            "course": "ENGL142",
-            "section_id": "ENGL142-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "7",
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Christopher Kauffman"
+            ],
             "meetings": [
                 {
-                    "days": "MW",
-                    "room": "0310",
-                    "building": "TWS",
+                    "building": "IRB",
                     "classtype": "",
-                    "start_time": "1:00pm",
-                    "end_time": "1:50pm"
+                    "days": "TuTh",
+                    "end_time": "12:15pm",
+                    "room": "0324",
+                    "start_time": "11:00am"
                 },
                 {
-                    "days": "F",
-                    "room": "1106",
-                    "building": "TWS",
+                    "building": "CSI",
                     "classtype": "Discussion",
-                    "start_time": "10:00am",
-                    "end_time": "10:50am"
+                    "days": "MW",
+                    "end_time": "9:50am",
+                    "room": "3118",
+                    "start_time": "9:00am"
                 }
             ],
-            "open_seats": "2",
-            "waitlist": "0",
-            "instructors": [
-                "Blake Wilder"
-            ]
+            "number": "0202",
+            "open_seats": "36",
+            "seats": "36",
+            "section_id": "CMSC216-0202",
+            "semester": "202408",
+            "waitlist": "0"
         },
-        "WEID139T": {
-            "course": "WEID139T",
-            "section_id": "WEID139T-0201",
-            "semester": "202401",
-            "number": "0201",
-            "seats": "45",
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
             "meetings": [
                 {
-                    "days": "Tu",
-                    "room": "",
-                    "building": "TBA",
+                    "building": "ESJ",
                     "classtype": "",
-                    "start_time": "5:30pm",
-                    "end_time": "7:30pm"
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "2:50pm",
+                    "room": "3120",
+                    "start_time": "2:00pm"
                 }
             ],
-            "open_seats": "37",
-            "waitlist": "0",
-            "instructors": [
-                "Jazmin Pichardo",
-                "Sarah Scriven"
-            ]
+            "number": "0403",
+            "open_seats": "35",
+            "seats": "35",
+            "section_id": "CMSC250-0403",
+            "semester": "202408",
+            "waitlist": "0"
         },
-        "TLPL443": {
-            "course": "TLPL443",
-            "section_id": "TLPL443-0101",
-            "semester": "202401",
-            "number": "0101",
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Allan Yashinski"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "12:50pm",
+                    "room": "0131",
+                    "start_time": "12:00pm"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "0106",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0211",
+            "open_seats": "25",
             "seats": "25",
-            "meetings": [
-                {
-                    "days": "W",
-                    "room": "0221",
-                    "building": "TWS",
-                    "classtype": "",
-                    "start_time": "5:00pm",
-                    "end_time": "7:45pm"
-                }
-            ],
-            "open_seats": "21",
-            "waitlist": "0",
-            "instructors": [
-                "Astrid Sierra Mejia"
-            ]
+            "section_id": "MATH240-0211",
+            "semester": "202408",
+            "waitlist": "0"
         }
     },
     {
-        "TLPL443": {
-            "course": "TLPL443",
-            "section_id": "TLPL443-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "25",
-            "meetings": [
-                {
-                    "days": "W",
-                    "room": "0221",
-                    "building": "TWS",
-                    "classtype": "",
-                    "start_time": "5:00pm",
-                    "end_time": "7:45pm"
-                }
-            ],
-            "open_seats": "21",
-            "waitlist": "0",
+        "CMSC216": {
+            "course": "CMSC216",
             "instructors": [
-                "Astrid Sierra Mejia"
-            ]
-        },
-        "ENGL142": {
-            "course": "ENGL142",
-            "section_id": "ENGL142-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "7",
+                "Nelson Padua-Perez"
+            ],
             "meetings": [
                 {
-                    "days": "MW",
-                    "room": "0310",
-                    "building": "TWS",
+                    "building": "EGR",
                     "classtype": "",
-                    "start_time": "1:00pm",
-                    "end_time": "1:50pm"
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
+                    "room": "1202",
+                    "start_time": "3:30pm"
                 },
                 {
-                    "days": "F",
-                    "room": "1106",
-                    "building": "TWS",
+                    "building": "CSI",
                     "classtype": "Discussion",
-                    "start_time": "10:00am",
-                    "end_time": "10:50am"
+                    "days": "TuTh",
+                    "end_time": "10:20am",
+                    "room": "3120",
+                    "start_time": "9:30am"
                 }
             ],
-            "open_seats": "2",
-            "waitlist": "0",
-            "instructors": [
-                "Blake Wilder"
-            ]
+            "number": "0403",
+            "open_seats": "36",
+            "seats": "36",
+            "section_id": "CMSC216-0403",
+            "semester": "202408",
+            "waitlist": "0"
         },
-        "WEID139T": {
-            "course": "WEID139T",
-            "section_id": "WEID139T-0201",
-            "semester": "202401",
-            "number": "0201",
-            "seats": "45",
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
             "meetings": [
                 {
-                    "days": "Tu",
-                    "room": "",
-                    "building": "TBA",
+                    "building": "ESJ",
                     "classtype": "",
-                    "start_time": "5:30pm",
-                    "end_time": "7:30pm"
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "2:50pm",
+                    "room": "3120",
+                    "start_time": "2:00pm"
                 }
             ],
-            "open_seats": "37",
-            "waitlist": "0",
+            "number": "0403",
+            "open_seats": "35",
+            "seats": "35",
+            "section_id": "CMSC250-0403",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
             "instructors": [
-                "Jazmin Pichardo",
-                "Sarah Scriven"
-            ]
+                "Allan Yashinski"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "12:50pm",
+                    "room": "0131",
+                    "start_time": "12:00pm"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "0106",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0211",
+            "open_seats": "25",
+            "seats": "25",
+            "section_id": "MATH240-0211",
+            "semester": "202408",
+            "waitlist": "0"
         }
     },
     {
-        "TLPL443": {
-            "course": "TLPL443",
-            "section_id": "TLPL443-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "25",
-            "meetings": [
-                {
-                    "days": "W",
-                    "room": "0221",
-                    "building": "TWS",
-                    "classtype": "",
-                    "start_time": "5:00pm",
-                    "end_time": "7:45pm"
-                }
-            ],
-            "open_seats": "21",
-            "waitlist": "0",
+        "CMSC216": {
+            "course": "CMSC216",
             "instructors": [
-                "Astrid Sierra Mejia"
-            ]
-        },
-        "WEID139T": {
-            "course": "WEID139T",
-            "section_id": "WEID139T-0201",
-            "semester": "202401",
-            "number": "0201",
-            "seats": "45",
-            "meetings": [
-                {
-                    "days": "Tu",
-                    "room": "",
-                    "building": "TBA",
-                    "classtype": "",
-                    "start_time": "5:30pm",
-                    "end_time": "7:30pm"
-                }
+                "Nelson Padua-Perez"
             ],
-            "open_seats": "37",
-            "waitlist": "0",
-            "instructors": [
-                "Jazmin Pichardo",
-                "Sarah Scriven"
-            ]
-        },
-        "ENGL142": {
-            "course": "ENGL142",
-            "section_id": "ENGL142-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "7",
             "meetings": [
                 {
-                    "days": "MW",
-                    "room": "0310",
-                    "building": "TWS",
+                    "building": "EGR",
                     "classtype": "",
-                    "start_time": "1:00pm",
-                    "end_time": "1:50pm"
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
+                    "room": "1202",
+                    "start_time": "3:30pm"
                 },
                 {
-                    "days": "F",
-                    "room": "1106",
-                    "building": "TWS",
+                    "building": "CSI",
                     "classtype": "Discussion",
-                    "start_time": "10:00am",
-                    "end_time": "10:50am"
+                    "days": "TuTh",
+                    "end_time": "10:20am",
+                    "room": "3120",
+                    "start_time": "9:30am"
                 }
             ],
-            "open_seats": "2",
-            "waitlist": "0",
-            "instructors": [
-                "Blake Wilder"
-            ]
-        }
-    },
-    {
-        "WEID139T": {
-            "course": "WEID139T",
-            "section_id": "WEID139T-0201",
-            "semester": "202401",
-            "number": "0201",
-            "seats": "45",
-            "meetings": [
-                {
-                    "days": "Tu",
-                    "room": "",
-                    "building": "TBA",
-                    "classtype": "",
-                    "start_time": "5:30pm",
-                    "end_time": "7:30pm"
-                }
-            ],
-            "open_seats": "37",
-            "waitlist": "0",
-            "instructors": [
-                "Jazmin Pichardo",
-                "Sarah Scriven"
-            ]
+            "number": "0403",
+            "open_seats": "36",
+            "seats": "36",
+            "section_id": "CMSC216-0403",
+            "semester": "202408",
+            "waitlist": "0"
         },
-        "ENGL142": {
-            "course": "ENGL142",
-            "section_id": "ENGL142-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "7",
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
             "meetings": [
                 {
-                    "days": "MW",
-                    "room": "0310",
-                    "building": "TWS",
+                    "building": "ESJ",
                     "classtype": "",
-                    "start_time": "1:00pm",
-                    "end_time": "1:50pm"
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
                 },
                 {
-                    "days": "F",
-                    "room": "1106",
-                    "building": "TWS",
+                    "building": "CSI",
                     "classtype": "Discussion",
-                    "start_time": "10:00am",
-                    "end_time": "10:50am"
+                    "days": "TuTh",
+                    "end_time": "2:50pm",
+                    "room": "3120",
+                    "start_time": "2:00pm"
                 }
             ],
-            "open_seats": "2",
-            "waitlist": "0",
-            "instructors": [
-                "Blake Wilder"
-            ]
+            "number": "0403",
+            "open_seats": "35",
+            "seats": "35",
+            "section_id": "CMSC250-0403",
+            "semester": "202408",
+            "waitlist": "0"
         },
-        "TLPL443": {
-            "course": "TLPL443",
-            "section_id": "TLPL443-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "25",
-            "meetings": [
-                {
-                    "days": "W",
-                    "room": "0221",
-                    "building": "TWS",
-                    "classtype": "",
-                    "start_time": "5:00pm",
-                    "end_time": "7:45pm"
-                }
-            ],
-            "open_seats": "21",
-            "waitlist": "0",
+        "MATH240": {
+            "course": "MATH240",
             "instructors": [
-                "Astrid Sierra Mejia"
-            ]
-        }
-    },
-    {
-        "WEID139T": {
-            "course": "WEID139T",
-            "section_id": "WEID139T-0201",
-            "semester": "202401",
-            "number": "0201",
-            "seats": "45",
-            "meetings": [
-                {
-                    "days": "Tu",
-                    "room": "",
-                    "building": "TBA",
-                    "classtype": "",
-                    "start_time": "5:30pm",
-                    "end_time": "7:30pm"
-                }
+                "Allan Yashinski"
             ],
-            "open_seats": "37",
-            "waitlist": "0",
-            "instructors": [
-                "Jazmin Pichardo",
-                "Sarah Scriven"
-            ]
-        },
-        "TLPL443": {
-            "course": "TLPL443",
-            "section_id": "TLPL443-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "25",
             "meetings": [
                 {
-                    "days": "W",
-                    "room": "0221",
-                    "building": "TWS",
+                    "building": "ARM",
                     "classtype": "",
-                    "start_time": "5:00pm",
-                    "end_time": "7:45pm"
-                }
-            ],
-            "open_seats": "21",
-            "waitlist": "0",
-            "instructors": [
-                "Astrid Sierra Mejia"
-            ]
-        },
-        "ENGL142": {
-            "course": "ENGL142",
-            "section_id": "ENGL142-0101",
-            "semester": "202401",
-            "number": "0101",
-            "seats": "7",
-            "meetings": [
-                {
-                    "days": "MW",
-                    "room": "0310",
-                    "building": "TWS",
-                    "classtype": "",
-                    "start_time": "1:00pm",
-                    "end_time": "1:50pm"
+                    "days": "MWF",
+                    "end_time": "2:50pm",
+                    "room": "0131",
+                    "start_time": "2:00pm"
                 },
                 {
-                    "days": "F",
-                    "room": "1106",
-                    "building": "TWS",
+                    "building": "CHE",
                     "classtype": "Discussion",
-                    "start_time": "10:00am",
-                    "end_time": "10:50am"
+                    "days": "TuTh",
+                    "end_time": "11:50am",
+                    "room": "2136",
+                    "start_time": "11:00am"
                 }
             ],
-            "open_seats": "2",
-            "waitlist": "0",
-            "instructors": [
-                "Blake Wilder"
-            ]
+            "number": "0311",
+            "open_seats": "25",
+            "seats": "25",
+            "section_id": "MATH240-0311",
+            "semester": "202408",
+            "waitlist": "0"
         }
     }
 ]
