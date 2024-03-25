@@ -13,11 +13,9 @@ def backtracking(assignment, variables, res, domains):
 
     # Select an unassigned variable
     for var in variables:
-        # print(var)
         if var not in assignment:
             # Try all values in the domain of the variable
             for value in domains[var]:
-                print(value)
 
                 # If the assignment is valid, recurse on the remaining variables
                 if is_valid(value, assignment):
@@ -112,6 +110,7 @@ def create_schedule(wanted_classes, restrictions):
         print("No open sections for any classes.")
     elif no_open_sections:
         print("Classes with no open sections: " + ', '.join(no_open_sections))
+        
     backtracking({}, variables, res, domains)
 
     # Return the result
