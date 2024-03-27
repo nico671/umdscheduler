@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import { runInThisContext } from 'vm';
 </script>
 
 
@@ -7,7 +7,11 @@
 
     <div class="center">
       <button @click="getPosts">Get posts</button>
-      <h6 v-if="posts">Posts: {{ posts }}</h6>
+      <ul>
+    <li v-for="post in posts" :key="post" data-test="post">
+      {{ post }}
+    </li>
+  </ul>
     </div>
 </template>
 
@@ -16,7 +20,7 @@
 export default {
   data() {
     return {
-      posts: "null"
+      posts: null,
     }
   },
   methods: {
@@ -36,6 +40,7 @@ export default {
         }
       })
       console.log(data)
+      this.posts = data
     }
   }
 }

@@ -34,12 +34,13 @@ def get_unused_var(assignment, variables, domains):
 def domains_values(var, assignment, domains):
     return [domain for domain in domains[var] if domain not in assignment.values()]
 
-
-def check_overlap(course1, course2):
-    def parse_time(time_str):
+def parse_time(time_str):
         # Helper function to convert time string to minutes since midnight
         parts = time_str[:-2].split(':')
         return int(parts[0]) * 60 + int(parts[1])
+
+def check_overlap(course1, course2):
+    
 
     # print(course1)
     for meeting1 in course1["meetings"]:
@@ -67,15 +68,31 @@ def is_valid(value, assignment):
             return False
 
     # TODO: check for credit limits / minimums
+    
 
     return True
 
 def clean_sections(sections, restrictions):
     res = []
     for section in sections:
-        if section['instructors'][0] not in restrictions['prohibitedInstructors']:
-            if section['section_id'] not in restrictions['prohibitedTimes']:
-                res.append(section)
+        clean = True
+        for instructor in section['instructors']:
+            if instructor in restrictions['prohibitedInstructors']:
+                clean = False
+        if clean:
+            for meeting in section['meetings']:
+                for time in restrictions['prohibitedTimes']:
+                    if time['day'] in meeting['days']:
+                        start_time = parse_time(str(datetime.strptime(
+                            time['start'], '%H:%M%p').time()))
+                        end_time = parse_time(str(datetime.strptime(time['end'], '%H:%M%p').time()))
+
+                        start_time2 = parse_time(meeting["start_time"])
+                        end_time2 = parse_time(meeting["end_time"])
+                        if (start_time < end_time2) and (start_time2 < end_time):
+                            clean = False  # Time overlap found
+        if clean:
+            res.append(section)
     return res
 
 
