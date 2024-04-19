@@ -24,7 +24,7 @@
                 }
             ],
             "number": "0202",
-            "open_seats": "36",
+            "open_seats": "34",
             "seats": "36",
             "section_id": "CMSC216-0202",
             "semester": "202408",
@@ -33,52 +33,31 @@
         "CMSC250": {
             "course": "CMSC250",
             "instructors": [
-                "Fawzi Emad"
+                "Mohammad Nayeem Teli",
+                "Paul Kline"
             ],
             "meetings": [
                 {
                     "building": "ESJ",
                     "classtype": "",
-                    "days": "MWF",
-                    "end_time": "1:50pm",
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
                     "room": "0202",
-                    "start_time": "1:00pm"
+                    "start_time": "3:30pm"
                 },
                 {
                     "building": "CSI",
                     "classtype": "Discussion",
-                    "days": "TuTh",
-                    "end_time": "2:50pm",
-                    "room": "3120",
-                    "start_time": "2:00pm"
+                    "days": "MW",
+                    "end_time": "1:50pm",
+                    "room": "1121",
+                    "start_time": "1:00pm"
                 }
             ],
-            "number": "0403",
-            "open_seats": "35",
-            "seats": "35",
-            "section_id": "CMSC250-0403",
-            "semester": "202408",
-            "waitlist": "0"
-        },
-        "JOUR150": {
-            "course": "JOUR150",
-            "instructors": [
-                "Edward Alwood"
-            ],
-            "meetings": [
-                {
-                    "building": "KNI",
-                    "classtype": "",
-                    "days": "TuTh",
-                    "end_time": "1:45pm",
-                    "room": "1103",
-                    "start_time": "12:30pm"
-                }
-            ],
-            "number": "0301",
-            "open_seats": "3",
-            "seats": "3",
-            "section_id": "JOUR150-0301",
+            "number": "0204",
+            "open_seats": "38",
+            "seats": "38",
+            "section_id": "CMSC250-0204",
             "semester": "202408",
             "waitlist": "0"
         },
@@ -106,9 +85,39 @@
                 }
             ],
             "number": "0221",
-            "open_seats": "25",
+            "open_seats": "23",
             "seats": "25",
             "section_id": "MATH240-0221",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "15",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
             "semester": "202408",
             "waitlist": "0"
         }
@@ -138,7 +147,7 @@
                 }
             ],
             "number": "0202",
-            "open_seats": "36",
+            "open_seats": "34",
             "seats": "36",
             "section_id": "CMSC216-0202",
             "semester": "202408",
@@ -147,52 +156,31 @@
         "CMSC250": {
             "course": "CMSC250",
             "instructors": [
-                "Fawzi Emad"
+                "Mohammad Nayeem Teli",
+                "Paul Kline"
             ],
             "meetings": [
                 {
                     "building": "ESJ",
                     "classtype": "",
-                    "days": "MWF",
-                    "end_time": "1:50pm",
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
                     "room": "0202",
-                    "start_time": "1:00pm"
+                    "start_time": "3:30pm"
                 },
                 {
                     "building": "CSI",
                     "classtype": "Discussion",
-                    "days": "TuTh",
-                    "end_time": "2:50pm",
-                    "room": "3120",
-                    "start_time": "2:00pm"
+                    "days": "MW",
+                    "end_time": "1:50pm",
+                    "room": "1121",
+                    "start_time": "1:00pm"
                 }
             ],
-            "number": "0403",
-            "open_seats": "35",
-            "seats": "35",
-            "section_id": "CMSC250-0403",
-            "semester": "202408",
-            "waitlist": "0"
-        },
-        "JOUR150": {
-            "course": "JOUR150",
-            "instructors": [
-                "Edward Alwood"
-            ],
-            "meetings": [
-                {
-                    "building": "KNI",
-                    "classtype": "",
-                    "days": "TuTh",
-                    "end_time": "1:45pm",
-                    "room": "1103",
-                    "start_time": "12:30pm"
-                }
-            ],
-            "number": "0301",
-            "open_seats": "3",
-            "seats": "3",
-            "section_id": "JOUR150-0301",
+            "number": "0204",
+            "open_seats": "38",
+            "seats": "38",
+            "section_id": "CMSC250-0204",
             "semester": "202408",
             "waitlist": "0"
         },
@@ -220,9 +208,39 @@
                 }
             ],
             "number": "0331",
-            "open_seats": "25",
+            "open_seats": "15",
             "seats": "25",
             "section_id": "MATH240-0331",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "15",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
             "semester": "202408",
             "waitlist": "0"
         }

@@ -1,50 +1,29 @@
-<script setup lang="ts">
-import { runInThisContext } from 'vm';
-</script>
-
-
-<template>
-
-    <div class="center">
-      <button @click="getPosts">Get posts</button>
-      <ul>
-    <li v-for="post in posts" :key="post" data-test="post">
-      {{ post }}
-    </li>
-  </ul>
-    </div>
-</template>
-
 <script lang="ts">
-
+import ClassSearch from './components/ClassSearch.vue'
 export default {
+  components: {
+    ClassSearch, 
+  },
   data() {
     return {
-      posts: null,
+      selectedClasses: [] as string[]
     }
   },
   methods: {
-    async getPosts() {
-      const input_data = {
-        'wanted_classes': ['MATH240', 'CMSC216', 'CMSC250', "JOUR150"],
-        'restrictions': {
-          'minSeats': 0,
-          'prohibitedInstructors': ['Wiseley Wong', 'Raluca Rosca', 'Paul Kline', 'Mohammad Nayeem Teli', 'Ilchul Yoon'],
-          'prohibitedTimes': {},
-          'required_classes': []
-        }
-      }
-      const { data } = await this.axios.post('http://127.0.0.1:5000/schedule', input_data, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      console.log(data)
-      this.posts = data
-    }
+    addClass(value: string[]) {
+      console.log(value)
+      this.selectedClasses = value
+    },
   }
+
 }
 </script>
+
+<template>
+  <div class="center">
+    <ClassSearch ></ClassSearch>
+  </div>
+</template>
 
 <style>
 .center {
@@ -53,13 +32,5 @@ export default {
   width: 50%;
   border: 3px solid green;
   padding: 10px;
-}
-
-button {
-  margin: auto;
-  background-color: lightblue;
-  color: black;
-  font-size: 25px;
-  margin: auto;
 }
 </style>
