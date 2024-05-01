@@ -10,23 +10,23 @@
                     "building": "IRB",
                     "classtype": "",
                     "days": "TuTh",
-                    "end_time": "12:15pm",
+                    "end_time": "10:45am",
                     "room": "0324",
-                    "start_time": "11:00am"
+                    "start_time": "9:30am"
                 },
                 {
                     "building": "CSI",
                     "classtype": "Discussion",
                     "days": "MW",
-                    "end_time": "9:50am",
-                    "room": "3118",
-                    "start_time": "9:00am"
+                    "end_time": "8:50am",
+                    "room": "1122",
+                    "start_time": "8:00am"
                 }
             ],
-            "number": "0202",
-            "open_seats": "34",
+            "number": "0101",
+            "open_seats": "35",
             "seats": "36",
-            "section_id": "CMSC216-0202",
+            "section_id": "CMSC216-0101",
             "semester": "202408",
             "waitlist": "0"
         },
@@ -49,15 +49,747 @@
                     "building": "CSI",
                     "classtype": "Discussion",
                     "days": "MW",
-                    "end_time": "1:50pm",
+                    "end_time": "12:50pm",
                     "room": "1121",
-                    "start_time": "1:00pm"
+                    "start_time": "12:00pm"
                 }
             ],
-            "number": "0204",
-            "open_seats": "38",
+            "number": "0203",
+            "open_seats": "35",
             "seats": "38",
-            "section_id": "CMSC250-0204",
+            "section_id": "CMSC250-0203",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Wiseley Wong"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "10:50am",
+                    "room": "0135",
+                    "start_time": "10:00am"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "12:50pm",
+                    "room": "B0427",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0111",
+            "open_seats": "8",
+            "seats": "25",
+            "section_id": "MATH240-0111",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Christopher Kauffman"
+            ],
+            "meetings": [
+                {
+                    "building": "IRB",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "10:45am",
+                    "room": "0324",
+                    "start_time": "9:30am"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "MW",
+                    "end_time": "8:50am",
+                    "room": "1122",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0101",
+            "open_seats": "35",
+            "seats": "36",
+            "section_id": "CMSC216-0101",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Wiseley Wong"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "10:50am",
+                    "room": "0135",
+                    "start_time": "10:00am"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "12:50pm",
+                    "room": "B0427",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0111",
+            "open_seats": "8",
+            "seats": "25",
+            "section_id": "MATH240-0111",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Ilchul Yoon"
+            ],
+            "meetings": [
+                {
+                    "building": "SKN",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "1:45pm",
+                    "room": "0200",
+                    "start_time": "12:30pm"
+                },
+                {
+                    "building": "IRB",
+                    "classtype": "Discussion",
+                    "days": "MW",
+                    "end_time": "9:50am",
+                    "room": "2107",
+                    "start_time": "9:00am"
+                }
+            ],
+            "number": "0302",
+            "open_seats": "35",
+            "seats": "36",
+            "section_id": "CMSC216-0302",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Wiseley Wong"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "10:50am",
+                    "room": "0135",
+                    "start_time": "10:00am"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "12:50pm",
+                    "room": "B0427",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0111",
+            "open_seats": "8",
+            "seats": "25",
+            "section_id": "MATH240-0111",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Ilchul Yoon"
+            ],
+            "meetings": [
+                {
+                    "building": "SKN",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "1:45pm",
+                    "room": "0200",
+                    "start_time": "12:30pm"
+                },
+                {
+                    "building": "IRB",
+                    "classtype": "Discussion",
+                    "days": "MW",
+                    "end_time": "11:50am",
+                    "room": "2107",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0305",
+            "open_seats": "35",
+            "seats": "36",
+            "section_id": "CMSC216-0305",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Wiseley Wong"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "10:50am",
+                    "room": "0135",
+                    "start_time": "10:00am"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "12:50pm",
+                    "room": "B0427",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0111",
+            "open_seats": "8",
+            "seats": "25",
+            "section_id": "MATH240-0111",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Ilchul Yoon"
+            ],
+            "meetings": [
+                {
+                    "building": "SKN",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "1:45pm",
+                    "room": "0200",
+                    "start_time": "12:30pm"
+                },
+                {
+                    "building": "IRB",
+                    "classtype": "Discussion",
+                    "days": "MW",
+                    "end_time": "12:50pm",
+                    "room": "2107",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0307",
+            "open_seats": "35",
+            "seats": "36",
+            "section_id": "CMSC216-0307",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Wiseley Wong"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "10:50am",
+                    "room": "0135",
+                    "start_time": "10:00am"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "12:50pm",
+                    "room": "B0427",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0111",
+            "open_seats": "8",
+            "seats": "25",
+            "section_id": "MATH240-0111",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Nelson Padua-Perez"
+            ],
+            "meetings": [
+                {
+                    "building": "EGR",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
+                    "room": "1202",
+                    "start_time": "3:30pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "10:20am",
+                    "room": "3120",
+                    "start_time": "9:30am"
+                }
+            ],
+            "number": "0403",
+            "open_seats": "30",
+            "seats": "36",
+            "section_id": "CMSC216-0403",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Wiseley Wong"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "10:50am",
+                    "room": "0135",
+                    "start_time": "10:00am"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "12:50pm",
+                    "room": "B0427",
+                    "start_time": "12:00pm"
+                }
+            ],
+            "number": "0111",
+            "open_seats": "8",
+            "seats": "25",
+            "section_id": "MATH240-0111",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Nelson Padua-Perez"
+            ],
+            "meetings": [
+                {
+                    "building": "EGR",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
+                    "room": "1202",
+                    "start_time": "3:30pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "10:20am",
+                    "room": "3120",
+                    "start_time": "9:30am"
+                }
+            ],
+            "number": "0403",
+            "open_seats": "30",
+            "seats": "36",
+            "section_id": "CMSC216-0403",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
             "semester": "202408",
             "waitlist": "0"
         },
@@ -79,17 +811,17 @@
                     "building": "MTH",
                     "classtype": "Discussion",
                     "days": "TuTh",
-                    "end_time": "9:50am",
+                    "end_time": "11:50am",
                     "room": "0106",
-                    "start_time": "9:00am"
+                    "start_time": "11:00am"
                 }
             ],
-            "number": "0221",
-            "open_seats": "23",
+            "number": "0241",
+            "open_seats": "0",
             "seats": "25",
-            "section_id": "MATH240-0221",
+            "section_id": "MATH240-0241",
             "semester": "202408",
-            "waitlist": "0"
+            "waitlist": "7"
         },
         "PHIL211": {
             "course": "PHIL211",
@@ -115,7 +847,7 @@
                 }
             ],
             "number": "0102",
-            "open_seats": "15",
+            "open_seats": "12",
             "seats": "20",
             "section_id": "PHIL211-0102",
             "semester": "202408",
@@ -126,61 +858,60 @@
         "CMSC216": {
             "course": "CMSC216",
             "instructors": [
-                "Christopher Kauffman"
+                "Nelson Padua-Perez"
             ],
             "meetings": [
                 {
-                    "building": "IRB",
+                    "building": "EGR",
                     "classtype": "",
                     "days": "TuTh",
-                    "end_time": "12:15pm",
-                    "room": "0324",
-                    "start_time": "11:00am"
+                    "end_time": "4:45pm",
+                    "room": "1202",
+                    "start_time": "3:30pm"
                 },
                 {
                     "building": "CSI",
                     "classtype": "Discussion",
-                    "days": "MW",
-                    "end_time": "9:50am",
-                    "room": "3118",
-                    "start_time": "9:00am"
+                    "days": "TuTh",
+                    "end_time": "10:20am",
+                    "room": "3120",
+                    "start_time": "9:30am"
                 }
             ],
-            "number": "0202",
-            "open_seats": "34",
+            "number": "0403",
+            "open_seats": "30",
             "seats": "36",
-            "section_id": "CMSC216-0202",
+            "section_id": "CMSC216-0403",
             "semester": "202408",
             "waitlist": "0"
         },
         "CMSC250": {
             "course": "CMSC250",
             "instructors": [
-                "Mohammad Nayeem Teli",
-                "Paul Kline"
+                "Fawzi Emad"
             ],
             "meetings": [
                 {
                     "building": "ESJ",
                     "classtype": "",
-                    "days": "TuTh",
-                    "end_time": "4:45pm",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
                     "room": "0202",
-                    "start_time": "3:30pm"
+                    "start_time": "1:00pm"
                 },
                 {
                     "building": "CSI",
                     "classtype": "Discussion",
-                    "days": "MW",
-                    "end_time": "1:50pm",
-                    "room": "1121",
-                    "start_time": "1:00pm"
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
                 }
             ],
-            "number": "0204",
-            "open_seats": "38",
-            "seats": "38",
-            "section_id": "CMSC250-0204",
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
             "semester": "202408",
             "waitlist": "0"
         },
@@ -202,15 +933,137 @@
                     "building": "MTH",
                     "classtype": "Discussion",
                     "days": "TuTh",
-                    "end_time": "1:50pm",
+                    "end_time": "12:50pm",
                     "room": "0303",
-                    "start_time": "1:00pm"
+                    "start_time": "12:00pm"
                 }
             ],
-            "number": "0331",
-            "open_seats": "15",
+            "number": "0321",
+            "open_seats": "0",
             "seats": "25",
-            "section_id": "MATH240-0331",
+            "section_id": "MATH240-0321",
+            "semester": "202408",
+            "waitlist": "2"
+        },
+        "PHIL211": {
+            "course": "PHIL211",
+            "instructors": [
+                "Susan Dwyer"
+            ],
+            "meetings": [
+                {
+                    "building": "TYD",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "3:15pm",
+                    "room": "0117",
+                    "start_time": "2:00pm"
+                },
+                {
+                    "building": "SQH",
+                    "classtype": "Discussion",
+                    "days": "F",
+                    "end_time": "11:50am",
+                    "room": "1121",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0102",
+            "open_seats": "12",
+            "seats": "20",
+            "section_id": "PHIL211-0102",
+            "semester": "202408",
+            "waitlist": "0"
+        }
+    },
+    {
+        "CMSC216": {
+            "course": "CMSC216",
+            "instructors": [
+                "Nelson Padua-Perez"
+            ],
+            "meetings": [
+                {
+                    "building": "EGR",
+                    "classtype": "",
+                    "days": "TuTh",
+                    "end_time": "4:45pm",
+                    "room": "1202",
+                    "start_time": "3:30pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "10:20am",
+                    "room": "3120",
+                    "start_time": "9:30am"
+                }
+            ],
+            "number": "0403",
+            "open_seats": "30",
+            "seats": "36",
+            "section_id": "CMSC216-0403",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "CMSC250": {
+            "course": "CMSC250",
+            "instructors": [
+                "Fawzi Emad"
+            ],
+            "meetings": [
+                {
+                    "building": "ESJ",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "1:50pm",
+                    "room": "0202",
+                    "start_time": "1:00pm"
+                },
+                {
+                    "building": "CSI",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "8:50am",
+                    "room": "3120",
+                    "start_time": "8:00am"
+                }
+            ],
+            "number": "0401",
+            "open_seats": "34",
+            "seats": "35",
+            "section_id": "CMSC250-0401",
+            "semester": "202408",
+            "waitlist": "0"
+        },
+        "MATH240": {
+            "course": "MATH240",
+            "instructors": [
+                "Raluca Rosca"
+            ],
+            "meetings": [
+                {
+                    "building": "ARM",
+                    "classtype": "",
+                    "days": "MWF",
+                    "end_time": "3:50pm",
+                    "room": "0131",
+                    "start_time": "3:00pm"
+                },
+                {
+                    "building": "MTH",
+                    "classtype": "Discussion",
+                    "days": "TuTh",
+                    "end_time": "11:50am",
+                    "room": "0401",
+                    "start_time": "11:00am"
+                }
+            ],
+            "number": "0441",
+            "open_seats": "24",
+            "seats": "25",
+            "section_id": "MATH240-0441",
             "semester": "202408",
             "waitlist": "0"
         },
@@ -238,7 +1091,7 @@
                 }
             ],
             "number": "0102",
-            "open_seats": "15",
+            "open_seats": "12",
             "seats": "20",
             "section_id": "PHIL211-0102",
             "semester": "202408",

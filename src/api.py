@@ -15,6 +15,7 @@ def create_schedule():
     restrictions = data.get('restrictions', {})
     # Call your scheduling function with the input data
     result = scheduler.create_schedule(wanted_classes, restrictions)
+    print(result)
     # Return the result as JSON
     return jsonify(result)
 

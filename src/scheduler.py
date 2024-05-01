@@ -1,27 +1,26 @@
 from datetime import datetime
-
 import requests
+
+
 
 # backtracking function to create all possible schedules
 def backtracking(assignment, variables, res, domains):
-    # If the assignment is complete and valid, add it to the result
+    # Base case: If the assignment is complete, add it to the result
     if len(assignment) == len(variables):
-        res.append(assignment.copy())
+        res.append(assignment.copy())  # Make a deep copy of the assignment
         return
 
-    # Select an unassigned variable
-    for var in variables:
-        if var not in assignment:
-            # Try all values in the domain of the variable
-            for value in domains[var]:
+    # Choose an unassigned variable
+    var = get_unused_var(assignment, variables, domains)
 
-                # If the assignment is valid, recurse on the remaining variables
-                if is_valid(value, assignment):
-                    assignment[var] = value
-                    backtracking(assignment, variables, res,
-                                 domains)
-                    # # Remove the assignment
-                    # del assignment[var]
+    # Consider all possible values for the chosen variable
+    for value in domains_values(var, assignment, domains):
+        if is_valid(value, assignment):
+            assignment[var] = value
+            # Recursively call backtracking to continue building the assignment
+            backtracking(assignment, variables, res, domains)
+            # Backtrack: remove the current variable assignment
+            del assignment[var]
 
 
 def get_unused_var(assignment, variables, domains):
@@ -29,16 +28,18 @@ def get_unused_var(assignment, variables, domains):
     res = min(unassigned_vars, key=lambda var: len(domains[var]))
     return res
 
+
 def domains_values(var, assignment, domains):
     return [domain for domain in domains[var] if domain not in assignment.values()]
 
+
 def parse_time(time_str):
-        # Helper function to convert time string to minutes since midnight
-        parts = time_str[:-2].split(':')
-        return int(parts[0]) * 60 + int(parts[1])
+    # Helper function to convert time string to minutes since midnight
+    parts = time_str[:-2].split(':')
+    return int(parts[0]) * 60 + int(parts[1])
+
 
 def check_overlap(course1, course2):
-    
 
     # print(course1)
     for meeting1 in course1["meetings"]:
@@ -66,9 +67,9 @@ def is_valid(value, assignment):
             return False
 
     # TODO: check for credit limits / minimums
-    
 
     return True
+
 
 def clean_sections(sections, restrictions):
     res = []
@@ -83,11 +84,11 @@ def clean_sections(sections, restrictions):
                     if time['day'] in meeting['days']:
                         start_time = parse_time(str(datetime.strptime(
                             time['start'], '%H:%M%p').time()))
-                        end_time = parse_time(str(datetime.strptime(time['end'], '%H:%M%p').time()))
+                        end_time = parse_time(
+                            str(datetime.strptime(time['end'], '%H:%M%p').time()))
                         start_time2 = parse_time(meeting["start_time"])
                         end_time2 = parse_time(meeting["end_time"])
                         if (start_time < end_time2) and (start_time2 < end_time):
-                            print("here")
                             clean = False  # Time overlap found
         if clean:
             res.append(section)
@@ -125,20 +126,20 @@ def create_schedule(wanted_classes, restrictions):
         print("No open sections for any classes.")
     elif no_open_sections:
         print("Classes with no open sections: " + ', '.join(no_open_sections))
-        
+
     backtracking({}, variables, res, domains)
 
     # Return the result
     return res
 
-# wanted_classes = ['MATH240', 'CMSC216', 'CMSC250']
-# restrictions = {
-#                 'minSeats': 0,
-#                 'prohibitedInstructors': ['Wiseley Wong', 'Raluca Rosca', 'Paul Kline', 'Mohammad Nayeem Teli', 'Ilchul Yoon'],
-#                 'prohibitedTimes': {},
-#                 'required_classes': []
-#             }
+wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'PHIL211']
+restrictions = {
+                'minSeats': 0,
+                'prohibitedInstructors': [],
+                'prohibitedTimes': tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}]),
+                'required_classes': []
+            }
 
-# # Call your scheduling function with the input data
-# result = create_schedule(wanted_classes, restrictions)
-# print(result)
+# Call your scheduling function with the input data
+result = create_schedule(wanted_classes, restrictions)
+print(len(result))

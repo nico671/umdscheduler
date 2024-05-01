@@ -6,8 +6,8 @@ input_data = {
     'wanted_classes': ['MATH240', 'CMSC216', 'CMSC250', "PHIL211"],
     'restrictions': {
         'minSeats': 0,
-        'prohibitedInstructors': ["Mengyuan Chen", "Denitsa Yotova",'Wiseley Wong', 'Raluca Rosca', 'Ilchul Yoon'],
-        'prohibitedTimes': tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}]),
+        'prohibitedInstructors': [],
+        'prohibitedTimes': [tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}])],
         'required_classes': []
     }
 }
