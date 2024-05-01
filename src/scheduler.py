@@ -92,6 +92,9 @@ def clean_sections(sections, restrictions):
                             clean = False  # Time overlap found
         if clean:
             res.append(section)
+        else:
+            print("Prohibited time or instructor for section " +
+                  section['section_id'])
     return res
 
 
