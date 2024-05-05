@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import requests
 
 
@@ -135,7 +136,7 @@ def create_schedule(wanted_classes, restrictions):
     # Return the result
     return res
 
-wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'PHIL211']
+wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'MATH241']
 restrictions = {
                 'minSeats': 0,
                 'prohibitedInstructors': [],
@@ -146,3 +147,5 @@ restrictions = {
 # Call your scheduling function with the input data
 result = create_schedule(wanted_classes, restrictions)
 print(len(result))
+with open("src/test.json", "w") as outfile:
+    outfile.write(json.dumps(result, indent=4))
