@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, make_response, request, jsonify
 from flask_cors import cross_origin
 import scheduler
 
@@ -16,8 +16,13 @@ def create_schedule():
     # Call your scheduling function with the input data
     result = scheduler.create_schedule(wanted_classes, restrictions)
     print(result)
-    # Return the result as JSON
-    return jsonify(result)
+    # Create a Response object
+    response = make_response(jsonify(result))
+    # Set headers on the Response object
+    response.headers['Content-Type'] = 'application/json'
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    # Return the Response object
+    return response
 
 
 if __name__ == '__main__':
