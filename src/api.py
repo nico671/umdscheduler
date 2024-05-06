@@ -1,12 +1,12 @@
-from flask import Flask, make_response, request, jsonify
-from flask_cors import cross_origin
-import scheduler
+from sched import scheduler
+from flask import Flask, jsonify, make_response, request
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/schedule": {"origins": "*"}})
 
 
 @app.route('/schedule', methods=['POST'])
-@cross_origin()
 def create_schedule():
     # Get the input data from the request
     data = request.get_json()
@@ -20,7 +20,6 @@ def create_schedule():
     response = make_response(jsonify(result))
     # Set headers on the Response object
     response.headers['Content-Type'] = 'application/json'
-    response.headers['Access-Control-Allow-Origin'] = '*'
     # Return the Response object
     return response
 
