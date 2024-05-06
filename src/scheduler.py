@@ -145,7 +145,7 @@ restrictions = {
             }
 
 # Call your scheduling function with the input data
-result = create_schedule(wanted_classes, restrictions)
-print(len(result))
-with open("src/test.json", "w") as outfile:
-    outfile.write(json.dumps(result, indent=4))
+# result = create_schedule(wanted_classes, restrictions)
+# print(len(result))
+# with open("src/test.json", "w") as outfile:
+#     outfile.write(json.dumps(result, indent=4))

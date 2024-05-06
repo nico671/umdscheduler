@@ -12,7 +12,7 @@ input_data = {
     }
 }
 
-url = 'http://127.0.0.1:5000/schedule'
+url = 'https://umdscheduler.onrender.com/schedule'
 response = requests.post(
     url, json=input_data, headers={'Content-Type': 'application/json'})
 
