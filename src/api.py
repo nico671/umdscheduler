@@ -1,4 +1,4 @@
-from sched import scheduler
+from . import scheduler
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 
