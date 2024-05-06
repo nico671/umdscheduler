@@ -15,12 +15,13 @@ def create_schedule():
     restrictions = data.get('restrictions', {})
     # Call your scheduling function with the input data
     result = scheduler.create_schedule(wanted_classes, restrictions)
-    print(result)
+    # print(result)
     # Create a Response object
     response = make_response(jsonify(result))
     # Set headers on the Response object
     response.headers['Content-Type'] = 'application/json'
     # Return the Response object
+    print(response)
     return response
 
 
