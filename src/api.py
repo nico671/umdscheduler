@@ -9,6 +9,7 @@ app = Flask(__name__)
 def create_schedule():
     # Get the input data from the request
     data = request.get_json()
+    print(data)
 
     wanted_classes = data.get('wanted_classes', [])
     restrictions = data.get('restrictions', {})
@@ -16,8 +17,9 @@ def create_schedule():
     result = scheduler.create_schedule(wanted_classes, restrictions)
     # print(result)
     # Create a Response object
-    response = jsonify(result)
+    response = make_response(jsonify(result))
     # Set headers on the Response object
+    response.access_control_allow_origin = '*'
     # Return the Response object
     print(response)
     return response
