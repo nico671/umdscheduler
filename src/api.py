@@ -19,7 +19,7 @@ def create_schedule():
     # Create a Response object
     response = make_response(jsonify(result))
     # Set headers on the Response object
-    response.headers['Content-Type'] = 'application/json'
+    # response.headers['Content-Type'] = 'application/json'
     # Return the Response object
     print(response)
     return response
