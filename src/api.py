@@ -13,7 +13,7 @@ def create_schedule():
     print(data)
 
     wanted_classes = data.get('wanted_classes', [])
-    restrictions = jsonify(data.get('restrictions', {}))
+    restrictions = data.get('restrictions', {})
     # Call your scheduling function with the input data
     result = scheduler.create_schedule(wanted_classes, restrictions)
     # print(result)
