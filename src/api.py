@@ -2,7 +2,7 @@ import scheduler
 from flask import Flask, jsonify, make_response, request
 
 app = Flask(__name__)
-# CORS(app, resources={r"/schedule": {"origins": "*"}})
+CORS(app, resources={r"/schedule": {"origins": "*"}})
 
 
 @app.route('/schedule', methods=['POST'])
