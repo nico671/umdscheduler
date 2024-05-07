@@ -28,7 +28,7 @@ Flask-Cors==4.0.0
 fonttools==4.51.0
 foundation==0.1.0a0.dev1
 idna==3.6
-instagrapi==2.0.3
+gunicorn==22.0.0
 installer==0.7.0
 ipykernel==6.29.4
 ipython==8.23.0
