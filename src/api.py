@@ -1,9 +1,8 @@
 import scheduler
 from flask import Flask, jsonify, make_response, request
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/schedule": {"origins": "*"}})
+# CORS(app, resources={r"/schedule": {"origins": "*"}})
 
 
 @app.route('/schedule', methods=['POST'])
@@ -17,9 +16,8 @@ def create_schedule():
     result = scheduler.create_schedule(wanted_classes, restrictions)
     # print(result)
     # Create a Response object
-    response = make_response(jsonify(result))
+    response = jsonify(result)
     # Set headers on the Response object
-    # response.headers['Content-Type'] = 'application/json'
     # Return the Response object
     print(response)
     return response
