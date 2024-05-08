@@ -1,13 +1,21 @@
 from datetime import datetime
+from flask import json
 import requests
 
 
 
 # backtracking function to create all possible schedules
-def backtracking(assignment, variables, res, domains):
+def backtracking(assignment, variables, res, domains, found):
     # Base case: If the assignment is complete, add it to the result
     if len(assignment) == len(variables):
-        res.append(assignment.copy())  # Make a deep copy of the assignment
+        string_rep = ""
+        for key in assignment:
+            string_rep += key + " " + assignment[key]['section_id']
+        if string_rep not in found:
+            res.append(assignment.copy())  # Make a deep copy of the assignment
+            found.append(string_rep)
+        else:
+            print("Duplicate schedule found")
         return
 
     # Choose an unassigned variable
@@ -18,7 +26,7 @@ def backtracking(assignment, variables, res, domains):
         if is_valid(value, assignment):
             assignment[var] = value
             # Recursively call backtracking to continue building the assignment
-            backtracking(assignment, variables, res, domains)
+            backtracking(assignment, variables, res, domains, found)
             # Backtrack: remove the current variable assignment
             del assignment[var]
 
@@ -123,21 +131,28 @@ def create_schedule(wanted_classes, restrictions):
             print("No possible sections for " + course)
             no_open_sections.append(course)
         else:
-            domains[course] = sections
+            for section in sections:
+                if int(section["open_seats"]) < restrictions['minSeats']:
+                    print("Not enough open seats for section " +
+                          section['section_id'])
+                else:
+                    if course not in domains:
+                        domains[course] = []
+                    domains[course].append(section)
     print(domains.keys())
     if len(no_open_sections) == len(variables):
         print("No open sections for any classes.")
     elif no_open_sections:
         print("Classes with no open sections: " + ', '.join(no_open_sections))
-
-    backtracking({}, variables, res, domains)
+    found = []
+    backtracking({}, variables, res, domains, found)
 
     # Return the result
     return res
 
 wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'MATH241']
 restrictions = {
-                'minSeats': 0,
+                'minSeats': 1,
                 'prohibitedInstructors': [],
                 'prohibitedTimes': tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}]),
                 'required_classes': []
