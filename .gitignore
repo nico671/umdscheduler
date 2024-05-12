@@ -3,3 +3,6 @@ ifonlyiknewumdioexistedbeforeiwrotethiswholefileandnowidontwanttodeleteiteventho
 src/__pycache__/
 .DS_Store
 .gitignore
+src/requirements.txt
+src/test.json
+src/test.py
