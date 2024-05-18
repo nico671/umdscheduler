@@ -90,7 +90,7 @@ def clean_sections(sections, restrictions):
             for meeting in section['meetings']:
                 if len(restrictions['prohibitedTimes']) > 0:
                     for time in restrictions['prohibitedTimes']:
-                        if time['day'] in meeting['days']:
+                        if time["day"] in meeting['days']:
                             start_time = parse_time(str(datetime.strptime(
                                 time['start'], '%H:%M%p').time()))
                             end_time = parse_time(
