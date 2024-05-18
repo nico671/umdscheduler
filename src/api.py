@@ -11,8 +11,7 @@ CORS(app, resources={r"/schedule": {"origins": "*"}})
 def create_schedule():
     # Get the input data from the request
     # 
-    data = json.loads(json.dumps(request.get_json()))
-
+    data = request.get_json()
     print(data)
 
     wanted_classes = data.get('wanted_classes', [])
