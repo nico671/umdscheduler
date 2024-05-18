@@ -1,3 +1,4 @@
+import json
 from flask_cors import CORS
 import scheduler
 from flask import Flask, jsonify, make_response, request
@@ -9,7 +10,9 @@ CORS(app, resources={r"/schedule": {"origins": "*"}})
 @app.route('/schedule', methods=['POST'])
 def create_schedule():
     # Get the input data from the request
-    data = request.get_json()
+    # 
+    data = json.loads(request.get_json())
+
     print(data)
 
     wanted_classes = data.get('wanted_classes', [])
