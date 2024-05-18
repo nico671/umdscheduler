@@ -88,16 +88,17 @@ def clean_sections(sections, restrictions):
                 clean = False
         if clean:
             for meeting in section['meetings']:
-                for time in restrictions['prohibitedTimes']:
-                    if time['day'] in meeting['days']:
-                        start_time = parse_time(str(datetime.strptime(
-                            time['start'], '%H:%M%p').time()))
-                        end_time = parse_time(
-                            str(datetime.strptime(time['end'], '%H:%M%p').time()))
-                        start_time2 = parse_time(meeting["start_time"])
-                        end_time2 = parse_time(meeting["end_time"])
-                        if (start_time < end_time2) and (start_time2 < end_time):
-                            clean = False  # Time overlap found
+                if len(restrictions['prohibitedTimes']) > 0:
+                    for time in restrictions['prohibitedTimes']:
+                        if time['day'] in meeting['days']:
+                            start_time = parse_time(str(datetime.strptime(
+                                time['start'], '%H:%M%p').time()))
+                            end_time = parse_time(
+                                str(datetime.strptime(time['end'], '%H:%M%p').time()))
+                            start_time2 = parse_time(meeting["start_time"])
+                            end_time2 = parse_time(meeting["end_time"])
+                            if (start_time < end_time2) and (start_time2 < end_time):
+                                clean = False  # Time overlap found
         if clean:
             res.append(section)
         else:
