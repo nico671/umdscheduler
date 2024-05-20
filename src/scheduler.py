@@ -90,7 +90,7 @@ def clean_sections(sections, restrictions):
             for meeting in section['meetings']:
                 if len(restrictions['prohibitedTimes']) > 0:
                     for time in restrictions['prohibitedTimes']:
-                        print(time)
+                        # print(time)
                         if time["day"] in meeting['days']:
                             start_time = parse_time(str(datetime.strptime(
                                 time['start'], '%H:%M%p').time()))
@@ -150,6 +150,7 @@ def create_schedule(wanted_classes, restrictions):
     backtracking({}, variables, res, domains, found)
 
     # Return the result
+    print(res)
     return res
 
 wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'MATH241']

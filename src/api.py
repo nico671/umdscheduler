@@ -24,7 +24,7 @@ def create_schedule():
     # Set headers on the Response object
     response.access_control_allow_origin = '*'
     # Return the Response object
-    print(response)
+    print(response.status_code)
     return response
 
 
