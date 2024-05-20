@@ -153,13 +153,13 @@ def create_schedule(wanted_classes, restrictions):
     print(res)
     return res
 
-wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'MATH241']
-restrictions = {
-                'minSeats': 1,
-                'prohibitedInstructors': [],
-                'prohibitedTimes': tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}]),
-                'required_classes': []
-            }
+# wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'MATH241']
+# restrictions = {
+#                 'minSeats': 1,
+#                 'prohibitedInstructors': [],
+#                 'prohibitedTimes': tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}]),
+#                 'required_classes': []
+#             }
 
 # Call your scheduling function with the input data
 # result = create_schedule(wanted_classes, restrictions)
