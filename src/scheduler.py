@@ -136,13 +136,13 @@ def create_schedule(wanted_classes, restrictions):
             no_open_sections.append(course)
         else:
             for section in sections:
-                if int(section["open_seats"]) < restrictions['minSeats']:
-                    print("Not enough open seats for section " +
-                          section['section_id'])
-                else:
-                    if course not in domains:
-                        domains[course] = []
-                    domains[course].append(section)
+                # if int(section["open_seats"]) < restrictions['minSeats']:
+                #     print("Not enough open seats for section " +
+                #           section['section_id'])
+                # else:
+                if course not in domains:
+                    domains[course] = []
+                domains[course].append(section)
     print(domains.keys())
     if len(no_open_sections) == len(variables):
         print("No open sections for any classes.")
