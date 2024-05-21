@@ -4,7 +4,6 @@ import requests
 from datetime import datetime
 
 
-
 # backtracking function to create all possible schedules
 def backtracking(assignment, variables, res, domains, found):
     # Base case: If the assignment is complete, add it to the result
@@ -80,9 +79,9 @@ def is_valid(value, assignment):
     return True
 
 
-
 def parse_time(time_str):
     return datetime.strptime(time_str, '%H:%M%p').time()
+
 
 def clean_sections(sections, restrictions):
     res = []
@@ -100,12 +99,10 @@ def clean_sections(sections, restrictions):
                             end_time = parse_time(time['end'])
                             start_time2 = parse_time(meeting["start_time"])
                             end_time2 = parse_time(meeting["end_time"])
-                            if (start_time < end_time2) and (start_time2 < end_time):
+                            if (start_time < end_time2) and (end_time < end_time2) or (start_time2 < end_time) and (end_time2 < end_time):
                                 clean = False  # Time overlap found
                                 break
-                    if not clean:
-                        break
-        if clean:
+        if clean == True:
             res.append(section)
         else:
             print("Prohibited time or instructor for section " +
