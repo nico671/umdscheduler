@@ -83,6 +83,7 @@ def is_valid(value, assignment):
 
 def parse_time(time_str):
     return datetime.strptime(time_str, '%H:%M%p').time()
+
 def clean_sections(sections, restrictions):
     res = []
     for section in sections:
@@ -150,9 +151,10 @@ def create_schedule(wanted_classes, restrictions):
         print("No open sections for any classes.")
     elif no_open_sections:
         print("Classes with no open sections: " + ', '.join(no_open_sections))
+
     found = []
     backtracking({}, variables, res, domains, found)
 
     # Return the result
-    print(res)
+    # print(res)
     return res

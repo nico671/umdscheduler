@@ -12,7 +12,7 @@ def create_schedule():
     # Get the input data from the request
     # 
     data = request.get_json()
-    print(data)
+    # print(data)
 
     wanted_classes = data.get('wanted_classes', [])
     restrictions = data.get('restrictions', {})
@@ -24,7 +24,7 @@ def create_schedule():
     # Set headers on the Response object
     response.access_control_allow_origin = '*'
     # Return the Response object
-    print(response.status_code)
+    # print(response.status_code)
     return response
 
 
