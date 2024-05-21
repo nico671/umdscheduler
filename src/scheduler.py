@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import json
 import requests
+from datetime import datetime
 
 
 
@@ -79,6 +80,9 @@ def is_valid(value, assignment):
     return True
 
 
+
+def parse_time(time_str):
+    return datetime.strptime(time_str, '%H:%M%p').time()
 def clean_sections(sections, restrictions):
     res = []
     for section in sections:
@@ -88,18 +92,18 @@ def clean_sections(sections, restrictions):
                 clean = False
         if clean:
             for meeting in section['meetings']:
-                if len(restrictions['prohibitedTimes']) > 0:
+                if restrictions['prohibitedTimes']:
                     for time in restrictions['prohibitedTimes']:
-                        # print(time)
                         if time["day"] in meeting['days']:
-                            start_time = parse_time(str(datetime.strptime(
-                                time['start'], '%H:%M%p').time()))
-                            end_time = parse_time(
-                                str(datetime.strptime(time['end'], '%H:%M%p').time()))
+                            start_time = parse_time(time['start'])
+                            end_time = parse_time(time['end'])
                             start_time2 = parse_time(meeting["start_time"])
                             end_time2 = parse_time(meeting["end_time"])
                             if (start_time < end_time2) and (start_time2 < end_time):
                                 clean = False  # Time overlap found
+                                break
+                    if not clean:
+                        break
         if clean:
             res.append(section)
         else:
@@ -152,17 +156,3 @@ def create_schedule(wanted_classes, restrictions):
     # Return the result
     print(res)
     return res
-
-# wanted_classes = ['MATH240', 'CMSC216', 'CMSC250', 'MATH241']
-# restrictions = {
-#                 'minSeats': 1,
-#                 'prohibitedInstructors': [],
-#                 'prohibitedTimes': tuple([{"day": "Th", "start": "8:00am", "end": "9:00am"}, {"day": "F", "start": "8:00am", "end": "11:00am"}, {"day": "W", "start": "8:00am", "end": "9:00am"}]),
-#                 'required_classes': []
-#             }
-
-# Call your scheduling function with the input data
-# result = create_schedule(wanted_classes, restrictions)
-# print(len(result))
-# with open("src/test.json", "w") as outfile:
-#     outfile.write(json.dumps(result, indent=4))
