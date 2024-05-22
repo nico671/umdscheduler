@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import json
+from flask import json, jsonify
 import requests
 from datetime import datetime
 
@@ -129,26 +129,30 @@ def create_schedule(wanted_classes, restrictions):
             "semester": "202408"
         }
 
-        sections = clean_sections(requests.get(
-            "https://api.umd.io/v1/courses/sections", params=parameters).json(), restrictions)
+        try:
+            response = requests.get(
+                "https://api.umd.io/v1/courses/sections", params=parameters)
+            response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
+        except requests.RequestException as e:
+            return jsonify({"error": f"An error occurred when trying to get sections for {course}: {str(e)}"})
+        sections = clean_sections(response)
         if len(sections) == 0:
             print("No possible sections for " + course)
             no_open_sections.append(course)
         else:
             for section in sections:
-                # if int(section["open_seats"]) < restrictions['minSeats']:
-                #     print("Not enough open seats for section " +
-                #           section['section_id'])
-                # else:
-                if course not in domains:
-                    domains[course] = []
-                domains[course].append(section)
+                if int(section["open_seats"]) < restrictions['minSeats']:
+                    print("Not enough open seats for section " +
+                          section['section_id'])
+                else:
+                    if course not in domains:
+                        domains[course] = []
+                    domains[course].append(section)
     print(domains.keys())
     if len(no_open_sections) == len(variables):
-        print("No open sections for any classes.")
-    elif no_open_sections:
-        print("Classes with no open sections: " + ', '.join(no_open_sections))
-
+        return jsonify({"error": "No possible sections for any of the requested courses"}), 400
+    if len(no_open_sections) > 0:
+        return jsonify({"error": "No open sections for any of the requested courses", "courses": no_open_sections}), 400
     found = []
     backtracking({}, variables, res, domains, found)
 
