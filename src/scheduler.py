@@ -29,6 +29,9 @@ def backtracking(assignment, variables, res, domains, found):
             backtracking(assignment, variables, res, domains, found)
             # Backtrack: remove the current variable assignment
             del assignment[var]
+        else:
+            print("Invalid assignment for " + var)
+            
 
 
 def get_unused_var(assignment, variables, domains):
@@ -62,8 +65,8 @@ def check_overlap(course1, course2):
                 end_time2 = parse_time(meeting2["end_time"])
 
                 # Check for overlap
-                if (start_time1 < end_time2) and (start_time2 < end_time1):
-                    return True  # Time overlap found
+                if (start_time < end_time2) and (start_time2 < end_time):
+                    return True
 
     return False  # No time overlap
 
@@ -88,7 +91,7 @@ def clean_sections(sections, restrictions):
     for section in sections:
         clean = True
         for instructor in section['instructors']:
-            if instructor in restrictions['prohibitedInstructors']:
+            if instructor.lower() in [x.lower() for x in restrictions['prohibitedInstructors']]:
                 clean = False
         if clean:
             for meeting in section['meetings']:
