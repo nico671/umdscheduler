@@ -135,7 +135,8 @@ def create_schedule(wanted_classes, restrictions):
             response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
         except requests.RequestException as e:
             return jsonify({"error": f"An error occurred when trying to get sections for {course}: {str(e)}"})
-        sections = clean_sections(response, restrictions)
+        sections = clean_sections(requests.get(
+                "https://api.umd.io/v1/courses/sections", params=parameters), restrictions)
         if len(sections) == 0:
             print("No possible sections for " + course)
             no_open_sections.append(course)
