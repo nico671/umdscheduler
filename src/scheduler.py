@@ -31,7 +31,7 @@ def backtracking(assignment, variables, res, domains, found):
             del assignment[var]
         else:
             print("Invalid assignment for " + var)
-            
+
 
 
 def get_unused_var(assignment, variables, domains):
@@ -65,7 +65,7 @@ def check_overlap(course1, course2):
                 end_time2 = parse_time(meeting2["end_time"])
 
                 # Check for overlap
-                if (start_time < end_time2) and (start_time2 < end_time):
+                if (start_time1 < end_time2) and (start_time2 < end_time1):
                     return True
 
     return False  # No time overlap
