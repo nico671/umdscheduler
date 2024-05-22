@@ -99,9 +99,9 @@ def clean_sections(sections, restrictions):
                             end_time = parse_time(time['end'])
                             start_time2 = parse_time(meeting["start_time"])
                             end_time2 = parse_time(meeting["end_time"])
-                            if (start_time < end_time2) and (end_time < end_time2) or (start_time2 < end_time) and (end_time2 < end_time):
-                                clean = False  # Time overlap found
-                                break
+                            if (start_time < end_time2) and (start_time2 < end_time):
+                                clean = False
+                            
         if clean == True:
             res.append(section)
         else:
