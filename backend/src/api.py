@@ -20,12 +20,15 @@ def create_schedule():
     result = scheduler.create_schedule(wanted_classes, restrictions)
     # print(result)
     # Create a Response object
-    response = make_response(jsonify(result))
+    response = make_response(result)
     # Set headers on the Response object
     response.access_control_allow_origin = '*'
     # Return the Response object
     # print(response.status_code)
-    return response
+    if response.status_code != 200:
+        print(response.json)
+    else:
+        return response
 
 
 if __name__ == '__main__':

@@ -1,21 +1,13 @@
 from datetime import datetime
-from flask import json, jsonify
 import requests
 from datetime import datetime
 
 
 # backtracking function to create all possible schedules
-def backtracking(assignment, variables, res, domains, found):
+def backtracking(assignment, variables, res, domains):
     # Base case: If the assignment is complete, add it to the result
     if len(assignment) == len(variables):
-        string_rep = ""
-        for key in assignment:
-            string_rep += key + " " + assignment[key]['section_id']
-        if string_rep not in found:
-            res.append(assignment.copy())  # Make a deep copy of the assignment
-            found.append(string_rep)
-        else:
-            print("Duplicate schedule found")
+        res.append(assignment.copy())  # Make a deep copy of the assignment
         return
 
     # Choose an unassigned variable
@@ -26,12 +18,9 @@ def backtracking(assignment, variables, res, domains, found):
         if is_valid(value, assignment):
             assignment[var] = value
             # Recursively call backtracking to continue building the assignment
-            backtracking(assignment, variables, res, domains, found)
+            backtracking(assignment, variables, res, domains)
             # Backtrack: remove the current variable assignment
             del assignment[var]
-        else:
-            print("Invalid assignment for " + var)
-
 
 
 def get_unused_var(assignment, variables, domains):
@@ -73,6 +62,7 @@ def check_overlap(course1, course2):
 
 def is_valid(value, assignment):
     # Check for overlap
+
     for assigned_value in assignment.values():
         if check_overlap(value, assigned_value):
             return False
@@ -92,6 +82,8 @@ def clean_sections(sections, restrictions):
         clean = True
         for instructor in section['instructors']:
             if instructor.lower() in [x.lower() for x in restrictions['prohibitedInstructors']]:
+                print("Prohibited instructor for section " +
+                      section['section_id'])
                 clean = False
         if clean:
             for meeting in section['meetings']:
@@ -103,13 +95,14 @@ def clean_sections(sections, restrictions):
                             start_time2 = parse_time(meeting["start_time"])
                             end_time2 = parse_time(meeting["end_time"])
                             if (start_time < end_time2) and (start_time2 < end_time):
+                                print("Prohibited time for section " +
+                                      section['section_id'])
                                 clean = False
-                            
+        if section['open_seats'] == 0:
+            print("No open seats for section " + section['section_id'])
+            clean = False
         if clean == True:
             res.append(section)
-        else:
-            print("Prohibited time or instructor for section " +
-                  section['section_id'])
     return res
 
 
@@ -137,29 +130,28 @@ def create_schedule(wanted_classes, restrictions):
                 "https://api.umd.io/v1/courses/sections", params=parameters)
             response.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xx
         except requests.RequestException as e:
-            return jsonify({"error": f"An error occurred when trying to get sections for {course}: {str(e)}"})
+            return {"error": f"An error occurred when trying to get sections for {course}: {str(e)}"}
         sections = clean_sections(requests.get(
-                "https://api.umd.io/v1/courses/sections", params=parameters).json(), restrictions)
+            "https://api.umd.io/v1/courses/sections", params=parameters).json(), restrictions)
         if len(sections) == 0:
             print("No possible sections for " + course)
             no_open_sections.append(course)
         else:
             for section in sections:
-                if int(section["open_seats"]) < restrictions['minSeats']:
-                    print("Not enough open seats for section " +
-                          section['section_id'])
-                else:
-                    if course not in domains:
-                        domains[course] = []
-                    domains[course].append(section)
-    print(domains.keys())
+                if course not in domains:
+                    domains[course] = []
+                domains[course].append(section)
+    # print(domains.keys())
     if len(no_open_sections) == len(variables):
-        return jsonify({"error": "No possible sections for any of the requested courses"}), 400
+        return {"error": "No possible sections for any of the requested courses"}
     if len(no_open_sections) > 0:
-        return jsonify({"error": "No open sections for any of the requested courses", "courses": no_open_sections}), 400
-    found = []
-    backtracking({}, variables, res, domains, found)
+        return {"error": "No open sections for any of the requested courses", "courses": no_open_sections}
+    for course in variables:
+        if course not in domains:
+            return {"error": "No possible sections for " + course}
 
-    # Return the result
-    # print(res)
+    backtracking({}, variables, res, domains)
+
+    if len(res) == 0:
+        return {"error": "No possible schedules found"}
     return res

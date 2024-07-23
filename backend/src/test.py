@@ -3,7 +3,7 @@
 # import requests
 
 # input_data = {
-#     'wanted_classes': ['MATH240', 'CMSC216', 'CMSC250', "PHIL211"],
+#     'wanted_classes': [, 'CMSC216', 'CMSC250',],
 #     'restrictions': {
 #         'minSeats': 0,
 #         'prohibitedInstructors': [],
@@ -26,5 +26,3 @@
 #     outfile.write(json_object)
 # # self.assertIsInstance(response_data, list)
 # # self.assertEqual(len(response_data), 6)
-
-
