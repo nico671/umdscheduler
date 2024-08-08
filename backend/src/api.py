@@ -10,7 +10,7 @@ CORS(app, resources={r"/schedule": {"origins": "*"}})
 @app.route('/schedule', methods=['POST'])
 def create_schedule():
     # Get the input data from the request
-    # 
+    #
     data = request.get_json()
     # print(data)
 

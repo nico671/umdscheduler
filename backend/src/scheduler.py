@@ -79,6 +79,9 @@ def parse_time(time_str):
 def clean_sections(sections, restrictions):
     res = []
     for section in sections:
+        if int(section['open_seats']) < 1:
+            print("No open seats for section " + section['section_id'])
+            clean = False
         clean = True
         for instructor in section['instructors']:
             if instructor.lower() in [x.lower() for x in restrictions['prohibitedInstructors']]:
@@ -98,9 +101,7 @@ def clean_sections(sections, restrictions):
                                 print("Prohibited time for section " +
                                       section['section_id'])
                                 clean = False
-        if section['open_seats'] == 0:
-            print("No open seats for section " + section['section_id'])
-            clean = False
+
         if clean == True:
             res.append(section)
     return res
@@ -145,7 +146,7 @@ def create_schedule(wanted_classes, restrictions):
     if len(no_open_sections) == len(variables):
         return {"error": "No possible sections for any of the requested courses"}
     if len(no_open_sections) > 0:
-        return {"error": "No open sections for any of the requested courses", "courses": no_open_sections}
+        return {"error": "No open sections for any of the following requested courses", "courses": no_open_sections}
     for course in variables:
         if course not in domains:
             return {"error": "No possible sections for " + course}
