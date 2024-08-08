@@ -19,9 +19,9 @@
 	offsetDate.setFullYear(2018);
 	offsetDate.setMonth(11);
 	offsetDate.setSeconds(0);
-	let totalLength = 90; // The height of the schedule view in vh
-	// let latestEnd = 720; // The end time of the latest slot in minutes (12 hours * 60 minutes)
-
+	let totalLength = 0; // The height of the schedule view in vh
+	let latestEnd = 0; // The end time of the latest slot in minutes (12 hours * 60 minutes)
+	let earliestStart = 100000;
 	onMount(async () => {
 		// console.log(scheduleData);
 		// Utility functions
@@ -51,6 +51,12 @@
 			const startSlot = Math.round((startDate.getTime() - offsetDate.getTime()) / 60000);
 			const endSlot = Math.round((endDate.getTime() - offsetDate.getTime()) / 60000);
 			// console.log(startSlot, startDate);
+			if (startSlot < earliestStart) {
+				earliestStart = startSlot;
+			}
+			if (endSlot > latestEnd) {
+				latestEnd = endSlot;
+			}
 			return { startSlot, length: endSlot - startSlot };
 		};
 
@@ -95,7 +101,7 @@
 				}
 			);
 		});
-
+		totalLength = latestEnd - earliestStart;
 		dayLabels = new Map([...dayLabels.entries()].sort());
 	});
 
@@ -111,15 +117,15 @@
 		// 	}
 		// 	// return slot;
 		// });
-		day.forEach((slot) => {
-			const idx = day.indexOf(slot);
-			if (idx > 0) {
-				const prev = day[idx - 1];
-				slot.start += prev.start + prev.length;
-			}
-		});
+		// day.forEach((slot) => {
+		// 	const idx = day.indexOf(slot);
+		// 	if (idx > 0) {
+		// 		const prev = day[idx - 1];
+		// 		slot.start += prev.length;
+		// 	}
+		// });
 		// return secondstep;
-		console.log(day);
+		// console.log(day);
 		return day;
 	}
 </script>
@@ -130,15 +136,14 @@
 			{#each formatSlots(day) as slot, j}
 				<div
 					class="schedule-slot"
-					style="top: {slot.start}px; background:{colorMap.get(slot.class)};"
+					style="top: {(slot.start - earliestStart) * (540 / totalLength)}px; height: {slot.length *
+						(540 / totalLength)}px; background:{colorMap.get(slot.class)};"
 				>
-					{slot.class} ({slot.sectionCode})
-					<br />
-					{slot.startTime} - {slot.endTime}
+					{slot.class} ({slot.sectionCode}) - {slot.location}
 					<br />
 					{slot.professor} - {slot.prof_rating}✪
 					<br />
-					{slot.location}
+					{slot.startTime} - {slot.endTime}
 				</div>
 			{/each}
 		</div>
@@ -150,7 +155,7 @@
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		width: 100%;
-		height: 80vh;
+		height: 60vh;
 		border: 4px solid #000000;
 		align-items: stretch;
 	}
@@ -164,11 +169,13 @@
 	}
 
 	.schedule-slot {
+		/* font-size: smaller; */
 		float: none;
 		position: absolute;
 		text-align: center;
-		margin-top: 1vh;
+		/* margin: 1vh; */
 		width: 100%;
+		/* padding: 1vh; */
 		border-radius: 3%;
 		/* padding: 1%; */
 		/* font-size: 1.5vh; */
