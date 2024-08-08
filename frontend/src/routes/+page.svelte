@@ -14,6 +14,7 @@
 	let colorMap = new Map();
 	let showTimeSelectionModal = false;
 	let showAddClassModal = false;
+	let generatingSchedules = false;
 
 	let currentAmountLoaded = 0;
 
@@ -22,6 +23,7 @@
 	async function generateSchedules() {
 		generatedSchedules = [];
 		currentAmountLoaded = 0;
+		generatingSchedules = true;
 		var prohibitedInstructors = [] as string[];
 
 		prohibitedProfessors.forEach((value, key) => {
@@ -54,8 +56,9 @@
 		})
 			.then((response) => response.json())
 			.then((data) => {
+				console.log(data[0]);
 				console.log(data.length);
-				shuffle(data);
+				// shuffle(data);
 				generatedSchedules = data;
 				// console.log(generatedSchedules);
 			})
@@ -140,13 +143,14 @@
 
 <header>
 	<div id="header-row">
-		<h1 id="header-text">Schedule Generator</h1>
+		<h1 id="header-text">TerpScheduler</h1>
 		<div id="header-button-rows">
 			{#if addedClasses.length > 1}
 				<button class="header-button" on:click={() => generateSchedules()}
 					>Generate Schedules</button
 				>
 			{/if}
+
 			<button class="header-button" on:click={() => (showAddClassModal = true)}>Add Class</button>
 			<AddClassModal
 				bind:colorMap
@@ -217,9 +221,23 @@
 	</div>
 
 	{#if generatedSchedules.length > 0}
+		<h2>{generatedSchedules.length} schedules generated!</h2>
+
 		<div class="sched-wrapper">
 			<InfiniteScheduleScroll bind:generatedSchedules bind:addedClasses bind:colorMap
 			></InfiniteScheduleScroll>
+		</div>
+	{/if}
+	{#if generatedSchedules.length === 0}
+		<div id="no-sched-div">
+			{#if !generatingSchedules}
+				<h1>
+					Add at least 2 class and click the "Generate Schedules" button to generate schedules
+				</h1>
+			{:else}
+				<div class="lds-dual-ring"></div>
+			{/if}
+			<!-- <h1>No schedules generated</h1> -->
 		</div>
 	{/if}
 </body>
@@ -246,10 +264,14 @@
 		/* margin: 1vh; */
 		align-items: flex-start;
 		justify-content: flex-start;
+		/* height: min-content; */
 		height: 10vh;
-		width: 12vw;
+		max-height: 10vh;
+		max-width: 30%;
+		/* width: fit-content; */
 		padding: 1vh;
-		/* margin: 0.25vw; */
+		margin-right: 1%;
+		margin-left: 1%;
 		/* margin-right: 0.25vw; */
 		/* border-right: 1px solid #646464b2; */
 		/* padding: 1vh; */
@@ -260,6 +282,43 @@
 		border-radius: 15px;
 		height: 100%;
 		/* max-height: 30vh; */
+	}
+
+	#no-sched-div {
+		display: flex;
+		flex-direction: column;
+		/* flex-basis: auto; */
+		justify-content: center;
+		align-items: center;
+	}
+
+	.lds-dual-ring,
+	.lds-dual-ring:after {
+		box-sizing: border-box;
+	}
+	.lds-dual-ring {
+		display: inline-block;
+		width: 80px;
+		height: 80px;
+	}
+	.lds-dual-ring:after {
+		content: ' ';
+		display: block;
+		width: 64px;
+		height: 64px;
+		margin: 8px;
+		border-radius: 50%;
+		border: 6.4px solid currentColor;
+		border-color: currentColor transparent currentColor transparent;
+		animation: lds-dual-ring 1.2s linear infinite;
+	}
+	@keyframes lds-dual-ring {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	.header-button {

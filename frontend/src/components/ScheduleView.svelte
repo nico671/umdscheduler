@@ -22,7 +22,6 @@
 	let totalLength = 90; // The height of the schedule view in vh
 	// let latestEnd = 720; // The end time of the latest slot in minutes (12 hours * 60 minutes)
 
-
 	onMount(async () => {
 		// console.log(scheduleData);
 		// Utility functions
@@ -51,7 +50,7 @@
 		const calculateSlotTimes = (startDate: Date, endDate: Date) => {
 			const startSlot = Math.round((startDate.getTime() - offsetDate.getTime()) / 60000);
 			const endSlot = Math.round((endDate.getTime() - offsetDate.getTime()) / 60000);
-			console.log(startSlot, startDate);
+			// console.log(startSlot, startDate);
 			return { startSlot, length: endSlot - startSlot };
 		};
 
@@ -82,8 +81,9 @@
 								class: element,
 								professor: scheduleData[element]['instructors'].toString(),
 								location: `${classTime.building} ${classTime.room}`,
+								prof_rating: scheduleData[element]['prof_weight'],
 								// time: getTime(startSlot),
-								length
+								length: length
 							};
 
 							if (!dayLabels.has(k)) {
@@ -98,23 +98,47 @@
 
 		dayLabels = new Map([...dayLabels.entries()].sort());
 	});
+
+	function formatSlots(day: any[]) {
+		day = day.sort((a, b) => a.start - b.start);
+		// day = day.map((slot, i) => {
+		// 	const prev = day[i - 1];
+		// 	if (prev) {
+		// 		if (slot.start < prev.start + prev.length) {
+		// 			slot.start = prev.start + prev.length;
+		// 		}
+		// 		slot.start - prev.start;
+		// 	}
+		// 	// return slot;
+		// });
+		day.forEach((slot) => {
+			const idx = day.indexOf(slot);
+			if (idx > 0) {
+				const prev = day[idx - 1];
+				slot.start += prev.start + prev.length;
+			}
+		});
+		// return secondstep;
+		console.log(day);
+		return day;
+	}
 </script>
 
 <div class="grid-container">
 	{#each new Map([...dayLabels.entries()].sort()).values() as day, i}
 		<div class="schedule-column">
-			{#each day.sort((a, b) => a.start - b.start) as slot, j}
+			{#each formatSlots(day) as slot, j}
 				<div
 					class="schedule-slot"
-					style="top: {((slot.start) / 900) * totalLength}vh; background:{colorMap.get(
-						slot.class
-					)};"
+					style="top: {slot.start}px; background:{colorMap.get(slot.class)};"
 				>
 					{slot.class} ({slot.sectionCode})
 					<br />
 					{slot.startTime} - {slot.endTime}
 					<br />
-					{slot.professor}
+					{slot.professor} - {slot.prof_rating}✪
+					<br />
+					{slot.location}
 				</div>
 			{/each}
 		</div>
@@ -126,22 +150,27 @@
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		width: 100%;
-		height: 85vh;
+		height: 80vh;
 		border: 4px solid #000000;
+		align-items: stretch;
 	}
 
 	.schedule-column {
 		flex: 1;
+		position: relative;
 		justify-content: center;
+		/* align-items: stretch; */
 		height: 100%;
 	}
 
 	.schedule-slot {
 		float: none;
-		position: relative;
+		position: absolute;
 		text-align: center;
-		margin: auto;
-		width: 98%;
+		margin-top: 1vh;
+		width: 100%;
 		border-radius: 3%;
+		/* padding: 1%; */
+		/* font-size: 1.5vh; */
 	}
 </style>

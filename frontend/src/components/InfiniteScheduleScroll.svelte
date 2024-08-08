@@ -50,30 +50,29 @@
 
 <div class="schedules-container">
 	<ul id="schedules-scroll" bind:this={element}>
-		{#if generatedSchedules.length}
-			<p>{generatedSchedules.length} schedules generated!</p>
-		{/if}
+		<!-- {#if generatedSchedules.length}
+			<h2>{generatedSchedules.length} schedules generated!</h2>
+		--->
 		{#each schedules as item, i}
 			<h3>Schedule #{i + 1}</h3>
+			<h4>Average Professor Rating - {item['prof_weight']}</h4>
 			<ScheduleView bind:scheduleData={item} {addedClasses} {colorMap}></ScheduleView>
 		{/each}
 	</ul>
 </div>
 
 <style lang="scss">
-
-	.schedules-container{
+	.schedules-container {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 		width: 100%;
 		// max-width: 95%;
-		
 	}
 	#schedules-scroll {
-		margin:0;
-		padding:1vw;
+		margin: 0;
+		padding: 1vw;
 		box-sizing: border-box;
 		overflow-y: scroll;
 		height: 80vh;
@@ -85,5 +84,18 @@
 			scrollbar-width: none; /* Firefox */
 			-ms-overflow-style: none;
 		}
+	}
+
+	h4 {
+		margin: 0;
+		padding: 0;
+	}
+	h3 {
+		margin: 0;
+		padding: 0;
+	}
+	h2 {
+		margin-top: 0;
+		padding-top: 0;
 	}
 </style>

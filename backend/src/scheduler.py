@@ -13,9 +13,10 @@ def backtracking(assignment, variables, res, domains):
         for cla in assignment:
             sect = assignment[cla]
             prof_weights.append(sect['prof_weight'])
-        assignment['prof_weight'] = mean(prof_weights)
-        print(assignment['prof_weight'])
+        assignment['prof_weight'] = round(mean(prof_weights), 2)
+        # print(assignment['prof_weight'])
         res.append(assignment.copy())  # Make a deep copy of the assignment
+        assignment.pop('prof_weight')
         return
 
     # Choose an unassigned variable
@@ -126,7 +127,8 @@ def weight_schedules(domains):
                 if instructor not in professor_weights:
                     res = requests.get(
                         f'https://planetterp.com/api/v1/professor', params={'name': instructor}).json()
-                    professor_weights[instructor] = res['average_rating']
+                    professor_weights[instructor] = round(
+                        res['average_rating'], 2)
                 if section['prof_weight'] != 0:
                     section['prof_weight'] = mean(
                         [section['prof_weight'], professor_weights[instructor]])
@@ -184,4 +186,5 @@ def create_schedule(wanted_classes, restrictions):
 
     if len(res) == 0:
         return {"error": "No possible schedules found"}
-    return res
+    # print("sorted", sorted(res, key=lambda d: d['prof_weight']))
+    return sorted(res, key=lambda d: d['prof_weight'])
