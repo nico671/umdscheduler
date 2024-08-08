@@ -1,12 +1,20 @@
 from datetime import datetime
 import requests
 from datetime import datetime
-
+from statistics import mean
 
 # backtracking function to create all possible schedules
+
+
 def backtracking(assignment, variables, res, domains):
     # Base case: If the assignment is complete, add it to the result
     if len(assignment) == len(variables):
+        prof_weights = []
+        for cla in assignment:
+            sect = assignment[cla]
+            prof_weights.append(sect['prof_weight'])
+        assignment['prof_weight'] = mean(prof_weights)
+        print(assignment['prof_weight'])
         res.append(assignment.copy())  # Make a deep copy of the assignment
         return
 
@@ -107,6 +115,27 @@ def clean_sections(sections, restrictions):
     return res
 
 
+def weight_schedules(domains):
+    professor_weights = {}
+    for domain in domains:
+        sections = domains[domain]
+        for section in sections:
+            section['prof_weight'] = 0
+            # print(section)
+            for instructor in section['instructors']:
+                if instructor not in professor_weights:
+                    res = requests.get(
+                        f'https://planetterp.com/api/v1/professor', params={'name': instructor}).json()
+                    professor_weights[instructor] = res['average_rating']
+                if section['prof_weight'] != 0:
+                    section['prof_weight'] = mean(
+                        [section['prof_weight'], professor_weights[instructor]])
+                section['prof_weight'] = professor_weights[instructor]
+            # weight by professor ranking (higher is better)
+            # sourced from planetterp
+    return domains
+
+
 def create_schedule(wanted_classes, restrictions):
     # Initialize your variables, res, and seen here
     variables = wanted_classes
@@ -142,7 +171,7 @@ def create_schedule(wanted_classes, restrictions):
                 if course not in domains:
                     domains[course] = []
                 domains[course].append(section)
-    # print(domains.keys())
+
     if len(no_open_sections) == len(variables):
         return {"error": "No possible sections for any of the requested courses"}
     if len(no_open_sections) > 0:
@@ -150,7 +179,7 @@ def create_schedule(wanted_classes, restrictions):
     for course in variables:
         if course not in domains:
             return {"error": "No possible sections for " + course}
-
+    weight_schedules(domains)
     backtracking({}, variables, res, domains)
 
     if len(res) == 0:
