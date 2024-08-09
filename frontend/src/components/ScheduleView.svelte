@@ -107,25 +107,6 @@
 
 	function formatSlots(day: any[]) {
 		day = day.sort((a, b) => a.start - b.start);
-		// day = day.map((slot, i) => {
-		// 	const prev = day[i - 1];
-		// 	if (prev) {
-		// 		if (slot.start < prev.start + prev.length) {
-		// 			slot.start = prev.start + prev.length;
-		// 		}
-		// 		slot.start - prev.start;
-		// 	}
-		// 	// return slot;
-		// });
-		// day.forEach((slot) => {
-		// 	const idx = day.indexOf(slot);
-		// 	if (idx > 0) {
-		// 		const prev = day[idx - 1];
-		// 		slot.start += prev.length;
-		// 	}
-		// });
-		// return secondstep;
-		// console.log(day);
 		return day;
 	}
 </script>
@@ -166,6 +147,8 @@
 		justify-content: center;
 		/* align-items: stretch; */
 		height: 100%;
+		margin-left: 0.5vh;
+		margin-right: 0.5vh;
 	}
 
 	.schedule-slot {

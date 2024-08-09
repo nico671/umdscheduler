@@ -243,6 +243,25 @@
 </body>
 
 <style>
+	header {
+		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		/* background-color: #64646443; */
+		/* background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0.546), white); */
+		border-radius: 0px 0px 5px 5px;
+		margin-bottom: 1vh;
+		padding: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	body {
+		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		margin: 0px;
+		padding: 0px;
+		display: flex;
+		flex-direction: column;
+		/* background-color: lightblue; */
+	}
 	/* .restriction-header {
 		display: flex;
 		flex-direction: row;
@@ -369,13 +388,6 @@
 
 	.sched-wrapper {
 		margin: 0;
-	}
-
-	body {
-		font-family: Arial, sans-serif;
-		display: flex;
-		flex-direction: column;
-		/* overflow: hidden; */
 	}
 
 	.readd-prof-button {
