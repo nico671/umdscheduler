@@ -295,17 +295,9 @@
 		width: 30%;
 		max-width: 30%;
 		padding: 1vh;
-		margin: 0px;
-		/* margin-right: 1%;
-		margin-left: 1%; */
-		/* background-color: #ffffffe0; */
-		/* box-shadow: 1px 1px 10px 0.5px #94727254; */
 		border: solid 3px #94727254;
-		/* background-color:  */
-		margin-bottom: 2vh;
-		/* margin-right: 1vh; */
+		margin-bottom: 1vh;
 		border-radius: 15px;
-		height: 100%;
 	}
 
 	#no-sched-div {
@@ -372,10 +364,11 @@
 	#restrictions-container {
 		display: flex;
 		flex-direction: row;
-		justify-content: space-evenly;
+		justify-content: space-between;
 		padding: 0px;
-		margin: 0px;
-		width: 100%;
+		margin-left: 1vw;
+		margin-right: 1vw;
+		width: 98vw;
 	}
 
 	.restricted-time-button {
