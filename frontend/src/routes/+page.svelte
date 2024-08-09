@@ -168,54 +168,57 @@
 	</div>
 </header>
 <body>
-	<div id="restrictions-container">
-		<div class="restriction-box">
-			<h3>Added Classes</h3>
-			<div class="restriction-items">
-				{#each addedClasses as className, index}
-					<button class="added-class-button" on:click={() => (showModals[index] = true)}>
-						{className}
-					</button>
-					<ClassModal
-						bind:showModal={showModals[index]}
-						{className}
-						{removeClasses}
-						{index}
-						closeModal={closeClassModal}
-						{prohibitProf}
-						{prohibitedProfessors}
-					></ClassModal>
-				{/each}
-			</div>
-		</div>
-
-		<div class="restriction-box">
-			<h3>Prohibited Professors</h3>
-			{#if Array.from(prohibitedProfessors.values()).flatMap((profs) => profs).length > 0}
+	<div id="im-bad-at-css-holder-div">
+		<h2 id="restrictions-text">Applied Restrictions</h2>
+		<div id="restrictions-container">
+			<div class="restriction-box">
+				<h3>Added Classes</h3>
 				<div class="restriction-items">
-					{#each Array.from(prohibitedProfessors.values())
-						.flatMap((profs) => profs)
-						.sort((a, b) => a.length - b.length) as prof}
-						<div class="prof-button">
-							<p>{prof}</p>
-							<button class="readd-prof-button" on:click={() => reAddProfessor(prof)}>x</button>
-						</div>
-						<!-- TODO: make into a modal -->
+					{#each addedClasses as className, index}
+						<button class="added-class-button" on:click={() => (showModals[index] = true)}>
+							{className}
+						</button>
+						<ClassModal
+							bind:showModal={showModals[index]}
+							{className}
+							{removeClasses}
+							{index}
+							closeModal={closeClassModal}
+							{prohibitProf}
+							{prohibitedProfessors}
+						></ClassModal>
 					{/each}
 				</div>
-			{/if}
-		</div>
+			</div>
 
-		<div class="restriction-box">
-			<h3>Prohibited Times</h3>
-			<div class="restriction-items">
-				{#if prohibitedTimes.length > 0}
-					{#each prohibitedTimes.entries() as [time, day]}
-						<button class="restricted-time-button"
-							>{day.get('day')}: {day.get('start')}-{day.get('end')}</button
-						>
-					{/each}
+			<div class="restriction-box">
+				<h3>Prohibited Professors</h3>
+				{#if Array.from(prohibitedProfessors.values()).flatMap((profs) => profs).length > 0}
+					<div class="restriction-items">
+						{#each Array.from(prohibitedProfessors.values())
+							.flatMap((profs) => profs)
+							.sort((a, b) => a.length - b.length) as prof}
+							<div class="prof-button">
+								<p>{prof}</p>
+								<button class="readd-prof-button" on:click={() => reAddProfessor(prof)}>x</button>
+							</div>
+							<!-- TODO: make into a modal -->
+						{/each}
+					</div>
 				{/if}
+			</div>
+
+			<div class="restriction-box">
+				<h3>Prohibited Times</h3>
+				<div class="restriction-items">
+					{#if prohibitedTimes.length > 0}
+						{#each prohibitedTimes.entries() as [time, day]}
+							<button class="restricted-time-button"
+								>{day.get('day')}: {day.get('start')}-{day.get('end')}</button
+							>
+						{/each}
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -245,13 +248,18 @@
 <style>
 	header {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		/* background-color: #64646443; */
+		background-color: #e21833;
 		/* background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0.546), white); */
-		border-radius: 0px 0px 5px 5px;
-		margin-bottom: 1vh;
+		/* border-radius: 0px 0px 25px 25px; */
+		/* margin-bottom: 1vh; */
 		padding: 0px;
 		width: 100%;
 		height: 100%;
+	}
+
+	#restrictions-text {
+		margin: 0px;
+		padding: 1vh;
 	}
 
 	body {
@@ -262,45 +270,39 @@
 		flex-direction: column;
 		/* background-color: lightblue; */
 	}
-	/* .restriction-header {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		width: 100%;
-		padding: 0.5vh;
-	} */
 	h3 {
-		/* border-right: 1px solid #646464b2; */
 		padding-left: 1vh;
 		margin: 0px;
 		padding: 1vh;
 	}
 
+	#im-bad-at-css-holder-div {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: start;
+		background-color: #fbe3e6;
+		border-radius: 0px 0px 15px 15px;
+	}
+
 	.restriction-box {
 		display: flex;
 		flex-direction: column;
-		/* padding: 1vh; */
-		/* margin: 1vh; */
 		align-items: flex-start;
 		justify-content: flex-start;
-		/* height: min-content; */
 		height: 10vh;
 		max-height: 10vh;
+		width: 30%;
 		max-width: 30%;
-		/* width: fit-content; */
 		padding: 1vh;
-		margin-right: 1%;
-		margin-left: 1%;
-		/* margin-right: 0.25vw; */
-		/* border-right: 1px solid #646464b2; */
-		/* padding: 1vh; */
-		background-color: rgba(51, 51, 51, 0.1);
-		/* padding: 1vw; */
+		margin: 0px;
+		/* margin-right: 1%;
+		margin-left: 1%; */
+		background-color: #b3b3b38f;
 		margin-bottom: 2vh;
-		margin-right: 1vh;
+		/* margin-right: 1vh; */
 		border-radius: 15px;
 		height: 100%;
-		/* max-height: 30vh; */
 	}
 
 	#no-sched-div {
@@ -341,10 +343,10 @@
 	}
 
 	.header-button {
-		background-color: rgba(51, 51, 51, 0.1);
+		background-color: #ffffffe0;
 		border-radius: 8px;
 		border-width: 0;
-		color: #333333;
+		color: #000000;
 		cursor: pointer;
 		display: inline-block;
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -367,10 +369,10 @@
 	#restrictions-container {
 		display: flex;
 		flex-direction: row;
-		/* background-color: rgba(51, 51, 51, 0.1); */
-		/* padding: 1vw; */
-		/* margin-bottom: 2vh;
-		border-radius: 15px; */
+		justify-content: space-evenly;
+		padding: 0px;
+		margin: 0px;
+		width: 100%;
 	}
 
 	.restricted-time-button {
@@ -418,7 +420,7 @@
 	#header-text {
 		margin: 1vw;
 		font-size: 3vw;
-		color: red;
+		color: #ffffffe0;
 	}
 
 	#header-row {
@@ -444,6 +446,7 @@
 		width: fit-content;
 		display: flex;
 		flex-wrap: wrap;
+		/* background-color: #64646443; */
 		/* justify-content: space-evenly; */
 	}
 
