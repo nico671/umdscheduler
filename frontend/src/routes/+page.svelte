@@ -298,7 +298,10 @@
 		margin: 0px;
 		/* margin-right: 1%;
 		margin-left: 1%; */
-		background-color: #b3b3b38f;
+		/* background-color: #ffffffe0; */
+		/* box-shadow: 1px 1px 10px 0.5px #94727254; */
+		border: solid 3px #94727254;
+		/* background-color:  */
 		margin-bottom: 2vh;
 		/* margin-right: 1vh; */
 		border-radius: 15px;
