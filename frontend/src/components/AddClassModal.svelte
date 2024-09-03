@@ -6,7 +6,7 @@
 	export let availableClasses: string[]; // string[]
 	export let addedClasses: string[]; // string[]
 	export let showModals: boolean[]; // boolean[]
-	export let prohibitedProfessors: Map<string, string[]>; // Map<string, string[]>
+
 	let dialog: HTMLDialogElement; // HTMLDialogElement
 	let classInput = '';
 	// Function to generate a random color
@@ -15,9 +15,9 @@
 	}
 
 	function addClass(value: string) {
-		if (!prohibitedProfessors.has(value)) {
-			prohibitedProfessors.set(value, []);
-		}
+		// if (!prohibitedProfessors.has(value)) {
+		// 	prohibitedProfessors.set(value, []);
+		// }
 		addedClasses.push(value);
 		colorMap.set(value, getRandomColor());
 		addedClasses = [...new Set(addedClasses)];
