@@ -50,10 +50,7 @@
 
 <div class="schedules-container">
 	<ul id="schedules-scroll" bind:this={element}>
-		<!-- {#if generatedSchedules.length}
-			<h2>{generatedSchedules.length} schedules generated!</h2>
-		--->
-		{#each schedules as item, i}
+		{#each schedules.sort((a, b) => a['prof_weight'] - b['prof_weight']) as item, i}
 			<h3>Schedule #{i + 1}</h3>
 			<h4>Average Professor Rating - {item['prof_weight']}</h4>
 			<ScheduleView bind:scheduleData={item} {addedClasses} {colorMap}></ScheduleView>

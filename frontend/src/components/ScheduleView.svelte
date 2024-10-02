@@ -101,6 +101,9 @@
 				}
 			);
 		});
+		addedClasses.sort((a, b) => {
+			return scheduleData[a]['number'] - scheduleData[b]['number'];
+		});
 		totalLength = latestEnd - earliestStart;
 		dayLabels = new Map([...dayLabels.entries()].sort());
 	});
