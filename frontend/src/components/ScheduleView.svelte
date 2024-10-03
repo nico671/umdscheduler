@@ -114,18 +114,19 @@
 	}
 </script>
 
+<!-- TODO: need to fix schedule generation frontend -->
 <div class="grid-container">
 	{#each new Map([...dayLabels.entries()].sort()).values() as day, i}
 		<div class="schedule-column">
 			{#each formatSlots(day) as slot, j}
 				<div
 					class="schedule-slot"
-					style="top: {(slot.start - earliestStart) * (540 / totalLength)}px; height: {slot.length *
-						(540 / totalLength)}px; background:{colorMap.get(slot.class)};"
+					style="top: {slot.start - earliestStart}px; height: {slot.length /
+						totalLength}px; background:{colorMap.get(slot.class)};"
 				>
 					{slot.class} ({slot.sectionCode}) - {slot.location}
 					<br />
-					{slot.professor} - {slot.prof_rating}✪
+					{slot.professor} - {slot.prof_rating} ✪
 					<br />
 					{slot.startTime} - {slot.endTime}
 				</div>
@@ -139,7 +140,7 @@
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		width: 100%;
-		height: 65vh;
+		height: 60vh;
 		/* height: fit-content; */
 		border: 4px solid #000000;
 		align-items: stretch;
