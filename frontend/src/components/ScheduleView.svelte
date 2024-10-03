@@ -137,7 +137,7 @@
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		width: 100%;
-		height: 65vh;
+		height: 60vh;
 		/* height: fit-content; */
 		border: 4px solid #000000;
 		align-items: stretch;
