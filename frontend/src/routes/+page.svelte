@@ -156,7 +156,6 @@
 	</div>
 
 	<div id="im-bad-at-css-holder-div">
-		<h2 id="restrictions-text">Applied Restrictions</h2>
 		<div id="restrictions-container">
 			<div class="restriction-box">
 				<h3>Added Classes</h3>
@@ -193,6 +192,7 @@
 							>
 							<ProfessorModal
 								bind:showModal={showProfessorModals[index]}
+								{addedClasses}
 								closeModal={closeProfModal}
 								profName={prof}
 								{reAddProfessor}
@@ -246,7 +246,7 @@
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
 		/* background-color: #fbe3e6; */
-		background-image: linear-gradient(to bottom, #fbe3e6, white);
+		/* background-image: linear-gradient(to bottom, #fbe3e6, white); */
 		/* background-image: linear-gradient(to bottom,,); */
 		/* border-radius: 0px 0px 25px 25px; */
 		/* margin-bottom: 1vh; */
@@ -255,25 +255,19 @@
 		height: 100%;
 	}
 
-	#restrictions-text {
-		margin-left: 1vh;
-		padding-left: 1vh;
-		padding-bottom: 0px;
-		margin-bottom: 0.5vh;
-	}
-
 	body {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		margin: 0px;
 		padding: 0px;
 		display: flex;
 		flex-direction: column;
+		height: fit-content;
 		/* background-color: lightblue; */
 	}
 	h3 {
 		padding-left: 1vh;
+		padding-top: 1vh;
 		margin: 0px;
-		padding: 1vh;
 	}
 
 	#im-bad-at-css-holder-div {
@@ -296,9 +290,10 @@
 		width: 30%;
 		max-width: 30%;
 		/* padding: 1vh; */
-		border: solid 3px #94727254;
+		/* border: solid 3px #94727254; */
 		margin-bottom: 1vh;
 		border-radius: 15px;
+		background-color: #f0f0f0;
 	}
 
 	#no-sched-div {
@@ -352,7 +347,7 @@
 	}
 
 	.header-button {
-		background-color: #dbcacb;
+		background-color: #f0f0f0;
 		border-radius: 8px;
 		border-width: 0;
 		color: black;
@@ -385,46 +380,8 @@
 		width: 98vw;
 	}
 
-	.restricted-time-button {
-		background-color: #64646443;
-		border: 2px solid #646464b2;
-		border-radius: 25px;
-		text-align: center;
-		font-size: small;
-		padding-left: 0.3vw;
-		width: fit-content;
-		height: auto;
-		margin-bottom: 1vh;
-		margin-right: 0.5vw;
-	}
-
 	.sched-wrapper {
 		margin: 0;
-	}
-
-	.readd-prof-button {
-		background-color: #6cd46900;
-		border: 0px;
-		width: fit-content;
-		/* margin-left: 0.25vw; */
-	}
-
-	.prof-button {
-		background-color: #64646443;
-		border: 2px solid #646464b2;
-		border-radius: 25px;
-		/* text-align: center; */
-		display: flex;
-		flex-direction: row;
-		/* justify-content: space-evenly; */
-		font-size: x-small;
-		padding-left: 0.3vw;
-		padding-top: 0.3vh;
-		padding-bottom: 0.3vh;
-		width: fit-content;
-		margin-bottom: 0.3vh;
-		margin-left: 0.3vh;
-		height: fit-content;
 	}
 
 	#header-text {
@@ -440,10 +397,6 @@
 		width: 100%;
 	}
 
-	p {
-		margin-bottom: 10px;
-	}
-
 	:host {
 		display: flex;
 		flex-direction: column;
@@ -456,21 +409,8 @@
 		width: fit-content;
 		display: flex;
 		flex-wrap: wrap;
+		padding: 1vh;
 		/* background-color: #64646443; */
 		/* justify-content: space-evenly; */
-	}
-
-	.added-class-button {
-		width: fit-content;
-		margin-top: 0.5vh;
-		/* font-size: x-large; */
-		display: flex;
-		flex-direction: row;
-		justify-content: space-evenly;
-		background-color: #6cd469c2;
-		border: 2px solid #6cd469;
-		border-radius: 25px;
-		padding: 0.5vh;
-		margin-right: 0.25vw;
 	}
 </style>

@@ -120,8 +120,8 @@
 			{#each formatSlots(day) as slot, j}
 				<div
 					class="schedule-slot"
-					style="top: {(slot.start - earliestStart) * (540 / totalLength)}px; height: {slot.length *
-						(540 / totalLength)}px; background:{colorMap.get(slot.class)};"
+					style="top: {(slot.start - earliestStart) * (600 / totalLength)}px; height: {slot.length *
+						(600 / totalLength)}px; background:{colorMap.get(slot.class)};"
 				>
 					{slot.class} ({slot.sectionCode}) - {slot.location}
 					<br />
@@ -142,6 +142,7 @@
 		height: 60vh;
 		border: 4px solid #000000;
 		align-items: stretch;
+		margin-bottom: 1vh;
 	}
 
 	.schedule-column {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
+	export let addedClasses: string[];
 	export let showModal: boolean; // boolean
 	let dialog: HTMLDialogElement; // HTMLDialogElement
 	export let profName: string;
@@ -12,7 +12,7 @@
 	export let closeModal: (index: number) => void;
 	export let reAddProfessor: (className: string) => void;
 
-	$: loaded = instructorType && courses && averageRating;
+	$: loaded = instructorType && courses.length != 0 && averageRating && reviews;
 
 	$: if (dialog && showModal) dialog.showModal();
 
@@ -29,10 +29,11 @@
 				reviews = data.reviews;
 				averageRating = data.average_rating;
 				instructorType = data.type;
-				// courses = data.courses;
+				courses = data.courses;
 			})
 			.catch((error) => {
 				console.log(error);
+				dialog.close();
 				return [];
 			});
 	});
@@ -62,13 +63,24 @@
 					on:click={() => {
 						reAddProfessor(profName);
 						dialog.close();
-					}}>Allow {profName}</button
+					}}>Allow {instructorType.toLocaleLowerCase()}</button
 				>
 			</div>
 		</div>
 		<div>
-			<p>{profName}</p>
-			<p>{averageRating}</p>
+			<h2>Average Rating: {averageRating}</h2>
+			<h2>Reviews</h2>
+			{#each reviews as review}
+				{#if addedClasses.includes(review.course)}
+					<div class="review-div">
+						<h3>{review.course}</h3>
+						<h4>{review.created}</h4>
+						<p>Expected Grade: {review.expected_grade}</p>
+						<p>Rating: {review.rating}</p>
+						<p>{review.review}</p>
+					</div>
+				{/if}
+			{/each}
 		</div>
 	{/if}
 </dialog>
@@ -89,8 +101,17 @@
 		margin-left: 10px;
 	}
 
+	.review-div {
+		border: 1px solid #a8a8a8;
+		border-radius: 4px;
+		padding: 10px;
+		margin-top: 10px;
+		flex-wrap: wrap;
+		flex-direction: column;
+	}
+
 	dialog {
-		max-width: 50%;
+		max-width: 90%;
 		border-radius: 0.2em;
 		border: none;
 		padding: 0;
@@ -141,7 +162,7 @@
 		background-color: #585858;
 	}
 
-	p {
+	/* p {
 		margin: 0;
 		color: #333333;
 	}
@@ -160,5 +181,5 @@
 		font-size: 1em;
 		line-height: 1.5;
 		margin-bottom: 0.5em;
-	}
+	} */
 </style>

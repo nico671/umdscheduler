@@ -59,40 +59,41 @@
 </div>
 
 <style lang="scss">
-	.schedules-container {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		// max-width: 95%;
-	}
-	#schedules-scroll {
-		margin: 0;
-		padding: 1vw;
-		box-sizing: border-box;
-		overflow-y: scroll;
-		height: 80vh;
-		width: 100%;
-		&::-webkit-scrollbar {
-			display: none;
+	// .schedules-container {
+	// 	display: flex;
+	// 	flex-direction: column;
+	// 	align-items: center;
+	// 	justify-content: center;
+	// 	width: 100%;
+	// 	height: 100%;
+	// 	// max-width: 95%;
+	// }
+	// #schedules-scroll {
+	// 	margin: 0;
+	// 	padding: 1vw;
+	// 	box-sizing: border-box;
+	// 	overflow-y: scroll;
+	// 	height: 80vh;
+	// 	width: 100%;
+	// 	&::-webkit-scrollbar {
+	// 		display: none;
 
-			/* Hide scrollbar for IE, Edge and Firefox */
-			scrollbar-width: none; /* Firefox */
-			-ms-overflow-style: none;
-		}
-	}
+	// 		/* Hide scrollbar for IE, Edge and Firefox */
+	// 		scrollbar-width: none; /* Firefox */
+	// 		-ms-overflow-style: none;
+	// 	}
+	// }
 
-	h4 {
-		margin: 0;
-		padding: 0;
-	}
-	h3 {
-		margin: 0;
-		padding: 0;
-	}
-	h2 {
-		margin-top: 0;
-		padding-top: 0;
-	}
+	// h4 {
+	// 	margin: 0;
+	// 	padding: 0;
+	// }
+	// h3 {
+	// 	margin: 0;
+	// 	padding: 0;
+	// }
+	// h2 {
+	// 	margin-top: 0;
+	// 	padding-top: 0;
+	// }
 </style>
