@@ -5,11 +5,13 @@
 	import AddClassModal from '../components/AddClassModal.svelte';
 	import TimeSelectionModal from '../components/TimeSelectionModal.svelte';
 	import InfiniteScheduleScroll from '../components/InfiniteScheduleScroll.svelte';
+	import ProfessorModal from '../components/ProfessorModal.svelte';
+
 	let availableClasses = [] as string[];
 	var addedClasses = [] as string[];
 
 	let prohibitedTimes = [] as Map<string, string>[];
-	let prohibitedProfessors = new Map<string, string[]>();
+	let prohibitedProfessors: string[] = [];
 	let generatedSchedules: any[] = [];
 	let colorMap = new Map();
 	let showTimeSelectionModal = false;
@@ -18,21 +20,13 @@
 
 	let currentAmountLoaded = 0;
 
-	let showModals = new Array(addedClasses.length).fill(false); // Initialize all modals as closed
+	let showClassModals = new Array(addedClasses.length).fill(false); // Initialize all modals as closed
+	let showProfessorModals = new Array(prohibitedProfessors.length).fill(false);
 
 	async function generateSchedules() {
 		generatedSchedules = [];
 		currentAmountLoaded = 0;
 		generatingSchedules = true;
-		var prohibitedInstructors = [] as string[];
-
-		prohibitedProfessors.forEach((value, key) => {
-			if (value.length > 0) {
-				value.forEach((prof) => {
-					prohibitedInstructors.push(prof);
-				});
-			}
-		});
 
 		const url = new URL('http://127.0.0.1:5000/schedule');
 		console.log(prohibitedTimes.map((map) => Object.fromEntries(map)));
@@ -68,59 +62,54 @@
 			});
 	}
 
-	function shuffle(array: any[]) {
-		let currentIndex = array.length;
-
-		// While there remain elements to shuffle...
-		while (currentIndex != 0) {
-			// Pick a remaining element...
-			let randomIndex = Math.floor(Math.random() * currentIndex);
-			currentIndex--;
-
-			// And swap it with the current element.
-			[array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-		}
+	function removeProhibitedTime(time: number) {
+		prohibitedTimes.splice(time, 1);
+		prohibitedTimes = [...prohibitedTimes];
 	}
 
-	function prohibitProf(prof: string, className: string) {
-		if (!prohibitedProfessors.get(className)) {
-			prohibitedProfessors.set(className.toLowerCase(), [prof]);
-		} else {
-			if (prohibitedProfessors.get(className)!.includes(prof) === false) {
-				prohibitedProfessors.get(className)!.push(prof);
-			} else {
-				return;
-			}
-			prohibitedProfessors = new Map(prohibitedProfessors);
-			// console.log(prohibitedProfessors);
+	function prohibitProf(prof: string) {
+		if (prohibitedProfessors.includes(prof)) {
+			return;
 		}
+		prohibitedProfessors.push(prof);
+		prohibitedProfessors = [...prohibitedProfessors];
+		let idx = prohibitedProfessors.indexOf(prof);
+		showProfessorModals[idx] = false;
+		showProfessorModals = [...showProfessorModals];
 	}
 
 	function reAddProfessor(prof: string) {
-		for (let className of prohibitedProfessors.keys()) {
-			const index = prohibitedProfessors.get(className)!.indexOf(prof);
-			if (index !== -1) {
-				prohibitedProfessors.get(className)!.splice(index, 1);
-			}
+		if (!prohibitedProfessors.includes(prof)) {
+			return;
 		}
-		prohibitedProfessors = new Map(prohibitedProfessors);
+		const index = prohibitedProfessors.indexOf(prof);
+		prohibitedProfessors.splice(index, 1);
+		prohibitedProfessors = [...prohibitedProfessors];
 	}
 
 	function closeClassModal(index: number) {
-		showModals[index] = false;
-		showModals = [...showModals];
+		showClassModals[index] = false;
+		showClassModals = [...showClassModals];
 	}
+
+	function closeProfModal(index: number) {
+		showProfessorModals[index] = false;
+		showProfessorModals = [...showProfessorModals];
+	}
+
+	// function showProfModal(index: number) {
+	// 	showProfessorModals[index] = true;
+	// 	showProfessorModals = [...showProfessorModals];
+	// }
 
 	function removeClasses(value: string) {
 		const index = addedClasses.indexOf(value);
 		if (index !== -1) {
 			addedClasses.splice(index, 1);
 			addedClasses = [...addedClasses];
-			showModals.splice(index, 1);
+			showClassModals.splice(index, 1);
 			availableClasses.push(value);
 		}
-		prohibitedProfessors.delete(value);
-		prohibitedProfessors = new Map(prohibitedProfessors);
 	}
 
 	onMount(async () => {
@@ -146,17 +135,14 @@
 		<h1 id="header-text">TerpScheduler</h1>
 		<div id="header-button-rows">
 			{#if addedClasses.length > 1}
-				<button class="header-button" on:click={() => generateSchedules()}
-					>Generate Schedules</button
-				>
+				<button class="header-button" on:click={() => generateSchedules()}>Generate!</button>
 			{/if}
 
 			<button class="header-button" on:click={() => (showAddClassModal = true)}>Add Class</button>
 			<AddClassModal
 				bind:colorMap
-				bind:showModals
+				bind:showModals={showClassModals}
 				bind:showAddClassModal
-				bind:prohibitedProfessors
 				bind:addedClasses
 				bind:availableClasses
 			></AddClassModal>
@@ -166,20 +152,23 @@
 			<TimeSelectionModal bind:prohibitedTimes bind:showTimeSelectionModal></TimeSelectionModal>
 		</div>
 	</div>
-</header>
-<body>
+
 	<div id="im-bad-at-css-holder-div">
-		<h2 id="restrictions-text">Applied Restrictions</h2>
 		<div id="restrictions-container">
 			<div class="restriction-box">
 				<h3>Added Classes</h3>
 				<div class="restriction-items">
 					{#each addedClasses as className, index}
-						<button class="added-class-button" on:click={() => (showModals[index] = true)}>
+						<button
+							style="background-color: {colorMap.get(className) ||
+								'#64646443'}; border-color: {colorMap.get(className) || '#646464b2'}"
+							class="restriction-button"
+							on:click={() => (showClassModals[index] = true)}
+						>
 							{className}
 						</button>
 						<ClassModal
-							bind:showModal={showModals[index]}
+							bind:showModal={showClassModals[index]}
 							{className}
 							{removeClasses}
 							{index}
@@ -193,27 +182,36 @@
 
 			<div class="restriction-box">
 				<h3>Prohibited Professors</h3>
-				{#if Array.from(prohibitedProfessors.values()).flatMap((profs) => profs).length > 0}
+				{#if prohibitedProfessors.length > 0}
 					<div class="restriction-items">
-						{#each Array.from(prohibitedProfessors.values())
-							.flatMap((profs) => profs)
-							.sort((a, b) => a.length - b.length) as prof}
-							<div class="prof-button">
-								<p>{prof}</p>
-								<button class="readd-prof-button" on:click={() => reAddProfessor(prof)}>x</button>
-							</div>
-							<!-- TODO: make into a modal -->
+						{#each prohibitedProfessors as prof, index}
+							<button
+								class="restriction-button"
+								on:click={() => {
+									console.log(prof);
+									showProfessorModals[index] = true;
+									showProfessorModals = [...showProfessorModals];
+								}}>{prof}</button
+							>
+							<ProfessorModal
+								bind:showModal={showProfessorModals[index]}
+								{addedClasses}
+								closeModal={closeProfModal}
+								profName={prof}
+								{reAddProfessor}
+								{index}
+							></ProfessorModal>
 						{/each}
 					</div>
 				{/if}
 			</div>
 
 			<div class="restriction-box">
-				<h3>Prohibited Times</h3>
+				<h3>Prohibited Times (Click time to remove)</h3>
 				<div class="restriction-items">
 					{#if prohibitedTimes.length > 0}
 						{#each prohibitedTimes.entries() as [time, day]}
-							<button class="restricted-time-button"
+							<button class="restriction-button" on:click={() => removeProhibitedTime(time)}
 								>{day.get('day')}: {day.get('start')}-{day.get('end')}</button
 							>
 						{/each}
@@ -222,7 +220,8 @@
 			</div>
 		</div>
 	</div>
-
+</header>
+<body>
 	{#if generatedSchedules.length > 0}
 		<h2>{generatedSchedules.length} schedules generated!</h2>
 
@@ -248,18 +247,15 @@
 <style>
 	header {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		background-color: #e21833;
-		/* background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0.546), white); */
+
+		/* background-color: #fbe3e6; */
+		/* background-image: linear-gradient(to bottom, #fbe3e6, white); */
+		/* background-image: linear-gradient(to bottom,,); */
 		/* border-radius: 0px 0px 25px 25px; */
 		/* margin-bottom: 1vh; */
 		padding: 0px;
 		width: 100%;
 		height: 100%;
-	}
-
-	#restrictions-text {
-		margin: 0px;
-		padding: 1vh;
 	}
 
 	body {
@@ -268,20 +264,22 @@
 		padding: 0px;
 		display: flex;
 		flex-direction: column;
+		height: fit-content;
 		/* background-color: lightblue; */
 	}
 	h3 {
 		padding-left: 1vh;
+		padding-top: 1vh;
 		margin: 0px;
-		padding: 1vh;
 	}
 
 	#im-bad-at-css-holder-div {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
+		justify-content: start;
 		align-items: start;
-		background-color: #fbe3e6;
+		padding: 0px;
+
 		border-radius: 0px 0px 15px 15px;
 	}
 
@@ -290,19 +288,15 @@
 		flex-direction: column;
 		align-items: flex-start;
 		justify-content: flex-start;
-		height: 10vh;
-		max-height: 10vh;
+		height: 15vh;
+		max-height: 15vh;
 		width: 30%;
 		max-width: 30%;
-		padding: 1vh;
-		margin: 0px;
-		/* margin-right: 1%;
-		margin-left: 1%; */
-		background-color: #b3b3b38f;
-		margin-bottom: 2vh;
-		/* margin-right: 1vh; */
+		/* padding: 1vh; */
+		/* border: solid 3px #94727254; */
+		margin-bottom: 1vh;
 		border-radius: 15px;
-		height: 100%;
+		background-color: #f0f0f0;
 	}
 
 	#no-sched-div {
@@ -342,11 +336,24 @@
 		}
 	}
 
+	.restriction-button {
+		background-color: #64646443;
+		border: 2px solid #646464b2;
+		border-radius: 25px;
+		text-align: center;
+		font-size: small;
+		padding-left: 0.3vw;
+		width: fit-content;
+		height: 4vh;
+		margin-bottom: 1vh;
+		margin-right: 0.5vw;
+	}
+
 	.header-button {
-		background-color: #ffffffe0;
+		background-color: #f0f0f0;
 		border-radius: 8px;
 		border-width: 0;
-		color: #000000;
+		color: black;
 		cursor: pointer;
 		display: inline-block;
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -369,58 +376,21 @@
 	#restrictions-container {
 		display: flex;
 		flex-direction: row;
-		justify-content: space-evenly;
+		justify-content: space-between;
 		padding: 0px;
-		margin: 0px;
-		width: 100%;
-	}
-
-	.restricted-time-button {
-		background-color: #64646443;
-		border: 2px solid #646464b2;
-		border-radius: 25px;
-		text-align: center;
-		font-size: small;
-		padding-left: 0.3vw;
-		width: fit-content;
-		height: auto;
-		margin-bottom: 1vh;
-		margin-right: 0.5vw;
+		margin-left: 1vw;
+		margin-right: 1vw;
+		width: 98vw;
 	}
 
 	.sched-wrapper {
 		margin: 0;
 	}
 
-	.readd-prof-button {
-		background-color: #6cd46900;
-		border: 0px;
-		width: fit-content;
-		/* margin-left: 0.25vw; */
-	}
-
-	.prof-button {
-		background-color: #64646443;
-		border: 2px solid #646464b2;
-		border-radius: 25px;
-		/* text-align: center; */
-		display: flex;
-		flex-direction: row;
-		/* justify-content: space-evenly; */
-		font-size: x-small;
-		padding-left: 0.3vw;
-		padding-top: 0.3vh;
-		padding-bottom: 0.3vh;
-		width: fit-content;
-		margin-bottom: 0.3vh;
-		margin-left: 0.3vh;
-		height: fit-content;
-	}
-
 	#header-text {
 		margin: 1vw;
 		font-size: 3vw;
-		color: #ffffffe0;
+		color: #e21833;
 	}
 
 	#header-row {
@@ -428,10 +398,6 @@
 		flex-direction: row;
 		justify-content: space-between;
 		width: 100%;
-	}
-
-	p {
-		margin-bottom: 10px;
 	}
 
 	:host {
@@ -446,21 +412,8 @@
 		width: fit-content;
 		display: flex;
 		flex-wrap: wrap;
+		padding: 1vh;
 		/* background-color: #64646443; */
 		/* justify-content: space-evenly; */
-	}
-
-	.added-class-button {
-		width: fit-content;
-		margin-top: 0.5vh;
-		/* font-size: x-large; */
-		display: flex;
-		flex-direction: row;
-		justify-content: space-evenly;
-		background-color: #6cd469c2;
-		border: 2px solid #6cd469;
-		border-radius: 25px;
-		padding: 0.5vh;
-		margin-right: 0.25vw;
 	}
 </style>

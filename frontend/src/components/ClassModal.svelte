@@ -3,7 +3,7 @@
 
 	export let showModal: boolean; // boolean
 	export let className: string; // string
-	export let prohibitedProfessors: Map<string, string[]>; // string[]
+	export let prohibitedProfessors: string[]; // string[]
 	let dialog: HTMLDialogElement; // HTMLDialogElement
 	let courseTitle: string;
 	let courseProfs: Map<String, any> = new Map<string, any>();
@@ -12,9 +12,10 @@
 	let courseCredits: number;
 	let htmlContent = '';
 	export let index: number;
+	export let showProfessorModals: boolean[] = [];
 	export let closeModal: (index: number) => void;
 	export let removeClasses: (className: string) => void;
-	export let prohibitProf: (prof: string, className: string) => void;
+	export let prohibitProf: (prof: string) => void;
 
 	$: loaded = courseProfs.size && courseTitle && courseCredits && averageGPA && htmlContent;
 
@@ -129,7 +130,7 @@
 			<div class="available-professors">
 				<h2 style="margin-bottom:2vh">Available Professors</h2>
 				{#each Array.from(courseProfs.keys()) as prof}
-					{#if !prohibitedProfessors.get(className)?.includes(prof.toString())}
+					{#if !prohibitedProfessors.includes(prof.toString())}
 						<div class="prof-planet-terp">
 							<div class="prof-info">
 								<h3 style="margin-right:2vh">{prof}</h3>
@@ -145,13 +146,15 @@
 							<button
 								class="button prohibit"
 								on:click={() => {
-									if (
-										!prohibitedProfessors.get(className)?.includes(prof.toString()) &&
-										courseProfs.size > 1
-									) {
-										prohibitProf(prof.toString(), className);
+									if (!prohibitedProfessors.includes(prof.toString()) && courseProfs.size > 1) {
+										prohibitProf(prof.toString());
+										console.log(prof);
+										showProfessorModals[Array.from(courseProfs.keys()).indexOf(prof)] = true;
+										showProfessorModals = [...showProfessorModals];
+										showModal = false;
+										// dialog.close();
 									}
-								}}>REMOVE</button
+								}}>Remove</button
 							>
 						</div>
 					{/if}
