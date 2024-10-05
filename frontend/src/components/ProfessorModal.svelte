@@ -7,12 +7,15 @@
 	let instructorType: string;
 	let courses: string[];
 	let reviews: any[];
-	let averageRating: number;
+	let averageRating: number | string;
 	export let index: number;
 	export let closeModal: (index: number) => void;
 	export let reAddProfessor: (className: string) => void;
 
-	$: loaded = instructorType && courses.length != 0 && averageRating && reviews;
+	// let loaded = false;
+	// Check if all data is loaded
+	// no check for reviews because reviews could be empty
+	$: loaded = instructorType && courses.length != 0 && averageRating;
 
 	$: if (dialog && showModal) dialog.showModal();
 
@@ -26,10 +29,27 @@
 			.then((response) => response.json())
 			.then((data) => {
 				console.log(data);
+
 				reviews = data.reviews;
+				if (reviews.length == 0) {
+					reviews = [];
+				}
 				averageRating = data.average_rating;
+				if (averageRating == null) {
+					averageRating = 'N/A';
+				}
 				instructorType = data.type;
+				if (instructorType == 'Professor') {
+					instructorType = 'Professor';
+				} else if (instructorType == 'TA') {
+					instructorType = 'TA';
+				} else {
+					instructorType = 'N/A';
+				}
 				courses = data.courses;
+				if (courses.length == 0) {
+					courses = [];
+				}
 			})
 			.catch((error) => {
 				console.log(error);

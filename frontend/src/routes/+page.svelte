@@ -135,9 +135,7 @@
 		<h1 id="header-text">TerpScheduler</h1>
 		<div id="header-button-rows">
 			{#if addedClasses.length > 1}
-				<button class="header-button" on:click={() => generateSchedules()}
-					>Generate Schedules</button
-				>
+				<button class="header-button" on:click={() => generateSchedules()}>Generate!</button>
 			{/if}
 
 			<button class="header-button" on:click={() => (showAddClassModal = true)}>Add Class</button>
@@ -161,7 +159,12 @@
 				<h3>Added Classes</h3>
 				<div class="restriction-items">
 					{#each addedClasses as className, index}
-						<button class="restriction-button" on:click={() => (showClassModals[index] = true)}>
+						<button
+							style="background-color: {colorMap.get(className) ||
+								'#64646443'}; border-color: {colorMap.get(className) || '#646464b2'}"
+							class="restriction-button"
+							on:click={() => (showClassModals[index] = true)}
+						>
 							{className}
 						</button>
 						<ClassModal
@@ -285,8 +288,8 @@
 		flex-direction: column;
 		align-items: flex-start;
 		justify-content: flex-start;
-		height: 10vh;
-		max-height: 10vh;
+		height: 15vh;
+		max-height: 15vh;
 		width: 30%;
 		max-width: 30%;
 		/* padding: 1vh; */
@@ -341,7 +344,7 @@
 		font-size: small;
 		padding-left: 0.3vw;
 		width: fit-content;
-		height: auto;
+		height: 4vh;
 		margin-bottom: 1vh;
 		margin-right: 0.5vw;
 	}

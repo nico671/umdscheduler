@@ -127,8 +127,8 @@ def weight_schedules(domains):
                 if instructor not in professor_weights:
                     res = requests.get(
                         f'https://planetterp.com/api/v1/professor', params={'name': instructor}).json()
-                    # print(res)
-                    if res['average_rating'] != {'error': 'professor not found'}:
+                    print(res)
+                    if 'error' not in res and res['average_rating'] != None:
                         professor_weights[instructor] = round(
                             res['average_rating'], 2)
                     else:

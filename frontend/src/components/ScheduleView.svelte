@@ -57,7 +57,7 @@
 			if (endSlot > latestEnd) {
 				latestEnd = endSlot;
 			}
-			return { startSlot, length: endSlot - startSlot };
+			return { startSlot, length: (endSlot - startSlot) / totalLength };
 		};
 
 		// Main processing
@@ -105,6 +105,7 @@
 			return scheduleData[a]['number'] - scheduleData[b]['number'];
 		});
 		totalLength = latestEnd - earliestStart;
+		console.log(totalLength);
 		dayLabels = new Map([...dayLabels.entries()].sort());
 	});
 
@@ -121,8 +122,10 @@
 			{#each formatSlots(day) as slot, j}
 				<div
 					class="schedule-slot"
-					style="top: {slot.start - earliestStart}px; height: {slot.length /
-						totalLength}px; background:{colorMap.get(slot.class)};"
+					style="top: {slot.start -
+						earliestStart}px; height: {slot.length}vh; width: 100%; background:{colorMap.get(
+						slot.class
+					)};"
 				>
 					{slot.class} ({slot.sectionCode}) - {slot.location}
 					<br />
@@ -140,7 +143,7 @@
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		width: 100%;
-		height: 60vh;
+		height: 75vh;
 		/* height: fit-content; */
 		border: 4px solid #000000;
 		align-items: stretch;
