@@ -6,6 +6,7 @@
 	import TimeSelectionModal from '../components/TimeSelectionModal.svelte';
 	import InfiniteScheduleScroll from '../components/InfiniteScheduleScroll.svelte';
 	import ProfessorModal from '../components/ProfessorModal.svelte';
+	import ScheduleView from '../components/ScheduleView.svelte';
 
 	let availableClasses = [] as string[];
 	var addedClasses = [] as string[];
@@ -128,6 +129,47 @@
 				return [];
 			});
 	});
+	let schedules: any[] = [];
+	let element: HTMLElement | null;
+
+	const addNewSchedules = () => {
+		if (currentAmountLoaded >= generatedSchedules.length) return;
+		const newSchedules = generatedSchedules.slice(currentAmountLoaded, currentAmountLoaded + 10);
+		currentAmountLoaded += 10;
+		schedules = [...schedules, ...newSchedules];
+	};
+
+	const checkScroll = () => {
+		if (element && element.scrollHeight - element.scrollTop <= element.clientHeight + 10) {
+			addNewSchedules();
+		}
+	};
+
+	onMount(() => {
+		console.log('mounted');
+		addNewSchedules();
+		element = document.getElementById('schedules-scroll');
+		if (element) {
+			console.log('element found');
+			element.addEventListener('scroll', checkScroll);
+		} else {
+			console.error('Element not found');
+		}
+	});
+
+	onDestroy(() => {
+		if (element) {
+			element.removeEventListener('scroll', checkScroll);
+		}
+	});
+
+	$: {
+		if (generatedSchedules.length === 0) {
+			console.log('schedules reset');
+			currentAmountLoaded = 0;
+			schedules = [];
+		}
+	}
 </script>
 
 <header>
@@ -224,11 +266,13 @@
 <body>
 	{#if generatedSchedules.length > 0}
 		<h2>{generatedSchedules.length} schedules generated!</h2>
-
-		<div class="sched-wrapper">
-			<InfiniteScheduleScroll bind:generatedSchedules bind:addedClasses bind:colorMap
-			></InfiniteScheduleScroll>
-		</div>
+		<ul id="schedules-scroll" bind:this={element}>
+			{#each schedules.sort((a, b) => a['prof_weight'] - b['prof_weight']) as item, i}
+				<h3>Schedule #{i + 1}</h3>
+				<h4>Average Professor Rating - {item['prof_weight']}</h4>
+				<ScheduleView bind:scheduleData={item} {addedClasses} {colorMap}></ScheduleView>
+			{/each}
+		</ul>
 	{/if}
 	{#if generatedSchedules.length === 0}
 		<div id="no-sched-div">
@@ -253,15 +297,21 @@
 		/* background-image: linear-gradient(to bottom,,); */
 		/* border-radius: 0px 0px 25px 25px; */
 		/* margin-bottom: 1vh; */
-		padding: 0px;
-		width: 100%;
+		padding: 0vh;
+		margin: 1%;
+		width: 100vw;
+		max-width: 98vw;
 		height: 100%;
+		position: sticky;
 	}
 
 	body {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		margin: 0px;
 		padding: 0px;
+		width: 98vw;
+		overflow-x: hidden;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
 		height: fit-content;
@@ -279,6 +329,7 @@
 		justify-content: start;
 		align-items: start;
 		padding: 0px;
+		margin: 0px;
 
 		border-radius: 0px 0px 15px 15px;
 	}
@@ -292,9 +343,9 @@
 		max-height: 15vh;
 		width: 30%;
 		max-width: 30%;
-		/* padding: 1vh; */
+		padding: 0px;
+		margin: 0px;
 		/* border: solid 3px #94727254; */
-		margin-bottom: 1vh;
 		border-radius: 15px;
 		background-color: #f0f0f0;
 	}
@@ -345,8 +396,7 @@
 		padding-left: 0.3vw;
 		width: fit-content;
 		height: 4vh;
-		margin-bottom: 1vh;
-		margin-right: 0.5vw;
+		margin-right: 1vh;
 	}
 
 	.header-button {
@@ -361,9 +411,8 @@
 		font-weight: 500;
 		line-height: 20px;
 		list-style: none;
-		margin: 0;
 		padding: 1vw;
-		margin: 1vw;
+		/* margin: 1vw; */
 		text-align: center;
 		transition: all 200ms;
 		vertical-align: baseline;
@@ -377,18 +426,17 @@
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
-		padding: 0px;
-		margin-left: 1vw;
-		margin-right: 1vw;
-		width: 98vw;
+		align-items: center;
+		width: 100%;
 	}
 
 	.sched-wrapper {
-		margin: 0;
+		margin: 0px;
+		padding: 0px;
 	}
 
 	#header-text {
-		margin: 1vw;
+		margin: 0px;
 		font-size: 3vw;
 		color: #e21833;
 	}
@@ -398,6 +446,8 @@
 		flex-direction: row;
 		justify-content: space-between;
 		width: 100%;
+		padding-bottom: 2vh;
+		margin: 0px;
 	}
 
 	:host {
@@ -414,6 +464,6 @@
 		flex-wrap: wrap;
 		padding: 1vh;
 		/* background-color: #64646443; */
-		/* justify-content: space-evenly; */
+		justify-content: space-evenly;
 	}
 </style>

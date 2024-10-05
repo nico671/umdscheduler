@@ -57,6 +57,7 @@
 			if (endSlot > latestEnd) {
 				latestEnd = endSlot;
 			}
+			console.log(endSlot - startSlot);
 			return { startSlot, length: (endSlot - startSlot) / totalLength };
 		};
 
@@ -75,7 +76,7 @@
 					const endDate = createDate(classTime.end_time);
 
 					const { startSlot, length } = calculateSlotTimes(startDate, endDate);
-
+					console.log(startSlot, startDate, endDate, length);
 					daysCodes.forEach((dayCode, k) => {
 						if (days.toLowerCase().includes(dayCode.toLowerCase())) {
 							const slot = {
@@ -104,8 +105,9 @@
 		addedClasses.sort((a, b) => {
 			return scheduleData[a]['number'] - scheduleData[b]['number'];
 		});
+
 		totalLength = latestEnd - earliestStart;
-		console.log(totalLength);
+		console.log(totalLength, latestEnd, earliestStart);
 		dayLabels = new Map([...dayLabels.entries()].sort());
 	});
 
@@ -122,8 +124,8 @@
 			{#each formatSlots(day) as slot, j}
 				<div
 					class="schedule-slot"
-					style="top: {slot.start -
-						earliestStart}px; height: {slot.length}vh; width: 100%; background:{colorMap.get(
+					style="top: {slot.start *
+						(720 / latestEnd)}px; height: {slot.length}vh; width: 100%; background:{colorMap.get(
 						slot.class
 					)};"
 				>
