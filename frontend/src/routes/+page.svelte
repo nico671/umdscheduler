@@ -4,7 +4,6 @@
 	import ClassModal from '../components/ClassModal.svelte';
 	import AddClassModal from '../components/AddClassModal.svelte';
 	import TimeSelectionModal from '../components/TimeSelectionModal.svelte';
-	import InfiniteScheduleScroll from '../components/InfiniteScheduleScroll.svelte';
 	import ProfessorModal from '../components/ProfessorModal.svelte';
 	import ScheduleView from '../components/ScheduleView.svelte';
 
@@ -55,6 +54,7 @@
 				console.log(data.length);
 				// shuffle(data);
 				generatedSchedules = data;
+				addNewSchedules();
 				// console.log(generatedSchedules);
 			})
 			.catch((error) => {
@@ -128,6 +128,14 @@
 				console.log(error);
 				return [];
 			});
+		addNewSchedules();
+		element = document.getElementById('schedules-scroll');
+		if (element) {
+			console.log('element found');
+			element.addEventListener('scroll', checkScroll);
+		} else {
+			console.error('Element not found');
+		}
 	});
 	let schedules: any[] = [];
 	let element: HTMLElement | null;
@@ -145,31 +153,11 @@
 		}
 	};
 
-	onMount(() => {
-		console.log('mounted');
-		addNewSchedules();
-		element = document.getElementById('schedules-scroll');
-		if (element) {
-			console.log('element found');
-			element.addEventListener('scroll', checkScroll);
-		} else {
-			console.error('Element not found');
-		}
-	});
-
 	onDestroy(() => {
 		if (element) {
 			element.removeEventListener('scroll', checkScroll);
 		}
 	});
-
-	$: {
-		if (generatedSchedules.length === 0) {
-			console.log('schedules reset');
-			currentAmountLoaded = 0;
-			schedules = [];
-		}
-	}
 </script>
 
 <header>
@@ -263,16 +251,9 @@
 		</div>
 	</div>
 </header>
-<body>
+<body bind:this={element}>
 	{#if generatedSchedules.length > 0}
 		<h2>{generatedSchedules.length} schedules generated!</h2>
-		<ul id="schedules-scroll" bind:this={element}>
-			{#each schedules.sort((a, b) => a['prof_weight'] - b['prof_weight']) as item, i}
-				<h3>Schedule #{i + 1}</h3>
-				<h4>Average Professor Rating - {item['prof_weight']}</h4>
-				<ScheduleView bind:scheduleData={item} {addedClasses} {colorMap}></ScheduleView>
-			{/each}
-		</ul>
 	{/if}
 	{#if generatedSchedules.length === 0}
 		<div id="no-sched-div">
@@ -286,17 +267,16 @@
 			<!-- <h1>No schedules generated</h1> -->
 		</div>
 	{/if}
+	{#each schedules.sort((a, b) => a['prof_weight'] - b['prof_weight']) as item, i}
+		<h3>Schedule #{i + 1}</h3>
+		<h4>Average Professor Rating - {item['prof_weight']}</h4>
+		<ScheduleView bind:scheduleData={item} {addedClasses} {colorMap}></ScheduleView>
+	{/each}
 </body>
 
 <style>
 	header {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-
-		/* background-color: #fbe3e6; */
-		/* background-image: linear-gradient(to bottom, #fbe3e6, white); */
-		/* background-image: linear-gradient(to bottom,,); */
-		/* border-radius: 0px 0px 25px 25px; */
-		/* margin-bottom: 1vh; */
 		padding: 0vh;
 		margin: 1%;
 		width: 100vw;
@@ -307,16 +287,19 @@
 
 	body {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		margin: 0px;
-		padding: 0px;
-		width: 98vw;
-		overflow-x: hidden;
+		padding: 0vh;
+		margin: 1%;
+		width: 100vw;
+		max-width: 98vw;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
 		height: fit-content;
+		box-sizing: border-box;
+		overflow-y: scroll;
 		/* background-color: lightblue; */
 	}
+
 	h3 {
 		padding-left: 1vh;
 		padding-top: 1vh;
@@ -455,7 +438,7 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		padding: 1em;
+		/* padding: 1em; */
 	}
 
 	.restriction-items {

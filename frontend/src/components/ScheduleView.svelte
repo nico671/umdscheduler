@@ -144,13 +144,15 @@
 	.grid-container {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		width: 100%;
+		width: 98%;
 
 		height: 75vh;
 
 		/* height: fit-content; */
 		border: 4px solid #000000;
 		align-items: stretch;
+		margin: 0px;
+		padding: 0px;
 		margin-bottom: 1vh;
 	}
 
@@ -160,8 +162,8 @@
 		justify-content: center;
 		/* align-items: stretch; */
 		height: 100%;
-		margin-left: 0.5vh;
-		margin-right: 0.5vh;
+		/* margin-left: 0.5vh; */
+		/* margin-right: 0.5vh; */
 	}
 
 	.schedule-slot {
