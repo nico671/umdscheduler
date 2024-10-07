@@ -144,7 +144,7 @@
 	.grid-container {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		width: 98%;
+		width: 100%;
 
 		height: 75vh;
 

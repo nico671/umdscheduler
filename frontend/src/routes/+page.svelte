@@ -186,7 +186,7 @@
 	<div id="im-bad-at-css-holder-div">
 		<div id="restrictions-container">
 			<div class="restriction-box">
-				<h3>Added Classes</h3>
+				<h2>Added Classes</h2>
 				<div class="restriction-items">
 					{#each addedClasses as className, index}
 						<button
@@ -211,7 +211,7 @@
 			</div>
 
 			<div class="restriction-box">
-				<h3>Prohibited Professors</h3>
+				<h2>Prohibited Professors</h2>
 				{#if prohibitedProfessors.length > 0}
 					<div class="restriction-items">
 						{#each prohibitedProfessors as prof, index}
@@ -237,12 +237,21 @@
 			</div>
 
 			<div class="restriction-box">
-				<h3>Prohibited Times (Click time to remove)</h3>
+				<h2>Prohibited Times</h2>
 				<div class="restriction-items">
 					{#if prohibitedTimes.length > 0}
 						{#each prohibitedTimes.entries() as [time, day]}
-							<button class="restriction-button" on:click={() => removeProhibitedTime(time)}
-								>{day.get('day')}: {day.get('start')}-{day.get('end')}</button
+							<button
+								class="restriction-button"
+								on:click={() => {
+									if (
+										confirm(
+											`Allow classes ${day.get('day')}: ${day.get('start')}-${day.get('end')}?`
+										)
+									) {
+										removeProhibitedTime(time);
+									}
+								}}>{day.get('day')}: {day.get('start')}-{day.get('end')}</button
 							>
 						{/each}
 					{/if}
@@ -277,8 +286,8 @@
 <style>
 	header {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		padding: 0vh;
-		margin: 1%;
+		padding: 1vh;
+		margin: 0px;
 		width: 100vw;
 		max-width: 98vw;
 		height: 100%;
@@ -287,8 +296,8 @@
 
 	body {
 		font-family: 'Haas Grot Text R Web', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		padding: 0vh;
-		margin: 1%;
+		padding: 1vh;
+		margin: 0px;
 		width: 100vw;
 		max-width: 98vw;
 		height: 100%;
@@ -300,7 +309,7 @@
 		/* background-color: lightblue; */
 	}
 
-	h3 {
+	h2 {
 		padding-left: 1vh;
 		padding-top: 1vh;
 		margin: 0px;
@@ -413,11 +422,6 @@
 		width: 100%;
 	}
 
-	.sched-wrapper {
-		margin: 0px;
-		padding: 0px;
-	}
-
 	#header-text {
 		margin: 0px;
 		font-size: 3vw;
@@ -446,7 +450,8 @@
 		display: flex;
 		flex-wrap: wrap;
 		padding: 1vh;
+		margin-bottom: 1vh;
 		/* background-color: #64646443; */
-		justify-content: space-evenly;
+		justify-content: flex-start;
 	}
 </style>
