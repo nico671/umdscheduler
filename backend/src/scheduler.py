@@ -12,8 +12,12 @@ def backtracking(assignment, variables, res, domains):
         prof_weights = []
         for cla in assignment:
             sect = assignment[cla]
+            if sect['prof_weight'] != 0:
+                return
             prof_weights.append(sect['prof_weight'])
+
         assignment['prof_weight'] = round(mean(prof_weights), 2)
+
         # print(assignment['prof_weight'])
         res.append(assignment.copy())  # Make a deep copy of the assignment
         assignment.pop('prof_weight')

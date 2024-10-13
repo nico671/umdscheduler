@@ -25,6 +25,8 @@
 
 	async function generateSchedules() {
 		generatedSchedules = [];
+		// schedules = [];
+
 		currentAmountLoaded = 0;
 		generatingSchedules = true;
 
@@ -54,6 +56,7 @@
 				console.log(data.length);
 				// shuffle(data);
 				generatedSchedules = data;
+				schedules = [];
 				addNewSchedules();
 				// console.log(generatedSchedules);
 			})
@@ -141,6 +144,11 @@
 	let element: HTMLElement | null;
 
 	const addNewSchedules = () => {
+		if (!Array.isArray(generatedSchedules)) {
+			console.log(generatedSchedules);
+			console.error('generatedSchedules is not an array');
+			return;
+		}
 		if (currentAmountLoaded >= generatedSchedules.length) return;
 		const newSchedules = generatedSchedules.slice(currentAmountLoaded, currentAmountLoaded + 10);
 		currentAmountLoaded += 10;
