@@ -162,7 +162,7 @@ def create_schedule(wanted_classes, restrictions):
         parameters = {
             "course_id": course,
             # TODO: need to make this based on restrictions
-            "semester": "202408"
+            "semester": "202501"
         }
 
         try:

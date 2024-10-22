@@ -50,8 +50,10 @@
 			});
 		var uniqueProfs = [] as string[];
 		const url2 = new URL(`https://api.umd.io/v1/courses/${className}/sections`);
-		url2.searchParams.append('semester', '202408');
-		fetch(url2)
+		url2.searchParams.append('semester', '202501');
+		fetch(url2, {
+			method: 'GET'
+		})
 			.then((response) => response.json())
 			.then((data) => {
 				// console.log(data);

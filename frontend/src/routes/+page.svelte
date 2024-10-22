@@ -119,7 +119,7 @@
 	onMount(async () => {
 		const url = new URL('https://api.umd.io/v1/courses/list');
 		url.searchParams.append('sort', 'sort=course_id,-credits');
-		url.searchParams.append('semester', '202408');
+		url.searchParams.append('semester', '202501');
 
 		fetch(url)
 			.then((response) => response.json())
