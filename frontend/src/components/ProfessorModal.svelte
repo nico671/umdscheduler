@@ -15,7 +15,7 @@
 	// let loaded = false;
 	// Check if all data is loaded
 	// no check for reviews because reviews could be empty
-	$: loaded = instructorType && courses.length != 0 && averageRating;
+	$: loaded = instructorType && courses && courses.length != 0 && averageRating;
 
 	$: if (dialog && showModal) dialog.showModal();
 
@@ -135,12 +135,20 @@
 		border-radius: 0.2em;
 		border: none;
 		padding: 0;
+		overflow: hidden; /* Add this line to handle overflow */
+	}
+	dialog > div {
+		padding: 1em;
+		overflow-y: auto; /* Add this line to enable vertical scrolling */
+		max-height: 80vh; /* Add this line to limit the height of the content */
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
 	}
 	dialog > div {
 		padding: 1em;
+		overflow-y: auto; /* Add this line to enable vertical scrolling */
+		max-height: 80vh; /* Add this line to limit the height of the content */
 	}
 	dialog[open] {
 		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);

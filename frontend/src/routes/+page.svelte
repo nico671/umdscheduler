@@ -287,7 +287,7 @@
 	{#each schedules.sort((a, b) => a['prof_weight'] - b['prof_weight']) as item, i}
 		<h3>Schedule #{i + 1}</h3>
 		<h4>Average Professor Rating - {item['prof_weight']}</h4>
-		<ScheduleView bind:scheduleData={item} {addedClasses} {colorMap}></ScheduleView>
+		<ScheduleView {colorMap} scheduleData={item}></ScheduleView>
 	{/each}
 </body>
 
@@ -307,7 +307,7 @@
 		padding: 1vh;
 		margin: 0px;
 		width: 100vw;
-		max-width: 98vw;
+		max-width: 99vw;
 		height: 100%;
 		display: flex;
 		flex-direction: column;
@@ -318,7 +318,7 @@
 	}
 
 	h2 {
-		padding-left: 1vh;
+		padding-left: 0vh;
 		padding-top: 1vh;
 		margin: 0px;
 	}

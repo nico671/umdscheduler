@@ -1,135 +1,98 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	let dayLabels = new Map<number, any[]>();
-	dayLabels.set(0, []);
-	dayLabels.set(1, []);
-	dayLabels.set(2, []);
-	dayLabels.set(3, []);
-	dayLabels.set(4, []);
+	let dayLabels: any[][] = [[], [], [], [], []];
 	let daysCodes = ['M', 'Tu', 'W', 'Th', 'F'];
 
 	export let colorMap: Map<string, string> = new Map<string, string>();
 	export let scheduleData: any;
-	let classes: Map<string, any> = new Map<string, any>();
-	export let addedClasses: string[] = [];
-	var offsetDate = new Date();
-	offsetDate.setHours(8);
-	offsetDate.setMinutes(0);
-	offsetDate.setDate(26);
-	offsetDate.setFullYear(2018);
-	offsetDate.setMonth(11);
-	offsetDate.setSeconds(0);
-	let totalLength = 0; // The height of the schedule view in vh
-	let latestEnd = 0; // The end time of the latest slot in minutes (12 hours * 60 minutes)
-	let earliestStart = 100000;
-	onMount(async () => {
-		// console.log(scheduleData);
-		// Utility functions
-		const createDate = (dateStr: string) => {
-			// console.log(dateStr)
-			let parts = dateStr.split(':');
-			let date = new Date();
-			date.setDate(26);
-			date.setFullYear(2018);
-			date.setMonth(11);
-			let hours = parseInt(parts[0]);
-			if (dateStr.includes('pm') && hours !== 12) {
-				hours += 12;
-			}
-			date.setHours(hours);
-			date.setMinutes(parseInt(parts[1]));
-			date.setSeconds(0);
-			return date;
-		};
 
-		const getFormattedTime = (date: number | Date | undefined) => {
-			// console.log(date);
-			return Intl.DateTimeFormat('en-US', { timeStyle: 'short' }).format(date);
-		};
+	let earliestStart = 480; // 8:00 AM in minutes
+	let latestEnd = 1200; // 8:00 PM in minutes
+	let totalLength = latestEnd - earliestStart;
+	let offsetDate = new Date();
+	offsetDate.setHours(8, 0, 0, 0); // Set offsetDate to 8:00 AM
 
-		const calculateSlotTimes = (startDate: Date, endDate: Date) => {
-			const startSlot = Math.round((startDate.getTime() - offsetDate.getTime()) / 60000);
-			const endSlot = Math.round((endDate.getTime() - offsetDate.getTime()) / 60000);
-			// console.log(startSlot, startDate);
-			if (startSlot < earliestStart) {
-				earliestStart = startSlot;
-			}
-			if (endSlot > latestEnd) {
-				latestEnd = endSlot;
-			}
-			console.log(endSlot - startSlot);
-			return { startSlot, length: (endSlot - startSlot) / totalLength };
-		};
-
-		// Main processing
-		addedClasses.forEach((element) => {
-			scheduleData[element]['meetings'].forEach(
-				(classTime: {
-					days: { toString: () => any };
-					start_time: any;
-					end_time: any;
-					building: any;
-					room: any;
-				}) => {
+	onMount(() => {
+		// Process schedule data
+		Object.keys(scheduleData).forEach((element) => {
+			const meetings = scheduleData[element]?.meetings;
+			if (meetings) {
+				meetings.forEach((classTime: any) => {
 					const days = classTime.days.toString();
 					const startDate = createDate(classTime.start_time);
 					const endDate = createDate(classTime.end_time);
 
 					const { startSlot, length } = calculateSlotTimes(startDate, endDate);
-					console.log(startSlot, startDate, endDate, length);
+
 					daysCodes.forEach((dayCode, k) => {
-						if (days.toLowerCase().includes(dayCode.toLowerCase())) {
+						if (days.includes(dayCode)) {
 							const slot = {
 								sectionCode: scheduleData[element]['number'],
 								days: dayCode,
-								start: startSlot,
+								start: startSlot, // percentage
 								startTime: getFormattedTime(startDate),
 								endTime: getFormattedTime(endDate),
 								class: element,
 								professor: scheduleData[element]['instructors'].toString(),
 								location: `${classTime.building} ${classTime.room}`,
 								prof_rating: scheduleData[element]['prof_weight'],
-								// time: getTime(startSlot),
-								length: length
+								length: length // percentage
 							};
-
-							if (!dayLabels.has(k)) {
-								dayLabels.set(k, []);
-							}
-							dayLabels.get(k)!.push(slot);
+							dayLabels[k].push(slot);
 						}
 					});
-				}
-			);
-		});
-		addedClasses.sort((a, b) => {
-			return scheduleData[a]['number'] - scheduleData[b]['number'];
+				});
+			}
 		});
 
-		totalLength = latestEnd - earliestStart;
-		console.log(totalLength, latestEnd, earliestStart);
-		dayLabels = new Map([...dayLabels.entries()].sort());
+		console.log('Final dayLabels:', dayLabels);
+
+		// Trigger reactivity by reassigning dayLabels
+		dayLabels = [...dayLabels];
 	});
 
+	const createDate = (dateStr: string) => {
+		let parts = dateStr.split(':');
+		let date = new Date();
+		let hours = parseInt(parts[0]);
+		if (dateStr.includes('pm') && hours !== 12) {
+			hours += 12;
+		}
+		date.setHours(hours);
+		date.setMinutes(parseInt(parts[1]));
+		date.setSeconds(0);
+		return date;
+	};
+
+	const getFormattedTime = (date: Date) => {
+		return Intl.DateTimeFormat('en-US', { timeStyle: 'short' }).format(date);
+	};
+
+	const calculateSlotTimes = (startDate: Date, endDate: Date) => {
+		const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
+		const endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
+		const startSlot = ((startMinutes - earliestStart) / totalLength) * 100;
+		const length = ((endMinutes - startMinutes) / totalLength) * 100;
+		return { startSlot, length };
+	};
+
 	function formatSlots(day: any[]) {
-		day = day.sort((a, b) => a.start - b.start);
-		return day;
+		return day.sort((a, b) => a.start - b.start);
 	}
 </script>
 
-<!-- TODO: need to fix schedule generation frontend -->
 <div class="grid-container">
-	{#each new Map([...dayLabels.entries()].sort()).values() as day, i}
+	{#each daysCodes as day, i}
 		<div class="schedule-column">
-			{#each formatSlots(day) as slot, j}
+			<div class="day-label">{day}</div>
+			{#each formatSlots(dayLabels[i] || []) as slot}
 				<div
 					class="schedule-slot"
-					style="top: {slot.start *
-						(720 / latestEnd)}px; height: {slot.length}vh; width: 100%; background:{colorMap.get(
+					style="top: {slot.start}%; height: {slot.length}%; background: {colorMap.get(
 						slot.class
-					)};"
+					) || '#ccc'};"
 				>
-					{slot.class} ({slot.sectionCode}) - {slot.location}
+					<b>{slot.class}</b> - Section {slot.sectionCode} - {slot.location}
 					<br />
 					{slot.professor} - {slot.prof_rating} ✪
 					<br />
@@ -143,39 +106,35 @@
 <style>
 	.grid-container {
 		display: grid;
-		grid-template-columns: repeat(5, 1fr);
+		grid-template-columns: repeat(5, 1fr); /* Make all day columns equal size */
 		width: 100%;
-
-		height: 75vh;
-
-		/* height: fit-content; */
+		height: 100vh;
 		border: 4px solid #000000;
-		align-items: stretch;
-		margin: 0px;
-		padding: 0px;
-		margin-bottom: 1vh;
 	}
 
 	.schedule-column {
-		flex: 1;
 		position: relative;
-		justify-content: center;
-		/* align-items: stretch; */
-		height: 100%;
-		/* margin-left: 0.5vh; */
-		/* margin-right: 0.5vh; */
+		border: 1px solid #ccc;
+		height: 100%; /* Ensure it fills the grid container */
+	}
+
+	.day-label {
+		text-align: center;
+		font-weight: bold;
+		padding: 5px 0;
 	}
 
 	.schedule-slot {
-		/* font-size: smaller; */
-		float: none;
+		height: 100%;
 		position: absolute;
-		text-align: center;
-		/* margin: 1vh; */
-		width: 100%;
-		/* padding: 1vh; */
-		border-radius: 3%;
-		/* padding: 1%; */
-		/* font-size: 1.5vh; */
+		left: 1%;
+		width: 98%;
+		/* border: 1px solid #000; */
+		color: #000;
+		padding: 2px;
+		box-sizing: border-box;
+		overflow: hidden;
+		border-radius: 4px;
+		font-size: 0.8em;
 	}
 </style>
