@@ -480,7 +480,7 @@
 								? shade(colorMap.get(className), 20)
 								: '#646464b2'};"
 						>
-							{className} ×
+							{className}
 						</button>
 					{/each}
 				</div>
@@ -548,7 +548,11 @@
 			</div>
 			<div bind:this={scrollContainer} class="schedules-container">
 				{#each sortedSchedules as schedule, i (i)}
-					<ScheduleView scheduleData={schedule} {colorMap} />
+					<ScheduleView
+						scheduleData={schedule}
+						{colorMap}
+						scheduleIndex={i}
+					/>
 				{/each}
 			</div>
 		{/if}
@@ -648,7 +652,7 @@
 		box-sizing: border-box;
 	}
 
-	body {
+	/* body {
 		font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
 			sans-serif;
 		padding: 1vh;
@@ -661,7 +665,7 @@
 		height: fit-content;
 		box-sizing: border-box;
 		overflow-x: hidden;
-	}
+	} */
 
 	main {
 		width: 100%;
@@ -692,7 +696,7 @@
 		margin: 0px;
 	}
 
-	#im-bad-at-css-holder-div {
+	/* #im-bad-at-css-holder-div {
 		display: flex;
 		flex-direction: column;
 		justify-content: start;
@@ -700,7 +704,7 @@
 		padding: 0px;
 		margin: 0px;
 		border-radius: 0px 0px 15px 15px;
-	}
+	} */
 
 	.restriction-box {
 		display: flex;
@@ -717,7 +721,7 @@
 	.restriction-title {
 		padding: 12px 16px;
 		margin: 0;
-		color: var(--umd-red);
+		/* color: var(--umd-red); */
 		font-size: 1.2rem;
 		font-weight: 600;
 	}
@@ -739,7 +743,7 @@
 		align-items: center;
 	}
 
-	.lds-dual-ring,
+	/* .lds-dual-ring,
 	.lds-dual-ring:after {
 		box-sizing: border-box;
 	}
@@ -766,7 +770,7 @@
 		100% {
 			transform: rotate(360deg);
 		}
-	}
+	} */
 
 	.restriction-button {
 		/* Base styling */
@@ -812,7 +816,7 @@
 		touch-action: manipulation;
 	}
 
-	#restrictions-container {
+	/* #restrictions-container {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
@@ -833,7 +837,7 @@
 		width: 100%;
 		padding-bottom: 2vh;
 		margin: 0px;
-	}
+	} */
 
 	:host {
 		display: flex;
@@ -881,9 +885,9 @@
 		color: #666;
 	}
 
-	.generate-button {
+	/* .generate-button {
 		margin-top: 20px;
-	}
+	} */
 
 	.schedules-info {
 		margin: 20px 0;

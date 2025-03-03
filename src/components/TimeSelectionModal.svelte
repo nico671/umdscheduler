@@ -83,11 +83,11 @@
 	bind:this={dialog}
 	on:close={() => (showTimeSelectionModal = false)}
 	on:click|self={closeModal}
-	class="time-modal"
+	class="modal"
 >
 	<div class="modal-content" on:click|stopPropagation role="dialog">
 		<div class="modal-header">
-			<h2>Add Time Restriction</h2>
+			<h1>Add Time Restriction</h1>
 			<button class="close-btn" on:click={closeModal}>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -164,15 +164,16 @@
 				<button type="button" class="cancel-btn" on:click={closeModal}
 					>Cancel</button
 				>
-				<button type="submit" class="add-btn">Add Restriction</button>
+				<button type="submit" class="submit-btn">Add Restriction</button
+				>
 			</div>
 		</form>
 	</div>
 </dialog>
 
 <style>
-	.time-modal {
-		max-width: 450px;
+	.modal {
+		max-width: 600px;
 		width: 90%;
 		border-radius: 12px;
 		border: none;
@@ -183,32 +184,39 @@
 
 	.modal-content {
 		padding: 24px;
+		max-height: 85vh;
+		overflow-y: auto;
 	}
 
 	.modal-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 20px;
+		margin-bottom: 24px;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 16px;
 	}
 
-	.modal-header h2 {
+	.modal-header h1 {
 		margin: 0;
-		color: #222;
+		font-size: 1.8rem;
+		color: #e21833;
 	}
 
 	.close-btn {
 		background: transparent;
 		border: none;
 		cursor: pointer;
-		padding: 4px;
+		padding: 6px;
 		display: flex;
-		color: #666;
-		transition: color 0.2s;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		transition: background-color 0.2s;
 	}
 
 	.close-btn:hover {
-		color: #222;
+		background-color: rgba(0, 0, 0, 0.05);
 	}
 
 	.form-group {
@@ -270,7 +278,7 @@
 		font-weight: 500;
 	}
 
-	.add-btn {
+	.submit-btn {
 		background-color: #e21833;
 		border: none;
 		color: white;
@@ -280,7 +288,7 @@
 		font-weight: 500;
 	}
 
-	.add-btn:hover {
+	.submit-btn:hover {
 		background-color: #c91528;
 	}
 

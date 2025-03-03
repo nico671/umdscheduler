@@ -50,20 +50,21 @@
 <dialog
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
-	class="prof-modal"
+	on:click|self={() => closeModal(index)}
+	class="modal"
 >
 	<div class="modal-content">
 		{#if isLoading}
-			<div class="loader-container">
-				<div class="loader"></div>
+			<div class="loading">
+				<div class="spinner"></div>
+				<p>Loading professor information...</p>
 			</div>
 		{:else}
 			<div class="modal-header">
 				<h1>{profName}</h1>
 				<div class="button-group">
 					<button
-						class="allow-btn"
+						class="action-btn"
 						on:click={() => {
 							reAddProfessor(profName);
 							dialog.close();
@@ -73,10 +74,7 @@
 					</button>
 					<button
 						class="close-btn"
-						on:click={() => {
-							closeModal(index);
-							dialog.close();
-						}}
+						on:click={() => closeModal(index)}
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
@@ -150,7 +148,7 @@
 </dialog>
 
 <style>
-	.prof-modal {
+	.modal {
 		max-width: 600px;
 		width: 90%;
 		border-radius: 12px;
@@ -162,7 +160,7 @@
 
 	.modal-content {
 		padding: 24px;
-		max-height: 80vh;
+		max-height: 85vh;
 		overflow-y: auto;
 	}
 
@@ -178,7 +176,7 @@
 	.modal-header h1 {
 		margin: 0;
 		font-size: 1.8rem;
-		color: #333;
+		color: #e21833;
 		flex-grow: 1;
 	}
 
@@ -190,24 +188,20 @@
 	.close-btn {
 		background: transparent;
 		border: none;
-		color: #666;
 		cursor: pointer;
 		padding: 6px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		transition:
-			background-color 0.2s,
-			color 0.2s;
+		transition: background-color 0.2s;
 	}
 
 	.close-btn:hover {
 		background-color: rgba(0, 0, 0, 0.05);
-		color: #333;
 	}
 
-	.allow-btn {
+	.action-btn {
 		background-color: #e21833;
 		border: none;
 		color: white;
@@ -218,7 +212,7 @@
 		transition: background-color 0.2s;
 	}
 
-	.allow-btn:hover {
+	.action-btn:hover {
 		background-color: #c91528;
 	}
 
@@ -355,6 +349,24 @@
 		100% {
 			transform: rotate(360deg);
 		}
+	}
+
+	.loading {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 40px 0;
+	}
+
+	.spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid #f3f3f3;
+		border-top: 4px solid #e21833;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 16px;
 	}
 
 	dialog::backdrop {

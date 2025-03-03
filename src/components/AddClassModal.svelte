@@ -43,14 +43,28 @@
 	bind:this={dialog}
 	on:close={() => dispatch("close")}
 	on:click|self={handleCancel}
-	class="class-modal"
+	class="modal"
 >
 	<div class="modal-content" on:click|stopPropagation>
-		<header>
+		<div class="modal-header">
 			<h1>Add A Class</h1>
-			<button class="header-button" on:click={handleCancel}>Cancel</button
-			>
-		</header>
+			<button class="close-btn" on:click={handleCancel}>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
+				</svg>
+			</button>
+		</div>
 
 		<div id="search-column">
 			<input
@@ -80,53 +94,51 @@
 </dialog>
 
 <style>
-	.class-modal {
-		width: 500px;
-		max-width: 95vw;
-		height: auto;
-		max-height: 80vh;
-		padding: 0;
+	.modal {
+		max-width: 600px;
+		width: 90%;
 		border-radius: 12px;
 		border: none;
+		padding: 0;
 		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 		overflow: hidden;
 	}
 
 	.modal-content {
 		padding: 24px;
-		display: flex;
-		flex-direction: column;
-		height: 100%;
+		max-height: 80vh;
+		overflow-y: auto;
 	}
 
-	header {
+	.modal-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 20px;
-		border-bottom: 1px solid #e9e9e9;
-		padding-bottom: 12px;
+		margin-bottom: 24px;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 16px;
 	}
 
-	h1 {
-		font-size: clamp(24px, 5vw, 36px);
+	.modal-header h1 {
 		margin: 0;
+		font-size: 1.8rem;
+		color: #e21833;
 	}
 
-	.header-button {
-		background-color: rgba(51, 51, 51, 0.1);
-		border-radius: 8px;
+	.close-btn {
+		background: transparent;
 		border: none;
-		color: #333333;
 		cursor: pointer;
-		font-size: 16px;
-		font-weight: 500;
-		padding: 8px 16px;
-		transition: all 200ms;
+		padding: 6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		transition: background-color 0.2s;
 	}
 
-	.header-button:hover {
-		background-color: rgba(51, 51, 51, 0.2);
+	.close-btn:hover {
+		background-color: rgba(0, 0, 0, 0.05);
 	}
 
 	#search-column {
@@ -190,7 +202,22 @@
 	}
 
 	dialog::backdrop {
-		background-color: rgba(0, 0, 0, 0.5);
+		background: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(2px);
+	}
+
+	dialog[open] {
+		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes zoom {
+		from {
+			transform: scale(0.95);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
 	}
 </style>

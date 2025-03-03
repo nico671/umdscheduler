@@ -1,99 +1,107 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
-	export let showModal: boolean; // boolean
-	export let className: string; // string
-	export let prohibitedProfessors: string[]; // string[]
-	let dialog: HTMLDialogElement; // HTMLDialogElement
-	let courseTitle: string;
-	let courseProfs: Map<String, any> = new Map<string, any>();
-	let averageGPA: string;
-	let courseDescription: string;
-	let courseCredits: number;
-	let htmlContent = '';
-	export let index: number;
+	import { onMount } from "svelte";
+	export let className: string;
+	export let showModal: boolean;
+	export let prohibitedProfessors: string[] = [];
 	export let showProfessorModals: boolean[] = [];
+	export let index: number;
 	export let closeModal: (index: number) => void;
 	export let removeClasses: (className: string) => void;
 	export let prohibitProf: (prof: string) => void;
 
-	$: loaded = courseProfs.size && courseTitle && courseCredits && averageGPA && htmlContent;
+	let dialog: HTMLDialogElement;
+	let courseDescription: string = "";
+	let courseTitle: string = "";
+	let instructors: string[] = [];
+	let sections: any[] = [];
+
+	let isLoading = true;
 
 	$: if (dialog && showModal) dialog.showModal();
 
 	onMount(async () => {
-		const url = new URL('https://planetterp.com/api/v1/course');
+		isLoading = true;
 
-		url.searchParams.append('name', className);
+		try {
+			const url = new URL(`https://api.umd.io/v1/courses/${className}`);
+			const response = await fetch(url);
+			const data = await response.json();
 
-		fetch(url)
-			.then((response) => response.json())
-			.then((data) => {
-				courseTitle = data.title;
-				if (data.average_gpa == null) {
-					averageGPA = 'N/A';
-				} else {
-					averageGPA = data.average_gpa;
-				}
+			if (Array.isArray(data) && data.length > 0) {
+				const course = data[0];
+				courseDescription =
+					course.description || "No description available";
+				courseTitle = course.name || className;
 
-				const parser = new DOMParser();
-				const htmlDoc = parser.parseFromString(data.description, 'text/html');
+				// Get sections for this course
+				const sectionsUrl = new URL(
+					`https://api.umd.io/v1/courses/${className}/sections`,
+				);
+				const sectionsResponse = await fetch(sectionsUrl);
+				const sectionsData = await sectionsResponse.json();
 
-				htmlContent = htmlDoc.body.innerHTML;
+				// Extract instructors from sections
+				const instructorSet = new Set<string>();
+				sections = sectionsData || [];
 
-				// courseDescription = htmlDoc.body.textContent || '';
-				courseCredits = data.credits;
-			})
-			.catch((error) => {
-				console.log(error);
-				return [];
-			});
-		var uniqueProfs = [] as string[];
-		const url2 = new URL(`https://api.umd.io/v1/courses/${className}/sections`);
-		url2.searchParams.append('semester', '202501');
-		fetch(url2, {
-			method: 'GET'
-		})
-			.then((response) => response.json())
-			.then((data) => {
-				// console.log(data);
-				data.forEach((element: any) => {
-					const instructors = element.instructors;
-					if (instructors != null) {
-						instructors.forEach((prof: string) => {
-							if (!uniqueProfs.includes(prof)) {
-								uniqueProfs.push(prof);
+				sections.forEach((section: any) => {
+					if (Array.isArray(section.instructors)) {
+						section.instructors.forEach((instructor: string) => {
+							if (
+								instructor &&
+								instructor !== "Instructor: TBA"
+							) {
+								instructorSet.add(instructor);
 							}
 						});
 					}
 				});
-				// console.log(uniqueProfs);
-			})
-			.catch((error) => {
-				console.log(error);
-				return [];
-			})
-			.then(() => {
-				uniqueProfs.forEach((element: string) => {
-					const url = new URL('https://planetterp.com/api/v1/professor');
-					url.searchParams.append('name', element);
-					fetch(url)
-						.then((response) => response.json())
-						.then((data) => {
-							courseProfs.set(element, data);
-							courseProfs = new Map(
-								[...courseProfs.entries()].sort((a, b) => b[1].average_rating - a[1].average_rating)
-							);
-						})
-						.catch((error) => {
-							console.log(error);
-							// return [];
-						});
-				});
-			});
 
-		// console.log(prohibitedProfessors);
+				instructors = Array.from(instructorSet);
+			}
+		} catch (error) {
+			console.error("Error fetching course data:", error);
+			courseDescription = "Failed to load course details";
+		} finally {
+			isLoading = false;
+		}
 	});
+
+	// Separate functions for different actions on instructor items
+	function openProfessorModal(profName: string, event: Event) {
+		// Stop event propagation to prevent triggering other handlers
+		event.stopPropagation();
+
+		// First, check if this professor is already in the prohibited list
+		const profIndex = prohibitedProfessors.indexOf(profName);
+
+		if (profIndex !== -1) {
+			// If professor is already prohibited, open their existing modal
+			showProfessorModals[profIndex] = true;
+		} else {
+			// Otherwise, prohibit them first (which adds them to the list)
+			// and then open their modal
+			prohibitProf(profName);
+
+			// Find the index of the newly added professor
+			setTimeout(() => {
+				const newIndex = prohibitedProfessors.indexOf(profName);
+				if (newIndex !== -1) {
+					showProfessorModals[newIndex] = true;
+				}
+			}, 0);
+		}
+
+		// Close the class modal to avoid UI clutter
+		dialog.close();
+	}
+
+	// Function to handle prohibiting professors (with separate event handler)
+	function handleProhibitProfessor(profName: string, event: Event) {
+		// Stop event propagation
+		event.stopPropagation();
+		prohibitProf(profName);
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -101,210 +109,292 @@
 <dialog
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
+	on:click|self={() => closeModal(index)}
+	class="modal"
 >
-	{#if !loaded}
-		<div class="loader"></div>
-	{/if}
-	{#if loaded}
-		<div>
+	<div class="modal-content" on:click|stopPropagation>
+		{#if isLoading}
+			<div class="loading">
+				<div class="spinner"></div>
+				<p>Loading course information...</p>
+			</div>
+		{:else}
 			<div class="modal-header">
-				<h1>{className}</h1>
-				<button
-					on:click={() => {
-						closeModal(index);
-						dialog.close();
-					}}>Close</button
-				>
-				<button
-					on:click={() => {
-						removeClasses(className);
-						dialog.close();
-					}}>Remove {className}</button
-				>
+				<div>
+					<h1>{className}</h1>
+					<h2>{courseTitle}</h2>
+				</div>
+				<div class="button-group">
+					<button
+						class="action-btn danger"
+						on:click={() => {
+							removeClasses(className);
+							dialog.close();
+						}}
+					>
+						Remove Class
+					</button>
+					<button
+						class="close-btn"
+						on:click={() => closeModal(index)}
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<line x1="18" y1="6" x2="6" y2="18"></line>
+							<line x1="6" y1="6" x2="18" y2="18"></line>
+						</svg>
+					</button>
+				</div>
 			</div>
-			<h3>{courseTitle}</h3>
-			<div id="description">
-				{@html htmlContent}
-			</div>
-			<p><b>Credits</b>: {courseCredits}</p>
-			<p><b>Average GPA</b>: {averageGPA}</p>
-			<div class="available-professors">
-				<h2 style="margin-bottom:2vh">Available Professors</h2>
-				{#each Array.from(courseProfs.keys()) as prof}
-					{#if !prohibitedProfessors.includes(prof.toString())}
-						<div class="prof-planet-terp">
-							<div class="prof-info">
-								<h3 style="margin-right:2vh">{prof}</h3>
-								<p style="margin-right:2vh">
-									{parseFloat(courseProfs.get(prof).average_rating).toFixed(2)} Average Rating
-								</p>
-								<a
-									href="https://planetterp.com/professor/{courseProfs.get(prof).slug}"
-									target="_blank">Planet Terp Page</a
-								>
-							</div>
 
-							<button
-								class="button prohibit"
-								on:click={() => {
-									if (!prohibitedProfessors.includes(prof.toString()) && courseProfs.size > 1) {
-										prohibitProf(prof.toString());
-										console.log(prof);
-										showProfessorModals[Array.from(courseProfs.keys()).indexOf(prof)] = true;
-										showProfessorModals = [...showProfessorModals];
-										showModal = false;
-										// dialog.close();
-									}
-								}}>Remove</button
-							>
-						</div>
-					{/if}
-				{/each}
+			<div class="course-description">
+				<h3>Description</h3>
+				<p>{courseDescription}</p>
 			</div>
-		</div>
-	{/if}
+
+			<div class="instructors-section">
+				<h3>Instructors</h3>
+				<div class="instructors-list">
+					{#if instructors.length > 0}
+						{#each instructors as instructor}
+							<div class="instructor-item">
+								<!-- Make instructor name clickable -->
+								<button
+									class="instructor-name-btn"
+									on:click={(e) =>
+										openProfessorModal(instructor, e)}
+								>
+									<span class="instructor-name"
+										>{instructor}</span
+									>
+									<span class="view-details"
+										>View Details</span
+									>
+								</button>
+
+								<button
+									class="instructor-action {prohibitedProfessors.includes(
+										instructor,
+									)
+										? 'prohibited'
+										: ''}"
+									on:click={(e) =>
+										handleProhibitProfessor(instructor, e)}
+									disabled={prohibitedProfessors.includes(
+										instructor,
+									)}
+								>
+									{#if prohibitedProfessors.includes(instructor)}
+										Prohibited
+									{:else}
+										Prohibit
+									{/if}
+								</button>
+							</div>
+						{/each}
+					{:else}
+						<p>No instructors available for this course.</p>
+					{/if}
+				</div>
+			</div>
+		{/if}
+	</div>
 </dialog>
 
 <style>
-	.prof-info {
-		display: flex;
-		flex-direction: column;
+	.modal {
+		max-width: 600px;
+		width: 90%;
+		border-radius: 12px;
+		border: none;
+		padding: 0;
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+		overflow: hidden;
 	}
 
-	.button.prohibit {
-		justify-self: center;
-		background-color: rgb(167, 0, 0);
-		width: fit-content;
-		height: fit-content;
-		font-size: 12px;
-		padding: 0.5vh;
-		margin-right: 1vh;
-	}
-
-	.button.prohibit:hover {
-		background-color: rgb(255, 0, 0);
+	.modal-content {
+		padding: 24px;
+		max-height: 85vh;
+		overflow-y: auto;
 	}
 
 	.modal-header {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		align-items: flex-start;
+		margin-bottom: 24px;
+		border-bottom: 1px solid #eee;
+		padding-bottom: 16px;
 	}
 
 	.modal-header h1 {
 		margin: 0;
-		flex-grow: 1;
+		font-size: 1.8rem;
+		color: #e21833;
 	}
 
-	.modal-header button {
-		margin-left: 10px;
+	.modal-header h2 {
+		margin: 4px 0 0 0;
+		font-size: 1.2rem;
+		color: #333;
 	}
 
-	.prof-planet-terp {
+	.button-group {
 		display: flex;
-		flex-direction: row;
-		margin-bottom: 1vh;
-		background-color: rgba(177, 177, 177, 0.25);
-		border: 2px solid rgba(177, 177, 177, 0.808);
-		border-radius: 15px;
-		padding: 1vh;
-		width: max-content;
+		gap: 8px;
+		align-items: center;
 	}
-	dialog {
-		max-width: 50%;
-		border-radius: 0.2em;
+
+	.close-btn {
+		background: transparent;
 		border: none;
-		padding: 0;
+		cursor: pointer;
+		padding: 6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		transition: background-color 0.2s;
 	}
-	dialog::backdrop {
-		background: rgba(0, 0, 0, 0.3);
+
+	.close-btn:hover {
+		background-color: rgba(0, 0, 0, 0.05);
 	}
-	dialog > div {
-		padding: 1em;
-	}
-	dialog[open] {
-		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-	@keyframes zoom {
-		from {
-			transform: scale(0.95);
-		}
-		to {
-			transform: scale(1);
-		}
-	}
-	dialog[open]::backdrop {
-		animation: fade 0.2s ease-out;
-	}
-	@keyframes fade {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-	button {
-		background-color: #a8a8a8; /* Green */
+
+	.action-btn {
+		background-color: #e21833;
 		border: none;
 		color: white;
-		padding: 15px 32px;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 16px;
-		margin: 4px 2px;
+		padding: 8px 16px;
+		border-radius: 6px;
+		font-weight: 500;
 		cursor: pointer;
-		border-radius: 4px;
+		transition: background-color 0.2s;
 	}
 
-	button:hover {
-		background-color: #585858;
-	}
-	h2,
-	h3,
-	p {
-		margin: 0;
-		color: #333333;
+	.action-btn:hover {
+		background-color: #c91528;
 	}
 
-	h2 {
-		font-size: 1.5em;
-		font-weight: bold;
+	.action-btn.danger {
+		background-color: #e21833; /* UMD red for danger */
 	}
 
 	h3 {
-		font-size: 1.2em;
-		font-weight: bold;
+		margin: 0 0 12px 0;
+		font-size: 1.1rem;
+		color: #333;
 	}
 
-	p {
-		font-size: 1em;
+	.course-description {
+		margin-bottom: 24px;
+	}
+
+	.course-description p {
 		line-height: 1.5;
-		margin-bottom: 0.5em;
+		color: #444;
 	}
 
-	/* Styling for the available professors section */
-	.available-professors {
-		margin-top: 1em;
+	.instructors-section {
+		margin-top: 24px;
 	}
 
-	.available-professors a {
-		margin-top: 0.5em;
+	.instructors-list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
 	}
 
-	.available-professors p {
-		margin-bottom: 0.2em;
+	.instructor-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px 12px;
+		border: 1px solid #eee;
+		border-radius: 8px;
+		background-color: white; /* Add explicit background color */
 	}
 
-	.loader {
-		border: 16px solid #f3f3f3; /* Light grey */
-		border-top: 16px solid #3498db; /* Blue */
+	/* New style for clickable instructor name button */
+	.instructor-name-btn {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		background: transparent;
+		border: none;
+		padding: 0;
+		gap: 8px;
+		cursor: pointer;
+		text-align: left;
+		flex: 1;
+		transition: color 0.2s;
+	}
+
+	.instructor-name-btn:hover {
+		color: #e21833;
+	}
+
+	.instructor-name-btn:hover .view-details {
+		opacity: 1;
+	}
+
+	.instructor-name {
+		font-weight: 500;
+	}
+
+	.view-details {
+		font-size: 0.75rem;
+		color: #666;
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
+
+	.instructor-action {
+		background: #f0f0f0;
+		border: none;
+		padding: 6px 12px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 0.9rem;
+		transition: background-color 0.2s;
+	}
+
+	.instructor-action:hover {
+		background-color: #e0e0e0;
+	}
+
+	.instructor-action.prohibited {
+		background-color: #f8d7da;
+		color: #721c24;
+		cursor: not-allowed;
+	}
+
+	/* Loading indicator */
+	.loading {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 40px 0;
+	}
+
+	.spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid #f3f3f3;
+		border-top: 4px solid #e21833;
 		border-radius: 50%;
-		width: 120px;
-		height: 120px;
-		animation: spin 2s linear infinite;
+		animation: spin 1s linear infinite;
+		margin-bottom: 16px;
 	}
 
 	@keyframes spin {
@@ -313,6 +403,27 @@
 		}
 		100% {
 			transform: rotate(360deg);
+		}
+	}
+
+	/* Modal animations */
+	dialog::backdrop {
+		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(2px);
+	}
+
+	dialog[open] {
+		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes zoom {
+		from {
+			transform: scale(0.95);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
 		}
 	}
 </style>

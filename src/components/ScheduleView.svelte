@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import SectionDetailModal from "./SectionDetailModal.svelte";
 	let dayLabels: any[][] = [[], [], [], [], []];
 	let daysCodes = ["M", "Tu", "W", "Th", "F"];
 	let dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 	export let colorMap: Map<string, string> = new Map<string, string>();
 	export let scheduleData: any;
+	export let scheduleIndex: number = 0;
 
-	let earliestStart = 480; // 8:00 AM in minutes
-	let latestEnd = 1200; // 8:00 PM in minutes
+	// Define more precise time constants for better alignment
+	const hourHeight = 60; // Height in pixels for one hour
+	let earliestStart = 480; // 8:00 AM in minutes from midnight
+	let latestEnd = 1200; // 8:00 PM in minutes from midnight
 	let totalLength = latestEnd - earliestStart;
+	let scheduleHeight = 800; // Overall height of the schedule container
 
-	// Generate time labels for the schedule
+	// Generate time labels for the schedule with more precision
 	let timeLabels: string[] = [];
 	for (let i = earliestStart; i <= latestEnd; i += 60) {
 		const hour = Math.floor(i / 60);
@@ -20,7 +25,26 @@
 		timeLabels.push(`${displayHour}:00 ${meridiem}`);
 	}
 
-	let scheduleHeight = 800; // Increased from 700px
+	let showSectionModal = false;
+	let selectedSectionId = "";
+	let selectedCourseId = "";
+
+	// Function to open section details
+	function openSectionDetails(courseId: string, sectionId: string) {
+		selectedCourseId = courseId;
+		selectedSectionId = sectionId;
+		showSectionModal = true;
+	}
+
+	// Function to close section modal
+	function closeSectionModal() {
+		showSectionModal = false;
+		// Don't reset the IDs until after animation completes
+		setTimeout(() => {
+			selectedSectionId = "";
+			selectedCourseId = "";
+		}, 300);
+	}
 
 	onMount(() => {
 		// Process schedule data
@@ -164,11 +188,15 @@
 		}).format(date);
 	};
 
+	// Improved slot time calculation for precise alignment with the grid
 	const calculateSlotTimes = (startDate: Date, endDate: Date) => {
 		const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
 		const endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
+
+		// Calculate percentage values with respect to grid dimensions
 		const startSlot = ((startMinutes - earliestStart) / totalLength) * 100;
 		const length = ((endMinutes - startMinutes) / totalLength) * 100;
+
 		return { startSlot, length };
 	};
 
@@ -176,14 +204,15 @@
 		return day.sort((a, b) => a.start - b.start);
 	}
 
+	// Update the detail levels to always include time and location
 	function shouldShowDetails(length: number) {
-		// For very small slots, we'll only show class name (less than 30 minutes)
+		// For very small slots (less than 30 minutes)
 		if (length < 4) return 0;
-		// For small slots (30-45 minutes), show compact info
+		// For small slots (30-45 minutes)
 		if (length < 8) return 1;
-		// For medium slots (45-75 minutes), show more info
+		// For medium slots (45-75 minutes)
 		if (length < 12) return 2;
-		// For large slots (75+ minutes), show all details
+		// For large slots (75+ minutes)
 		return 3;
 	}
 
@@ -203,13 +232,52 @@
 
 		return names[0]; // Just return the first name
 	}
+
+	// Function to calculate average professor rating
+	function calculateAverageRating(): string {
+		if (!scheduleData) return "N/A";
+
+		let totalRating = 0;
+		let countRated = 0;
+
+		Object.keys(scheduleData).forEach((className) => {
+			if (
+				scheduleData[className] &&
+				scheduleData[className]["prof_weight"]
+			) {
+				totalRating += parseFloat(
+					scheduleData[className]["prof_weight"],
+				);
+				countRated++;
+			}
+		});
+
+		if (countRated === 0) return "N/A";
+		return (totalRating / countRated).toFixed(2);
+	}
+
+	// Calculate the average rating when the component initializes
+	const avgProfRating = calculateAverageRating();
 </script>
 
+<!-- Add a header above the schedule container -->
+<div class="schedule-header">
+	<div class="schedule-info">
+		<h3 class="schedule-number">Schedule #{scheduleIndex + 1}</h3>
+		<div class="rating-badge">
+			<span class="rating-label">Avg. Professor Rating:</span>
+			<span class="rating-value">{avgProfRating} ⭐</span>
+		</div>
+	</div>
+</div>
+
 <div class="schedule-container" style="height: {scheduleHeight}px;">
-	<!-- Time labels column -->
+	<!-- Time labels column - ensure exact height matching grid lines -->
 	<div class="time-labels">
-		{#each timeLabels as time}
-			<div class="time-label">{time}</div>
+		{#each timeLabels as time, i}
+			<div class="time-label" style="height: {hourHeight}px;">
+				{time}
+			</div>
 		{/each}
 	</div>
 
@@ -224,18 +292,23 @@
 
 		<!-- Schedule grid with column grid lines -->
 		<div class="schedule-grid">
-			<!-- Time grid lines -->
+			<!-- Time grid lines - explicit height matching time labels -->
 			<div class="grid-lines">
-				{#each timeLabels as time}
-					<div class="grid-line"></div>
+				{#each timeLabels as time, i}
+					<div
+						class="grid-line"
+						style="height: {hourHeight}px;"
+					></div>
 				{/each}
 			</div>
 
 			<!-- Day columns -->
 			{#each daysCodes as day, i}
 				<div class="schedule-column">
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					{#each formatSlots(dayLabels[i] || []) as slot}
 						{@const detailLevel = shouldShowDetails(slot.length)}
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<div
 							class="schedule-slot"
 							style="
@@ -246,23 +319,43 @@
 								? `left: ${slot.horizontalPosition * (100 / slot.totalOverlap)}%; 
 									 width: ${100 / slot.totalOverlap}%;`
 								: 'left: 2px; right: 2px;'}
-							"
+								"
+							on:click={() =>
+								openSectionDetails(
+									slot.class,
+									`${slot.class}-${slot.sectionCode}`,
+								)}
 						>
 							<div class="slot-content">
-								<!-- Detail level 0: Very small slots -->
+								<!-- Detail level 0: Very small slots - stack class and time -->
 								{#if detailLevel === 0}
-									<div class="slot-header slot-header-mini">
-										{slot.class}
+									<div class="horizontal-info">
+										<span class="class-name"
+											>{slot.class}</span
+										>
+										<span class="mini-time"
+											>{slot.startTime.replace(
+												":00",
+												"",
+											)}</span
+										>
 									</div>
-									<!-- Detail level 1: Small slots (compact horizontal layout) -->
+
+									<!-- Detail level 1: Small slots - stack horizontally -->
 								{:else if detailLevel === 1}
-									<div class="slot-header compact">
+									<div class="class-row">
 										<span class="class-name"
 											>{slot.class}</span
 										>
+										<span class="section-number"
+											>§{slot.sectionCode}</span
+										>
 									</div>
-									<div class="compact-info">
-										<span class="time-compact"
+									<div class="info-row">
+										<span class="slot-location"
+											>{slot.location.split(" ")[0]}</span
+										>
+										<span class="slot-time"
 											>{slot.startTime.replace(
 												":00",
 												"",
@@ -271,13 +364,11 @@
 												"",
 											)}</span
 										>
-										<span class="section-compact"
-											>§{slot.sectionCode}</span
-										>
 									</div>
-									<!-- Detail level 2: Medium slots -->
+
+									<!-- Detail level 2: Medium slots - more horizontal stacking -->
 								{:else if detailLevel === 2}
-									<div class="slot-header">
+									<div class="class-row">
 										<span class="class-name"
 											>{slot.class}</span
 										>
@@ -285,10 +376,13 @@
 											>§{slot.sectionCode}</span
 										>
 									</div>
-									<!-- Combined time and location in one row -->
-									<div class="combined-row">
-										<span>{slot.location}</span>
-										<span
+									<div class="info-row">
+										<span class="slot-location"
+											>{slot.location}</span
+										>
+									</div>
+									<div class="info-row">
+										<span class="slot-time"
 											>{slot.startTime.replace(
 												":00",
 												"",
@@ -298,13 +392,10 @@
 											)}</span
 										>
 									</div>
-									<!-- Professor name only (no rating) -->
-									<div class="slot-professor">
-										{formatProfName(slot.professor)}
-									</div>
-									<!-- Detail level 3: Full details for large slots -->
+
+									<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
 								{:else}
-									<div class="slot-header">
+									<div class="class-row">
 										<span class="class-name"
 											>{slot.class}</span
 										>
@@ -312,26 +403,15 @@
 											>§{slot.sectionCode}</span
 										>
 									</div>
-
-									<div class="slot-time">
-										{slot.startTime} - {slot.endTime}
-									</div>
-
-									<div class="slot-location">
-										{slot.location}
-									</div>
-
-									<div class="slot-professor">
-										<span class="prof-name"
-											>{slot.professor}</span
+									<div class="info-row">
+										<span class="slot-location"
+											>{slot.location}</span
 										>
-										{#if slot.prof_rating}
-											<span class="slot-rating">
-												{Number(
-													slot.prof_rating,
-												).toFixed(1)} ⭐
-											</span>
-										{/if}
+									</div>
+									<div class="info-row">
+										<span class="slot-time"
+											>{slot.startTime}-{slot.endTime}</span
+										>
 									</div>
 								{/if}
 							</div>
@@ -358,6 +438,15 @@
 	</div>
 </div>
 
+{#if showSectionModal}
+	<SectionDetailModal
+		showModal={showSectionModal}
+		sectionId={selectedSectionId}
+		courseId={selectedCourseId}
+		on:close={closeSectionModal}
+	/>
+{/if}
+
 <style>
 	.schedule-container {
 		display: flex;
@@ -369,26 +458,30 @@
 		overflow: hidden;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 		box-sizing: border-box;
+		border-top-left-radius: 0;
+		border-top-right-radius: 0;
+		position: relative; /* Add this for better positioning context */
 	}
 
 	.time-labels {
 		width: 80px;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		padding-top: 50px; /* Match the day-headers height */
+		padding-top: 50px; /* Match the day-headers height exactly */
 		background-color: #f9f9f9;
 		border-right: 1px solid #eaeaea;
+		z-index: 2; /* Keep time labels above grid for visual clarity */
 	}
 
 	.time-label {
-		height: 60px;
+		/* height: 60px; - Now set via inline style for exact matching */
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-size: 0.8rem;
 		color: #666;
 		border-bottom: 1px dashed #eaeaea;
+		box-sizing: border-box; /* Ensure border is included in height calculation */
 	}
 
 	.grid-container {
@@ -402,9 +495,10 @@
 	.day-headers {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		height: 50px;
+		height: 50px; /* Fixed height to match padding-top of time-labels */
 		background-color: #e21833;
 		color: white;
+		z-index: 2; /* Keep headers above grid */
 	}
 
 	.day-header {
@@ -439,8 +533,9 @@
 
 	.grid-line {
 		position: relative;
-		height: 60px;
+		/* height: 60px; - Now set via inline style for exact matching */
 		border-bottom: 1px dashed #eaeaea;
+		box-sizing: border-box; /* Ensure border is included in height calculation */
 	}
 
 	.schedule-column {
@@ -459,12 +554,13 @@
 		right: 2px;
 		border-radius: 6px;
 		color: #333;
-		padding: 1px;
+		padding: 4px;
 		box-sizing: border-box;
 		overflow: hidden;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		transition: all 0.25s ease;
 		z-index: 1;
+		/* No need for any additional margins that might throw off alignment */
 	}
 
 	.schedule-slot:hover {
@@ -483,64 +579,39 @@
 		padding: 4px;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
-		font-size: 0.8rem;
+		gap: 2px;
 		overflow: hidden;
 	}
 
-	.slot-header {
-		font-weight: bold;
-		font-size: 0.9rem;
-		margin-bottom: 2px;
+	.slot-info {
 		display: flex;
-		justify-content: space-between;
-		align-items: center;
+		flex-direction: column;
+		gap: 2px;
 		overflow: hidden;
 	}
 
-	.slot-header-mini {
-		justify-content: center;
-		text-align: center;
-		font-size: 0.65rem;
-		font-weight: bold;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		padding: 1px;
-		line-height: 1.1;
-		height: 100%;
-		display: flex;
-		align-items: center;
-	}
-
+	/* Class name is the only bold element */
 	.class-name {
+		font-weight: bold;
+		font-size: 0.8rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		flex: 1;
 	}
 
-	.section-number {
-		font-size: 0.7rem;
-		opacity: 0.9;
-		font-weight: normal;
-		padding-left: 4px;
-		white-space: nowrap;
-	}
-
+	/* All other text is consistent weight and size */
+	.section-number,
 	.slot-location,
-	.slot-professor,
 	.slot-time {
+		font-weight: normal;
+		font-size: 0.75rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		font-size: 0.75rem;
-		line-height: 1.3;
+		color: #333;
 	}
 
-	.slot-time {
-		font-weight: 500;
-	}
+	/* Remove any specific styling for different detail levels */
 
 	.slot-tooltip {
 		display: none;
@@ -573,37 +644,26 @@
 
 	/* Making the schedule more responsive */
 	@media (min-width: 1200px) {
-		.slot-content {
-			font-size: 0.85rem;
-			padding: 10px;
+		.class-name {
+			font-size: 0.95rem;
 		}
 
-		.slot-header {
-			font-size: 1rem;
+		.section-number,
+		.slot-location,
+		.slot-time {
+			font-size: 0.85rem;
 		}
 	}
 
 	@media (max-width: 768px) {
-		.schedule-container {
-			height: 650px;
-		}
-
-		.time-labels {
-			width: 50px;
-		}
-
-		.time-label {
-			font-size: 0.65rem;
-		}
-
-		.slot-content {
-			padding: 3px;
-			font-size: 0.65rem;
-		}
-
-		.slot-header {
+		.class-name {
 			font-size: 0.75rem;
-			margin-bottom: 1px;
+		}
+
+		.section-number,
+		.slot-location,
+		.slot-time {
+			font-size: 0.7rem;
 		}
 	}
 
@@ -628,6 +688,14 @@
 		opacity: 0.8;
 	}
 
+	.location-compact {
+		font-size: 0.6rem;
+		opacity: 0.8;
+		max-width: 40%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
 	/* Combined row for medium slots */
 	.combined-row {
 		display: flex;
@@ -649,5 +717,143 @@
 
 	.combined-row span:last-child {
 		text-align: right;
+	}
+
+	/* Schedule header styling */
+	.schedule-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px 16px;
+		background-color: #f8f8f8;
+		border-top-left-radius: 8px;
+		border-top-right-radius: 8px;
+		border-bottom: 2px solid #e21833;
+		margin-bottom: -1px; /* Connect with schedule container */
+	}
+
+	.schedule-info {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		align-items: center;
+	}
+
+	.schedule-number {
+		margin: 0;
+		color: #333;
+		font-size: 1.2rem;
+		font-weight: 600;
+	}
+
+	.rating-badge {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background-color: white;
+		padding: 6px 12px;
+		border-radius: 20px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	}
+
+	.rating-label {
+		color: #666;
+		font-size: 0.9rem;
+	}
+
+	.rating-value {
+		color: #e21833;
+		font-weight: bold;
+		font-size: 1rem;
+	}
+
+	/* Add a spacer style for larger slots */
+	.slot-spacer {
+		flex-grow: 1;
+		min-height: 8px;
+	}
+
+	/* Improved slot content layout */
+	.slot-content {
+		height: 100%;
+		width: 100%;
+		padding: 4px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		overflow: hidden;
+	}
+
+	/* Horizontal information layout */
+	.horizontal-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.class-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.info-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		overflow: hidden;
+		font-size: 0.75rem;
+	}
+
+	/* Class name is the only bold element */
+	.class-name {
+		font-weight: bold;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		flex: 1;
+	}
+
+	.mini-time {
+		font-size: 0.7rem;
+		white-space: nowrap;
+		margin-left: 4px;
+	}
+
+	/* Section number now positioned inline */
+	.section-number {
+		font-size: 0.7rem;
+		opacity: 0.9;
+		font-weight: normal;
+		white-space: nowrap;
+		padding-left: 4px;
+		flex-shrink: 0;
+	}
+
+	/* All other text is consistent weight and size */
+	.slot-location,
+	.slot-time {
+		font-weight: normal;
+		font-size: 0.75rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.slot-location {
+		flex: 1;
+		text-align: left;
+	}
+
+	.slot-time {
+		text-align: right;
+		flex-shrink: 0;
+		margin-left: 4px;
 	}
 </style>
