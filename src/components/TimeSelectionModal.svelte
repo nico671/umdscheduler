@@ -1,234 +1,319 @@
 <script lang="ts">
-	export let prohibitedTimes = [] as Map<string, string>[];
+	import { createEventDispatcher } from "svelte";
+
+	export let showTimeSelectionModal = false;
+	// Changed to const export with proper type since it's not being used inside the component
+	export const prohibitedTimes: Array<any> = [];
+
 	let dialog: HTMLDialogElement;
-	export let showTimeSelectionModal: boolean;
-	function appendAMPM(value: string) {
-		// console.log(value)//;
-		var timeSplit = value.split(':');
-		var hours = parseInt(timeSplit[0]);
-		var minutes = timeSplit[1];
-		var meridian = '';
-		if (hours > 12) {
-			meridian = 'pm';
-			hours -= 12;
-		} else if (hours < 12) {
-			meridian = 'am';
-			if (hours == 0) {
-				hours = 12;
-			}
-		} else {
-			meridian = 'pm';
-		}
-		return hours + ':' + minutes + meridian;
-	}
+	let selectedDay = "Monday";
+	let startHour = "8";
+	let startMinute = "00";
+	let startAMPM = "AM";
+	let endHour = "9";
+	let endMinute = "00";
+	let endAMPM = "AM";
 
-	function addTime() {
-		let startElement = document.getElementById('start-time') as HTMLInputElement;
-		let endElement = document.getElementById('end-time') as HTMLInputElement;
-		let start = startElement ? startElement.value : '';
-		let end = endElement ? endElement.value : '';
-		start = appendAMPM(start);
-		end = appendAMPM(end);
-		let days = [];
-		if ((document.getElementById('monday') as HTMLInputElement)?.checked) {
-			days.push('M');
-		}
-		if ((document.getElementById('tuesday') as HTMLInputElement)?.checked) {
-			days.push('Tu');
-		}
-		if ((document.getElementById('wednesday') as HTMLInputElement)?.checked) {
-			days.push('W');
-		}
-		if ((document.getElementById('thursday') as HTMLInputElement)?.checked) {
-			days.push('Th');
-		}
-		if ((document.getElementById('friday') as HTMLInputElement)?.checked) {
-			days.push('F');
-		}
-		for (let i = 0; i < days.length; i++) {
-			var tempMap = new Map<string, string>();
-			tempMap.set('start', start);
-			tempMap.set('end', end);
-			tempMap.set('day', days[i]);
-			// console.log(tempMap);
-			if (prohibitedTimes == undefined) {
-				prohibitedTimes = [];
-			}
+	const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+	const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
+	const minutes = ["00", "15", "30", "45"];
+	const ampm = ["AM", "PM"];
 
-			let tempMapStr = JSON.stringify(Array.from(tempMap.entries()));
-			let prohibitedTimesStr = prohibitedTimes.map((timeBlock) =>
-				JSON.stringify(Array.from(timeBlock.entries()))
-			);
+	const dispatch = createEventDispatcher();
 
-			if (!prohibitedTimesStr.includes(tempMapStr)) {
-				// prohibitedTimes.push(tempMap);
-				prohibitedTimes = [...prohibitedTimes, tempMap];
-			}
+	$: if (dialog && showTimeSelectionModal) dialog.showModal();
 
-			// force reset prohibitedTimes
-			prohibitedTimes = [...prohibitedTimes];
-			console.log(prohibitedTimes);
-		}
-
-		// reset values of all inputs
-		startElement.value = '08:00';
-		endElement.value = '08:01';
-		(document.getElementById('monday') as HTMLInputElement).checked = false;
-		(document.getElementById('tuesday') as HTMLInputElement).checked = false;
-		(document.getElementById('wednesday') as HTMLInputElement).checked = false;
-		(document.getElementById('thursday') as HTMLInputElement).checked = false;
-		(document.getElementById('friday') as HTMLInputElement).checked = false;
-		showTimeSelectionModal = false;
+	function closeModal() {
+		dispatch("close");
 		dialog.close();
 	}
 
-	$: if (dialog && showTimeSelectionModal) dialog.showModal();
+	function handleSubmit() {
+		// Convert day to abbreviated form as needed by the backend
+		let dayCode;
+		switch (selectedDay) {
+			case "Monday":
+				dayCode = "M";
+				break;
+			case "Tuesday":
+				dayCode = "Tu";
+				break;
+			case "Wednesday":
+				dayCode = "W";
+				break;
+			case "Thursday":
+				dayCode = "Th";
+				break;
+			case "Friday":
+				dayCode = "F";
+				break;
+		}
+
+		// Convert times to standardized format
+		const startTime = formatTime(startHour, startMinute, startAMPM);
+		const endTime = formatTime(endHour, endMinute, endAMPM);
+
+		// Create the time restriction as a Map
+		const timeRestriction = new Map();
+		timeRestriction.set("days", dayCode);
+		timeRestriction.set("start_time", startTime);
+		timeRestriction.set("end_time", endTime);
+
+		dispatch("add", timeRestriction);
+	}
+
+	function formatTime(hour: string, minute: string, ampm: string) {
+		let hourNum = parseInt(hour);
+
+		// Convert to 24-hour format
+		if (ampm === "PM" && hourNum < 12) {
+			hourNum += 12;
+		} else if (ampm === "AM" && hourNum === 12) {
+			hourNum = 0;
+		}
+
+		// Format as a string
+		return `${hourNum.toString().padStart(2, "0")}:${minute}${ampm.toLowerCase()}`;
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <dialog
 	bind:this={dialog}
-	on:click|self={(event) => {
-		if (event.target === dialog) {
-			dialog.close();
-			showTimeSelectionModal = false;
-		}
-	}}
-	on:keydown|self={(event) => {
-		if (event.key === 'Escape')
-			() => {
-				showTimeSelectionModal = false;
-				dialog.close();
-			};
-	}}
+	on:close={() => (showTimeSelectionModal = false)}
+	on:click|self={closeModal}
+	class="time-modal"
 >
-	<div>
-		<h1>Add Time Block</h1>
-		<p>Enter the start and end times for the block and select the days it should be prohibited.</p>
-		<form>
-			<label for="start-time">Start Time</label>
-			<input
-				type="time"
-				id="start-time"
-				name="appt"
-				value="08:00"
-				min="08:00"
-				max="19:59"
-				required
-			/>
-			<label for="end-time">End Time</label>
-			<input type="time" id="end-time" name="appt" value="08:01" min="08:01" max="20:00" required />
-			<br />
-			<input type="checkbox" id="monday" name="Monday" value="M" class="checkbox-input" />
-			<label for="monday" class="checkbox-label">Monday</label><br />
-			<input type="checkbox" id="tuesday" name="Tuesday" value="Tu" class="checkbox-input" />
-			<label for="tuesday" class="checkbox-label">Tuesday</label><br />
-			<input type="checkbox" id="wednesday" name="Wednesday" value="W" class="checkbox-input" />
-			<label for="wednesday" class="checkbox-label">Wednesday</label><br />
-			<input type="checkbox" id="thursday" name="Thursday" value="Th" class="checkbox-input" />
-			<label for="thursday" class="checkbox-label">Thursday</label><br />
-			<input type="checkbox" id="friday" name="Friday" value="F" class="checkbox-input" />
-			<label for="friday" class="checkbox-label">Friday</label><br />
+	<div class="modal-content" on:click|stopPropagation role="dialog">
+		<div class="modal-header">
+			<h2>Add Time Restriction</h2>
+			<button class="close-btn" on:click={closeModal}>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
+				</svg>
+			</button>
+		</div>
+
+		<form on:submit|preventDefault={handleSubmit}>
+			<div class="form-group">
+				<label for="day">Day:</label>
+				<select id="day" bind:value={selectedDay}>
+					{#each days as day}
+						<option value={day}>{day}</option>
+					{/each}
+				</select>
+			</div>
+
+			<div class="time-section">
+				<h3>Start Time:</h3>
+				<div class="time-inputs">
+					<select bind:value={startHour}>
+						{#each hours as hour}
+							<option value={hour}>{hour}</option>
+						{/each}
+					</select>
+					<span>:</span>
+					<select bind:value={startMinute}>
+						{#each minutes as minute}
+							<option value={minute}>{minute}</option>
+						{/each}
+					</select>
+					<select bind:value={startAMPM}>
+						{#each ampm as period}
+							<option value={period}>{period}</option>
+						{/each}
+					</select>
+				</div>
+			</div>
+
+			<div class="time-section">
+				<h3>End Time:</h3>
+				<div class="time-inputs">
+					<select bind:value={endHour}>
+						{#each hours as hour}
+							<option value={hour}>{hour}</option>
+						{/each}
+					</select>
+					<span>:</span>
+					<select bind:value={endMinute}>
+						{#each minutes as minute}
+							<option value={minute}>{minute}</option>
+						{/each}
+					</select>
+					<select bind:value={endAMPM}>
+						{#each ampm as period}
+							<option value={period}>{period}</option>
+						{/each}
+					</select>
+				</div>
+			</div>
+
+			<div class="button-container">
+				<button type="button" class="cancel-btn" on:click={closeModal}
+					>Cancel</button
+				>
+				<button type="submit" class="add-btn">Add Restriction</button>
+			</div>
 		</form>
-		<button on:click|stopPropagation={addTime}>Submit</button>
 	</div>
 </dialog>
 
 <style>
-	dialog:not([open]) {
-		display: none;
-	}
-
-	dialog {
-		width: 75vh;
-		height: 75vh;
-		padding: 10px;
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
+	.time-modal {
+		max-width: 450px;
+		width: 90%;
+		border-radius: 12px;
+		border: none;
+		padding: 0;
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 		overflow: hidden;
 	}
 
-	form {
+	.modal-content {
+		padding: 24px;
+	}
+
+	.modal-header {
 		display: flex;
-		flex-direction: column;
-		width: 30%;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 20px;
 	}
 
-	#start-time,
-	#end-time {
-		/* Styles for the start and end time inputs */
-		padding: 10px;
-		margin-bottom: 10px;
+	.modal-header h2 {
+		margin: 0;
+		color: #222;
 	}
 
-	#monday,
-	#tuesday,
-	#wednesday,
-	#thursday,
-	#friday {
-		/* Styles for the weekday checkboxes */
-		margin: 5px;
-	}
-
-	.checkbox-input {
-		position: absolute;
-		opacity: 0;
-		height: 0;
-		width: 0;
-	}
-
-	/* Style the label */
-	.checkbox-label {
-		position: relative;
-		padding-left: 25px;
+	.close-btn {
+		background: transparent;
+		border: none;
 		cursor: pointer;
+		padding: 4px;
+		display: flex;
+		color: #666;
+		transition: color 0.2s;
 	}
 
-	/* Add a custom box */
-	.checkbox-label::before {
-		content: '';
-		position: absolute;
-		left: 0;
-		top: 0;
-		height: 20px;
-		width: 20px;
-		border: 1px solid #000;
+	.close-btn:hover {
+		color: #222;
 	}
 
-	/* Add a custom checkmark */
-	.checkbox-input:checked + .checkbox-label::after {
-		content: '';
-		position: absolute;
-		left: 5px;
-		top: 5px;
-		height: 10px;
-		width: 10px;
-		background-color: #000;
+	.form-group {
+		margin-bottom: 20px;
 	}
 
-	button {
-		align-self: center;
-		padding: 10px 20px;
-		background-color: #4caf50; /* Green */
+	.form-group label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 500;
+	}
+
+	select {
+		width: 100%;
+		padding: 10px 12px;
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		font-size: 16px;
+		appearance: auto;
+	}
+
+	.time-section {
+		margin-bottom: 20px;
+	}
+
+	.time-section h3 {
+		margin: 0 0 8px 0;
+		font-size: 16px;
+		font-weight: 500;
+	}
+
+	.time-inputs {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.time-inputs select {
+		width: auto;
+	}
+
+	.time-inputs span {
+		font-weight: bold;
+	}
+
+	.button-container {
+		display: flex;
+		gap: 12px;
+		justify-content: flex-end;
+		margin-top: 24px;
+	}
+
+	.cancel-btn {
+		background-color: #f0f0f0;
+		border: none;
+		padding: 10px 16px;
+		border-radius: 6px;
+		cursor: pointer;
+		font-weight: 500;
+	}
+
+	.add-btn {
+		background-color: #e21833;
 		border: none;
 		color: white;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 16px;
-		margin: 4px 2px;
+		padding: 10px 16px;
+		border-radius: 6px;
 		cursor: pointer;
+		font-weight: 500;
 	}
 
-	p {
-		margin: 0;
+	.add-btn:hover {
+		background-color: #c91528;
 	}
 
-	h1 {
-		font-size: 1.5em;
-		font-weight: bold;
-		margin-bottom: 0;
+	dialog::backdrop {
+		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(2px);
+	}
+
+	dialog[open] {
+		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	@keyframes zoom {
+		from {
+			transform: scale(0.95);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+
+	dialog[open]::backdrop {
+		animation: fade 0.2s ease-out;
+	}
+
+	@keyframes fade {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 </style>
