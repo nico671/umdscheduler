@@ -76,7 +76,7 @@ def is_valid(value, assignment):
             check_overlap(value, assigned_value)
             and value["section_id"] != assigned_value["section_id"]
         ):
-            print("tghere is an overlap")
+            # print("there is an overlap")
             return False
 
     # TODO: check for credit limits / minimums
@@ -100,9 +100,10 @@ def clean_sections(sections, restrictions):
             for meeting in section["meetings"]:
                 if restrictions["prohibitedTimes"]:
                     for time in restrictions["prohibitedTimes"]:
-                        if time["day"] in meeting["days"]:
-                            start_time = parse_time(time["start"])
-                            end_time = parse_time(time["end"])
+                        # print(time)
+                        if time["days"] in meeting["days"]:
+                            start_time = parse_time(time["start_time"])
+                            end_time = parse_time(time["end_time"])
                             start_time2 = parse_time(meeting["start_time"])
                             end_time2 = parse_time(meeting["end_time"])
                             if (start_time < end_time2) and (start_time2 < end_time):
@@ -162,7 +163,7 @@ def create_schedule(wanted_classes, restrictions):
         parameters = {
             "course_id": course,
             # TODO: need to make this based on restrictions
-            "semester": "202501",
+            "semester": "202508",
         }
 
         try:
@@ -205,5 +206,5 @@ def create_schedule(wanted_classes, restrictions):
     if len(res) == 0:
         print("No possible schedules found")
         return {"error": "No possible schedules found"}
-    print("sorted", sorted(res, key=lambda d: d["prof_weight"]))
+    # print("sorted", sorted(res, key=lambda d: d["prof_weight"]))
     return sorted(res, key=lambda d: d["prof_weight"])
