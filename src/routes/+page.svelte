@@ -29,6 +29,7 @@
 	let schedules: any[] = [];
 	let sortOption = "rating"; // Default sort option
 	let error: string | null = null;
+	let viewProfessorInfo: { name: string; showModal: boolean }[] = [];
 
 	// Theme colors
 	const umdRed = "#e21833";
@@ -332,6 +333,35 @@
 		showProfessorModals = [...showProfessorModals];
 	}
 
+	function viewProfessorDetails(profName: string) {
+		// Check if we're already tracking this professor
+		const existingIndex = viewProfessorInfo.findIndex(
+			(p) => p.name === profName,
+		);
+
+		if (existingIndex >= 0) {
+			// Update existing entry
+			viewProfessorInfo[existingIndex].showModal = true;
+			viewProfessorInfo = [...viewProfessorInfo];
+		} else {
+			// Add new entry
+			viewProfessorInfo = [
+				...viewProfessorInfo,
+				{
+					name: profName,
+					showModal: true,
+				},
+			];
+		}
+	}
+
+	function closeViewProfessorModal(index: number) {
+		if (viewProfessorInfo[index]) {
+			viewProfessorInfo[index].showModal = false;
+			viewProfessorInfo = [...viewProfessorInfo];
+		}
+	}
+
 	onMount(async () => {
 		// Fetch available classes
 		try {
@@ -438,7 +468,7 @@
 <div class="container">
 	<header class="header">
 		<div class="header-row">
-			<h1 class="header-title">UMD Schedule Generator</h1>
+			<h1 class="header-title">UMDScheduler</h1>
 			<div class="header-actions">
 				<button
 					class="header-button"
@@ -495,7 +525,7 @@
 							class="restriction-button"
 							on:click={() => (showProfessorModals[i] = true)}
 						>
-							{prof} ×
+							{prof}
 						</button>
 					{/each}
 				</div>
@@ -580,7 +610,9 @@
 		showModals={showClassModals}
 		on:close={() => (showAddClassModal = false)}
 		on:add={(event) => {
-			const className = event.detail;
+			const data = event.detail;
+			const className = typeof data === "string" ? data : data.className;
+
 			if (!addedClasses.includes(className)) {
 				// Add the class
 				addedClasses = [...addedClasses, className];
@@ -604,6 +636,12 @@
 				// Update showClassModals array
 				showClassModals = new Array(addedClasses.length).fill(false);
 
+				// If event.detail is an object with showModal set to true, show the modal
+				if (typeof data === "object" && data.showModal) {
+					// Set the modal flag for the newly added class to true
+					showClassModals[addedClasses.length - 1] = true;
+				}
+
 				showAddClassModal = false;
 			}
 		}}
@@ -621,18 +659,34 @@
 			closeModal={closeClassModal}
 			{removeClasses}
 			{prohibitProf}
+			{reAddProfessor}
+			on:viewProfessor={(event) =>
+				viewProfessorDetails(event.detail.professorName)}
 		/>
 	{/if}
 {/each}
 
-{#each prohibitedProfessors as _, i}
+{#each prohibitedProfessors as prof, i}
 	{#if showProfessorModals[i]}
 		<ProfessorModal
-			profName={prohibitedProfessors[i]}
+			profName={prof}
 			{addedClasses}
 			showModal={showProfessorModals[i]}
 			index={i}
 			closeModal={closeProfModal}
+			{reAddProfessor}
+		/>
+	{/if}
+{/each}
+
+{#each viewProfessorInfo as profInfo, i}
+	{#if profInfo.showModal}
+		<ProfessorModal
+			profName={profInfo.name}
+			{addedClasses}
+			showModal={profInfo.showModal}
+			index={i}
+			closeModal={() => closeViewProfessorModal(i)}
 			{reAddProfessor}
 		/>
 	{/if}

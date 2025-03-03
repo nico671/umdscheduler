@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, createEventDispatcher } from "svelte";
+
 	export let className: string;
 	export let showModal: boolean;
 	export let prohibitedProfessors: string[] = [];
@@ -8,21 +9,29 @@
 	export let closeModal: (index: number) => void;
 	export let removeClasses: (className: string) => void;
 	export let prohibitProf: (prof: string) => void;
+	export let reAddProfessor: (prof: string) => void;
+
+	// Create event dispatcher for custom events
+	const dispatch = createEventDispatcher();
 
 	let dialog: HTMLDialogElement;
 	let courseDescription: string = "";
 	let courseTitle: string = "";
 	let instructors: string[] = [];
 	let sections: any[] = [];
-
 	let isLoading = true;
 
+	// Show modal when the showModal prop is true
 	$: if (dialog && showModal) dialog.showModal();
 
 	onMount(async () => {
 		isLoading = true;
+		await fetchCourseData();
+	});
 
+	async function fetchCourseData() {
 		try {
+			// Fetch course info
 			const url = new URL(`https://api.umd.io/v1/courses/${className}`);
 			const response = await fetch(url);
 			const data = await response.json();
@@ -65,41 +74,27 @@
 		} finally {
 			isLoading = false;
 		}
-	});
+	}
 
-	// Complete refactoring of instructor interaction handlers
-	function openProfessorModal(profName: string) {
-		// First, check if this professor is already in the prohibited list
-		const profIndex = prohibitedProfessors.indexOf(profName);
+	// This is a completely new approach that doesn't prohibit professors
+	function viewProfessorDetails(profName: string) {
+		// Tell the parent we want to view this professor
+		dispatch("viewProfessor", { professorName: profName });
 
-		if (profIndex !== -1) {
-			// If professor is already prohibited, open their existing modal
-			showProfessorModals[profIndex] = true;
-		} else {
-			// Otherwise, prohibit them first (which adds them to the list)
-			// and then open their modal
-			prohibitProf(profName);
-
-			// Find the index of the newly added professor
-			setTimeout(() => {
-				const newIndex = prohibitedProfessors.indexOf(profName);
-				if (newIndex !== -1) {
-					showProfessorModals[newIndex] = true;
-				}
-			}, 0);
-		}
-
-		// Close the class modal to avoid UI clutter
+		// Close this modal
 		dialog.close();
 	}
 
-	function handleProhibit(profName: string) {
-		prohibitProf(profName);
+	// Separate function to handle prohibit/allow toggle
+	function toggleProhibition(profName: string) {
+		if (prohibitedProfessors.includes(profName)) {
+			reAddProfessor(profName);
+		} else {
+			prohibitProf(profName);
+		}
 	}
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <dialog
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
@@ -161,20 +156,21 @@
 					{#if instructors.length > 0}
 						{#each instructors as instructor}
 							<div class="instructor-item">
+								<!-- Left side: Name and Details button -->
 								<div class="instructor-info">
-									<span class="instructor-name"
-										>{instructor}</span
-									>
+									<div class="instructor-name">
+										{instructor}
+									</div>
 									<button
 										class="view-details-btn"
 										on:click|stopPropagation={() =>
-											openProfessorModal(instructor)}
+											viewProfessorDetails(instructor)}
 									>
 										View Details
 									</button>
 								</div>
 
-								<!-- Separate prohibited button with its own clear click handler -->
+								<!-- Right side: Prohibit/Allow button -->
 								<button
 									class="instructor-action {prohibitedProfessors.includes(
 										instructor,
@@ -182,13 +178,10 @@
 										? 'prohibited'
 										: ''}"
 									on:click|stopPropagation={() =>
-										handleProhibit(instructor)}
-									disabled={prohibitedProfessors.includes(
-										instructor,
-									)}
+										toggleProhibition(instructor)}
 								>
 									{#if prohibitedProfessors.includes(instructor)}
-										Prohibited
+										Allow
 									{:else}
 										Prohibit
 									{/if}
@@ -325,6 +318,8 @@
 		border-radius: 8px;
 		background-color: white;
 		gap: 12px; /* Add gap between elements */
+		position: static; /* Ensure it doesn't create a positioning context */
+		cursor: default; /* Explicitly non-interactive */
 	}
 
 	.instructor-info {
@@ -337,30 +332,45 @@
 	.instructor-name {
 		font-weight: 500;
 		font-size: 0.9rem;
-		margin-bottom: 4px;
+		margin-bottom: 8px; /* Increase space between name and button */
+		pointer-events: none; /* Completely non-interactive */
 	}
 
+	/* Make view details button more distinct */
 	.view-details-btn {
-		background: none;
-		border: none;
+		background-color: transparent;
+		border: 1px solid #e21833;
 		color: #e21833;
-		font-size: 0.75rem;
-		padding: 0;
+		font-size: 0.8rem;
+		padding: 4px 8px;
+		border-radius: 4px;
 		cursor: pointer;
-		text-decoration: underline;
+		display: inline-block; /* Make it a block element */
+		width: auto;
+		text-decoration: none; /* Remove underline */
+		margin: 0;
 	}
 
+	.view-details-btn:hover {
+		background-color: rgba(226, 24, 51, 0.05);
+	}
+
+	/* Make prohibit/allow button very distinct */
 	.instructor-action {
 		background: #f0f0f0;
-		border: none;
+		border: 1px solid #ddd; /* Add border for clarity */
 		padding: 8px 12px;
 		border-radius: 4px;
 		cursor: pointer;
 		font-size: 0.8rem;
 		white-space: nowrap;
 		font-weight: 500;
-		min-width: 90px; /* Ensure consistent width */
+		min-width: 90px;
+		width: 90px; /* Fixed width rather than percentage */
 		text-align: center;
+		position: relative; /* Create its own stacking context */
+		z-index: 2; /* Ensure it's above other elements */
+		flex-shrink: 0; /* Prevent shrinking */
 	}
 
 	.instructor-action:hover {
@@ -368,9 +378,14 @@
 	}
 
 	.instructor-action.prohibited {
-		background-color: #f8d7da;
-		color: #721c24;
-		cursor: not-allowed;
+		background-color: #e8f4e8; /* Light green background */
+		color: #2a602a; /* Dark green text */
+		cursor: pointer; /* Keep the pointer cursor */
+		border: 1px solid #c8e6c9; /* Light green border */
+	}
+
+	.instructor-action.prohibited:hover {
+		background-color: #d5ebd5; /* Slightly darker green on hover */
 	}
 
 	/* Loading indicator */

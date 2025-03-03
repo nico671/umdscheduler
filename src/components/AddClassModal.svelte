@@ -19,8 +19,8 @@
 
 	function addClass(value: string) {
 		if (!addedClasses.includes(value)) {
-			// Dispatch event to parent
-			dispatch("add", value);
+			// Dispatch event to parent with additional parameter to show modal
+			dispatch("add", { className: value, showModal: true });
 		}
 		classInput = "";
 	}
