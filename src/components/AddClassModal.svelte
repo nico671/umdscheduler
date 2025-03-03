@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from "svelte";
 	import { onMount } from "svelte";
 
-	export let colorMap: Map<string, string> = new Map();
+	export let colorMap: Map<string, string>;
 	export let showAddClassModal: boolean;
 	export let availableClasses: string[] = [];
 	export let addedClasses: string[] = [];
@@ -45,6 +45,7 @@
 	on:click|self={handleCancel}
 	class="modal"
 >
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="modal-content" on:click|stopPropagation>
 		<div class="modal-header">
 			<h1>Add A Class</h1>
@@ -67,6 +68,7 @@
 		</div>
 
 		<div id="search-column">
+			<!-- svelte-ignore a11y-autofocus -->
 			<input
 				class="class-search-bar"
 				bind:value={classInput}

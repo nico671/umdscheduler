@@ -583,13 +583,6 @@
 		overflow: hidden;
 	}
 
-	.slot-info {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		overflow: hidden;
-	}
-
 	/* Class name is the only bold element */
 	.class-name {
 		font-weight: bold;
@@ -667,58 +660,6 @@
 		}
 	}
 
-	/* For compact displays */
-	.compact {
-		margin-bottom: 0;
-	}
-
-	.compact-info {
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.65rem;
-		white-space: nowrap;
-		overflow: hidden;
-	}
-
-	.time-compact {
-		font-weight: 500;
-	}
-
-	.section-compact {
-		opacity: 0.8;
-	}
-
-	.location-compact {
-		font-size: 0.6rem;
-		opacity: 0.8;
-		max-width: 40%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	/* Combined row for medium slots */
-	.combined-row {
-		display: flex;
-		justify-content: space-between;
-		font-size: 0.7rem;
-		white-space: nowrap;
-		overflow: hidden;
-	}
-
-	.combined-row span {
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.combined-row span:first-child {
-		max-width: 60%;
-		text-align: left;
-	}
-
-	.combined-row span:last-child {
-		text-align: right;
-	}
-
 	/* Schedule header styling */
 	.schedule-header {
 		display: flex;
@@ -765,12 +706,6 @@
 		color: #e21833;
 		font-weight: bold;
 		font-size: 1rem;
-	}
-
-	/* Add a spacer style for larger slots */
-	.slot-spacer {
-		flex-grow: 1;
-		min-height: 8px;
 	}
 
 	/* Improved slot content layout */

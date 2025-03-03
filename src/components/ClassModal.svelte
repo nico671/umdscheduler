@@ -67,11 +67,8 @@
 		}
 	});
 
-	// Separate functions for different actions on instructor items
-	function openProfessorModal(profName: string, event: Event) {
-		// Stop event propagation to prevent triggering other handlers
-		event.stopPropagation();
-
+	// Complete refactoring of instructor interaction handlers
+	function openProfessorModal(profName: string) {
 		// First, check if this professor is already in the prohibited list
 		const profIndex = prohibitedProfessors.indexOf(profName);
 
@@ -96,10 +93,7 @@
 		dialog.close();
 	}
 
-	// Function to handle prohibiting professors (with separate event handler)
-	function handleProhibitProfessor(profName: string, event: Event) {
-		// Stop event propagation
-		event.stopPropagation();
+	function handleProhibit(profName: string) {
 		prohibitProf(profName);
 	}
 </script>
@@ -167,28 +161,28 @@
 					{#if instructors.length > 0}
 						{#each instructors as instructor}
 							<div class="instructor-item">
-								<!-- Make instructor name clickable -->
-								<button
-									class="instructor-name-btn"
-									on:click={(e) =>
-										openProfessorModal(instructor, e)}
-								>
+								<div class="instructor-info">
 									<span class="instructor-name"
 										>{instructor}</span
 									>
-									<span class="view-details"
-										>View Details</span
+									<button
+										class="view-details-btn"
+										on:click|stopPropagation={() =>
+											openProfessorModal(instructor)}
 									>
-								</button>
+										View Details
+									</button>
+								</div>
 
+								<!-- Separate prohibited button with its own clear click handler -->
 								<button
 									class="instructor-action {prohibitedProfessors.includes(
 										instructor,
 									)
 										? 'prohibited'
 										: ''}"
-									on:click={(e) =>
-										handleProhibitProfessor(instructor, e)}
+									on:click|stopPropagation={() =>
+										handleProhibit(instructor)}
 									disabled={prohibitedProfessors.includes(
 										instructor,
 									)}
@@ -211,6 +205,13 @@
 </dialog>
 
 <style>
+	/* Remove specific font imports - now handled by global fonts.css */
+
+	/* Apply font to all elements */
+	:global(*) {
+		font-family: "Gotham", "Helvetica Neue", Arial, sans-serif;
+	}
+
 	.modal {
 		max-width: 600px;
 		width: 90%;
@@ -314,58 +315,52 @@
 		gap: 10px;
 	}
 
+	/* Updated instructor item style for better separation */
 	.instructor-item {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 10px 12px;
+		padding: 12px 16px;
 		border: 1px solid #eee;
 		border-radius: 8px;
-		background-color: white; /* Add explicit background color */
+		background-color: white;
+		gap: 12px; /* Add gap between elements */
 	}
 
-	/* New style for clickable instructor name button */
-	.instructor-name-btn {
+	.instructor-info {
 		display: flex;
-		align-items: center;
-		justify-content: flex-start;
-		background: transparent;
-		border: none;
-		padding: 0;
-		gap: 8px;
-		cursor: pointer;
-		text-align: left;
+		flex-direction: column;
+		align-items: flex-start;
 		flex: 1;
-		transition: color 0.2s;
-	}
-
-	.instructor-name-btn:hover {
-		color: #e21833;
-	}
-
-	.instructor-name-btn:hover .view-details {
-		opacity: 1;
 	}
 
 	.instructor-name {
 		font-weight: 500;
+		font-size: 0.9rem;
+		margin-bottom: 4px;
 	}
 
-	.view-details {
+	.view-details-btn {
+		background: none;
+		border: none;
+		color: #e21833;
 		font-size: 0.75rem;
-		color: #666;
-		opacity: 0;
-		transition: opacity 0.2s;
+		padding: 0;
+		cursor: pointer;
+		text-decoration: underline;
 	}
 
 	.instructor-action {
 		background: #f0f0f0;
 		border: none;
-		padding: 6px 12px;
+		padding: 8px 12px;
 		border-radius: 4px;
 		cursor: pointer;
-		font-size: 0.9rem;
-		transition: background-color 0.2s;
+		font-size: 0.8rem;
+		white-space: nowrap;
+		font-weight: 500;
+		min-width: 90px; /* Ensure consistent width */
+		text-align: center;
 	}
 
 	.instructor-action:hover {
