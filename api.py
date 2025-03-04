@@ -1,7 +1,7 @@
 from flask import Flask, make_response, request
 from flask_cors import CORS
 
-import src.scheduler as scheduler
+import scheduler as scheduler
 
 app = Flask(__name__)
 CORS(app, resources={r"/schedule": {"origins": "http://localhost:5173"}})
