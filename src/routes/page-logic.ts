@@ -107,8 +107,8 @@ export async function generateSchedules(): Promise<void> {
     );
 
     try {
-      // Direct fetch to backend - no proxy
-      const response = await fetch("http://127.0.0.1:5000/schedule", {
+      // Direct fetch to backend with updated URL
+      const response = await fetch("https://umdscheduler.onrender.com/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,7 +132,7 @@ export async function generateSchedules(): Promise<void> {
     } catch (fetchError) {
       console.error("Direct fetch failed:", fetchError);
       error.set(
-        `Failed to connect to the backend server. Make sure it's running at http://127.0.0.1:5000 and reload the page.`,
+        `Failed to connect to the backend server. Please try again later.`,
       );
     }
   } catch (err) {
