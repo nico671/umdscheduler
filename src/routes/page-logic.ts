@@ -107,23 +107,23 @@ export async function generateSchedules(): Promise<void> {
     );
 
     try {
-      // Direct fetch to backend with updated URL and origin
+      // Direct fetch to backend with updated configuration for CORS issues
       const response = await fetch("https://umdscheduler.onrender.com/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
-          Origin: "https://umdscheduler.vercel.app"
+          "Accept": "application/json",
         },
         body: JSON.stringify(requestData),
-        mode: "cors",
-        credentials: "omit",
+        mode: "cors", // Keep cors mode
+        // Remove credentials option which can cause issues
       });
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error("Server returned error:", errorText);
         throw new Error(
-          `HTTP error! Status: ${response.status}, Details: ${errorText}`,
+          `Server error: ${response.status}. The schedule generator is currently unavailable. Please try again later.`
         );
       }
 
@@ -131,9 +131,15 @@ export async function generateSchedules(): Promise<void> {
       processScheduleData(data);
     } catch (fetchError) {
       console.error("Direct fetch failed:", fetchError);
-      error.set(
-        `Failed to connect to the backend server. Please try again later.`,
-      );
+
+      // More user-friendly error message
+      if (fetchError instanceof TypeError && fetchError.message.includes('NetworkError')) {
+        error.set("Cannot connect to the schedule generator. This might be due to a network issue or the server is temporarily down.");
+      } else {
+        error.set(
+          `The schedule generator is currently unavailable. Please try again later. (${fetchError instanceof Error ? fetchError.message : 'Unknown error'})`
+        );
+      }
     }
   } catch (err) {
     console.error("Error generating schedules:", err);
