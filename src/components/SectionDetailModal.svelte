@@ -30,7 +30,13 @@
         error = null;
 
         try {
-            const semesterToUse = semesterParam || $currentSemester || "202501";
+            // Always use the provided semester, current semester, or fallback
+            const semesterToUse = semesterParam || $currentSemester || "202401";
+
+            console.log(
+                `Fetching section ${sectionId} details for semester: ${semesterToUse}`,
+            );
+
             const response = await fetch(
                 `https://api.umd.io/v1/courses/sections/${sectionId}?semester=${semesterToUse}`,
             );

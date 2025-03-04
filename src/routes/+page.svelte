@@ -53,8 +53,11 @@
 		// Clear current schedules and classes when semester changes
 		$schedules = [];
 		$generatedSchedules = [];
-		// Reset error
 		$error = null;
+
+		// Clear added classes when semester changes to prevent conflicts
+		$addedClasses = [];
+		$showClassModals = [];
 
 		// Refresh available classes for the new semester
 		fetchAvailableClasses($currentSemester);
@@ -66,6 +69,10 @@
 			const url = new URL("https://api.umd.io/v1/courses/list");
 			url.searchParams.set("sort", "course_id,-credits");
 			url.searchParams.set("semester", semester);
+
+			console.log(
+				`Fetching available classes for semester: ${semester} (${logic.formatSemester(semester)})`,
+			);
 
 			const response = await fetch(url);
 			const data = await response.json();
@@ -83,7 +90,7 @@
 		// Fetch list of available semesters
 		await fetchSemesters();
 
-		// Initial fetch of available classes
+		// Initial fetch of available classes using current semester
 		if ($currentSemester) {
 			fetchAvailableClasses($currentSemester);
 		}
@@ -596,7 +603,7 @@
 	}
 
 	.remove-icon {
-		color: var(--neutral-500);
+		color: var (--neutral-500);
 		width: 12px; /* Smaller icon */
 		height: 12px; /* Smaller icon */
 		min-width: 12px; /* Force size */

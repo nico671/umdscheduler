@@ -578,18 +578,18 @@ export function formatSemester(semesterCode: string): string {
   const month = semesterCode.substring(4, 6);
 
   let season = "Unknown";
-  // UMD semester codes: 01=Winter, 05=Spring, 08=Fall, 12=Summer
+  // Correct UMD semester codes: 01=Spring, 05=Summer, 08=Fall, 12=Winter
   switch (month) {
-    case "01": season = "Winter"; break;
-    case "05": season = "Spring"; break;
+    case "01": season = "Spring"; break;
+    case "05": season = "Summer"; break;
     case "08": season = "Fall"; break;
-    case "12": season = "Summer"; break;
+    case "12": season = "Winter"; break;
   }
 
   return `${season} ${year}`;
 }
 
-// Function to fetch available semesters
+// Function to fetch available semesters with improved handling
 export async function fetchSemesters(): Promise<void> {
   try {
     const response = await fetch("https://api.umd.io/v1/courses/semesters");
@@ -604,55 +604,16 @@ export async function fetchSemesters(): Promise<void> {
       const semestersAsStrings = data.map(item => String(item));
 
       // Sort semesters in descending order (newest first)
-      const sortedSemesters = [...semestersAsStrings].sort((a, b) => {
-        // Ensure we're comparing strings and handle potential invalid values
-        return String(b).localeCompare(String(a));
-      });
+      const sortedSemesters = [...semestersAsStrings].sort((a, b) => String(b).localeCompare(String(a)));
 
-      // Find the current semester (most recent non-future semester)
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+      // Always select most recent semester by default (first in sorted list)
+      const mostRecentSemester = sortedSemesters[0] || "202401"; // Fallback if list is empty
 
-      // Find the most recent semester that isn't in the future
-      let mostRecentSemester = sortedSemesters[0]; // Default to newest
+      console.log(`Setting current semester to: ${mostRecentSemester} (${formatSemester(mostRecentSemester)})`);
 
-      for (const semester of sortedSemesters) {
-        if (semester.length === 6) {
-          const semesterYear = parseInt(semester.substring(0, 4));
-          const semesterMonth = parseInt(semester.substring(4, 6));
-
-          // Convert semester month code to approximate real month
-          // (01=January/Winter, 05=May/Spring, 08=August/Fall, 12=December/Winter session)
-          let realSemesterMonth;
-          switch (semesterMonth) {
-            case 1: realSemesterMonth = 1; break;  // Winter - January
-            case 5: realSemesterMonth = 5; break;  // Spring - May
-            case 8: realSemesterMonth = 8; break;  // Fall - August
-            case 12: realSemesterMonth = 12; break; // Winter session - December
-            default: realSemesterMonth = semesterMonth;
-          }
-
-          // Check if semester is current or past (not future)
-          if (semesterYear < currentYear ||
-            (semesterYear === currentYear && realSemesterMonth <= currentMonth + 2)) { // Allow planning 2 months ahead
-            mostRecentSemester = semester;
-            break; // Found our semester, stop looking
-          }
-        }
-      }
-
+      // Update stores
       availableSemesters.set(sortedSemesters);
-
-      // Set to the most recent practical semester
-      if (mostRecentSemester) {
-        currentSemester.set(mostRecentSemester);
-        console.log(`Using semester: ${formatSemester(mostRecentSemester)}`);
-      } else {
-        // Fallback to Spring 2024 if no appropriate semester found
-        currentSemester.set("202401");
-        console.log("No current semester found, using fallback: Spring 2024");
-      }
+      currentSemester.set(mostRecentSemester);
     } else {
       console.error("Unexpected response format from semesters API:", data);
       currentSemester.set("202401"); // Spring 2024 as fallback
