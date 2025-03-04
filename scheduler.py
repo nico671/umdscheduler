@@ -159,11 +159,11 @@ def create_schedule(wanted_classes, restrictions):
 
     # Call your backtracking function with the input data
     print("Wanted classes:", variables)
+    print("Semester:", restrictions["semester"])
     for course in variables:
         parameters = {
             "course_id": course,
-            # TODO: need to make this based on restrictions
-            "semester": "202508",
+            "semester": restrictions["semester"],
         }
 
         try:
