@@ -15,8 +15,6 @@
 		"test:unit": "vitest"
 	},
 	"devDependencies": {
-		"@event-calendar/core": "^3.8.0",
-		"@event-calendar/time-grid": "^3.8.0",
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
