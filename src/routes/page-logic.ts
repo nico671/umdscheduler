@@ -107,9 +107,8 @@ export async function generateSchedules(): Promise<void> {
     );
 
     try {
-      console.log("Attempting to fetch schedules from backend...");
+      console.log("Attempting to fetch schedules from backend with CORS workaround...");
 
-      // Create a simpler structure to test with
       const simplifiedRequest = {
         wanted_classes: currentAddedClasses,
         semester: selectedSemester || "202508",
@@ -119,52 +118,40 @@ export async function generateSchedules(): Promise<void> {
         }
       };
 
-      // Direct fetch with improved error logging and handling
-      const response = await fetch("https://umdscheduler.onrender.com/schedule", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(simplifiedRequest)
+      // Add jsonp parameter to work around CORS
+      const jsonpCallback = 'jsonp_callback_' + Math.round(100000 * Math.random());
+
+      // Create a JSONP script element instead of using fetch
+      return new Promise((resolve) => {
+        // First, create the global callback function
+        (window as { [key: string]: any })[jsonpCallback] = function (data: any) {
+          // Process the received data
+          console.log("JSONP data received:", data);
+          processScheduleData(data);
+          generatingSchedules.set(false);
+
+          // Clean up
+          document.body.removeChild(script);
+          delete (window as unknown as { [key: string]: unknown })[jsonpCallback];
+          resolve();
+        };
+
+        // Create script tag with the JSONP URL
+        const script = document.createElement('script');
+        const encodedData = encodeURIComponent(JSON.stringify(simplifiedRequest));
+        script.src = `https://umdscheduler.onrender.com/schedule?callback=${jsonpCallback}&data=${encodedData}`;
+        script.onerror = () => {
+          error.set("Failed to connect to the schedule generator. Please try again later.");
+          generatingSchedules.set(false);
+          document.body.removeChild(script);
+          delete (window as unknown as { [key: string]: unknown })[jsonpCallback];
+          resolve();
+        };
+        document.body.appendChild(script);
       });
-
-      // Log detailed information about the response
-      console.log(`Response status: ${response.status}`);
-      console.log(`Response status text: ${response.statusText}`);
-      console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Server error response: ${errorText}`);
-        throw new Error(`Server returned status ${response.status}: ${response.statusText}`);
-      }
-
-      // Try reading the response as text first to debug content issues
-      const responseText = await response.text();
-      console.log("Received raw response:", responseText);
-
-      // Parse the text response manually
-      let data;
-      try {
-        data = JSON.parse(responseText);
-        console.log("Parsed response data:", data);
-        processScheduleData(data);
-      } catch (parseError) {
-        console.error("Error parsing JSON response:", parseError);
-        console.error("Raw response that failed to parse:", responseText);
-        throw new Error("Failed to parse server response. The server might be returning invalid JSON.");
-      }
     } catch (fetchError) {
-      console.error("Fetch operation failed:", fetchError);
-
-      // More detailed error messaging based on the type of error
-      if (fetchError instanceof SyntaxError) {
-        error.set("The server response couldn't be processed. This might be a server configuration issue.");
-      } else if (fetchError instanceof TypeError) {
-        error.set("Network error. Please check your connection or the server might be down.");
-      } else {
-        error.set(`Schedule generation failed: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`);
-      }
+      console.error("JSONP operation failed:", fetchError);
+      error.set("Schedule generation failed. Please try again later.");
     }
   } catch (err) {
     console.error("Error generating schedules:", err);
