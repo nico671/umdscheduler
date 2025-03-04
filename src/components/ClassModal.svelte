@@ -78,27 +78,11 @@
 
 	// This is a completely new approach that doesn't prohibit professors
 	function viewProfessorDetails(profName: string) {
-		// Log the action to help with debugging
-		console.log("View details for professor:", profName);
+		// Tell the parent we want to view this professor
+		dispatch("viewProfessor", { professorName: profName });
 
-		// Create a unique event with all necessary data
-		const detailEvent = {
-			professorName: profName,
-			returnTo: {
-				type: "class",
-				className: className,
-				index: index,
-				timestamp: Date.now(), // Add timestamp to make each event unique
-			},
-		};
-
-		// Dispatch the event to the parent
-		dispatch("viewProfessor", detailEvent);
-
-		// Close this modal (it will be reopened when professor modal closes)
-		if (dialog && dialog.open) {
-			dialog.close();
-		}
+		// Close this modal
+		dialog.close();
 	}
 
 	// Separate function to handle prohibit/allow toggle
