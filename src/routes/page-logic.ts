@@ -107,33 +107,64 @@ export async function generateSchedules(): Promise<void> {
     );
 
     try {
-      // Direct fetch to backend with simplified configuration
+      console.log("Attempting to fetch schedules from backend...");
+
+      // Create a simpler structure to test with
+      const simplifiedRequest = {
+        wanted_classes: currentAddedClasses,
+        semester: selectedSemester || "202508",
+        restrictions: {
+          prohibitedInstructors: currentProhibitedProfessors,
+          prohibitedTimes: formattedProhibitedTimes,
+        }
+      };
+
+      // Direct fetch with improved error logging and handling
       const response = await fetch("https://umdscheduler.onrender.com/schedule", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(simplifiedRequest)
       });
+
+      // Log detailed information about the response
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response status text: ${response.statusText}`);
+      console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Server returned error:", errorText);
-        throw new Error(
-          `Server error: ${response.status}. The schedule generator is currently unavailable. Please try again later.`
-        );
+        console.error(`Server error response: ${errorText}`);
+        throw new Error(`Server returned status ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      processScheduleData(data);
-    } catch (fetchError) {
-      console.error("Direct fetch failed:", fetchError);
+      // Try reading the response as text first to debug content issues
+      const responseText = await response.text();
+      console.log("Received raw response:", responseText);
 
-      // User-friendly error message
-      error.set(
-        `The schedule generator is currently unavailable. Please try again later.`
-      );
+      // Parse the text response manually
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log("Parsed response data:", data);
+        processScheduleData(data);
+      } catch (parseError) {
+        console.error("Error parsing JSON response:", parseError);
+        console.error("Raw response that failed to parse:", responseText);
+        throw new Error("Failed to parse server response. The server might be returning invalid JSON.");
+      }
+    } catch (fetchError) {
+      console.error("Fetch operation failed:", fetchError);
+
+      // More detailed error messaging based on the type of error
+      if (fetchError instanceof SyntaxError) {
+        error.set("The server response couldn't be processed. This might be a server configuration issue.");
+      } else if (fetchError instanceof TypeError) {
+        error.set("Network error. Please check your connection or the server might be down.");
+      } else {
+        error.set(`Schedule generation failed: ${fetchError instanceof Error ? fetchError.message : "Unknown error"}`);
+      }
     }
   } catch (err) {
     console.error("Error generating schedules:", err);
