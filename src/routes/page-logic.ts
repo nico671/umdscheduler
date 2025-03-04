@@ -184,29 +184,29 @@ export function formatTimeRestriction(
   let dayDisplay = "";
   switch (days) {
     case "M":
-      dayDisplay = "Mon";
+      dayDisplay = "M";
       break;
     case "Tu":
-      dayDisplay = "Tue";
+      dayDisplay = "Tu";
       break;
     case "W":
-      dayDisplay = "Wed";
+      dayDisplay = "W";
       break;
     case "Th":
-      dayDisplay = "Thu";
+      dayDisplay = "Th";
       break;
     case "F":
-      dayDisplay = "Fri";
+      dayDisplay = "F";
       break;
     default:
       dayDisplay = days;
   }
 
-  // More compact time display
-  return `${dayDisplay}: ${start}-${end}`;
+  // Even more compact time display
+  return `${dayDisplay}:${start}-${end}`;
 }
 
-// Format time string for display - more compact version
+// Format time string for display - ultra-compact version
 export function formatTimeForDisplay(timeString: string): string {
   // Extract hour and minute from format like "08:00am"
   const match = timeString.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
@@ -214,12 +214,13 @@ export function formatTimeForDisplay(timeString: string): string {
 
   const [_, hour, minute, period] = match;
   const hourNum = parseInt(hour);
+  const periodChar = period.charAt(0).toUpperCase();
 
   // Skip leading zero on hours and only show minutes if not :00
   const hourDisplay = hourNum.toString();
-  const minuteDisplay = minute === "00" ? "" : `:${minute}`;
+  const minuteDisplay = minute === "00" ? "" : minute;
 
-  return `${hourDisplay}${minuteDisplay}${period.toUpperCase()}`;
+  return `${hourDisplay}${minuteDisplay}${periodChar}`;
 }
 
 // Fetch class details and update professor associations

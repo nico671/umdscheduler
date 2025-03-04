@@ -190,25 +190,31 @@
 				<h2 class="restriction-title">Time Restrictions</h2>
 				<div class="restriction-items">
 					{#each $prohibitedTimes as time, i}
-						<button
-							class="restriction-button time-restriction"
-							on:click={() => logic.removeProhibitedTime(i)}
-						>
-							{logic.formatTimeRestriction(time)}
-							<svg
-								class="remove-icon"
-								xmlns="http://www.w3.org/2000/svg"
-								width="14"
-								height="14"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
+						<div class="restriction-button time-restriction">
+							<span class="restriction-text"
+								>{logic.formatTimeRestriction(time)}</span
 							>
-								<line x1="18" y1="6" x2="6" y2="18"></line>
-								<line x1="6" y1="6" x2="18" y2="18"></line>
-							</svg>
-						</button>
+							<button
+								class="remove-btn"
+								on:click|stopPropagation={() =>
+									logic.removeProhibitedTime(i)}
+								aria-label="Remove time restriction"
+							>
+								<svg
+									class="remove-icon"
+									xmlns="http://www.w3.org/2000/svg"
+									width="14"
+									height="14"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+								>
+									<line x1="18" y1="6" x2="6" y2="18"></line>
+									<line x1="6" y1="6" x2="18" y2="18"></line>
+								</svg>
+							</button>
+						</div>
 					{/each}
 				</div>
 			</div>
@@ -523,12 +529,45 @@
 	.time-restriction {
 		background-color: var(--primary-light);
 		border-color: #f8d7dc;
-		padding-right: var(--space-2);
+		cursor: default; /* Change cursor to default since it's not clickable */
+		padding: var(--space-1) var(--space-2); /* Reduced padding */
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-1); /* Reduced gap */
+		font-size: 0.75rem; /* Smaller font size */
+		height: 1.75rem; /* Explicit height to make it smaller */
+		min-height: auto; /* Override any min-height */
+		line-height: 1; /* Tighter line height */
+	}
+
+	.restriction-text {
+		font-size: 0.75rem; /* Smaller font size */
+		white-space: nowrap; /* Prevent text wrapping */
+	}
+
+	.remove-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		padding: 1px; /* Smaller padding */
+		border-radius: 50%;
+		margin-left: var(--space-1);
+		cursor: pointer;
+		transition: background-color var(--transition-fast);
+		width: 16px; /* Explicit width */
+		height: 16px; /* Explicit height */
+		min-width: 16px; /* Ensure it doesn't grow */
 	}
 
 	.remove-icon {
 		color: var(--neutral-500);
-		margin-left: var(--space-1);
+		width: 12px; /* Smaller icon */
+		height: 12px; /* Smaller icon */
+		min-width: 12px; /* Force size */
+		min-height: 12px; /* Force size */
 	}
 
 	/* Empty state */
@@ -684,7 +723,7 @@
 		}
 
 		.app-main {
-			padding: var(--space-3) var(--space-3);
+			padding: var(--space-3) var (--space-3);
 		}
 
 		/* Make buttons stack vertically on very small screens */
