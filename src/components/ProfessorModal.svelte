@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { createEventDispatcher } from "svelte";
+	const dispatch = createEventDispatcher();
 	export let addedClasses: string[];
 	export let showModal: boolean; // boolean
 	let dialog: HTMLDialogElement; // HTMLDialogElement
@@ -9,14 +11,31 @@
 	let reviews: any[] = [];
 	let averageRating: number | string = "N/A";
 	export let index: number;
-	export let closeModal: (index: number) => void;
+	export let closeModal: (index: number, event?: CustomEvent) => void;
 	export let reAddProfessor: (className: string) => void;
 	let isLoading: boolean = true;
+	export let isViewOnly: boolean = false;
+	export let returnTo: {
+		type: string;
+		className?: string;
+		index: number;
+	} | null = null;
 
 	// Check if all data is loaded
 	$: loaded = instructorType && courses && !isLoading;
 
-	$: if (dialog && showModal) dialog.showModal();
+	$: if (dialog && showModal) {
+		// If the dialog is already open, close it first to reset state
+		if (dialog.open) {
+			dialog.close();
+			// Small timeout to ensure the browser has time to process the close
+			setTimeout(() => {
+				dialog.showModal();
+			}, 0);
+		} else {
+			dialog.showModal();
+		}
+	}
 
 	onMount(async () => {
 		console.log(showModal);
@@ -43,14 +62,30 @@
 			if (dialog) dialog.close();
 		}
 	});
+
+	function handleClose() {
+		if (dialog && dialog.open) {
+			dialog.close();
+
+			// Use setTimeout to ensure the dialog is fully closed before calling closeModal
+			setTimeout(() => {
+				closeModal(
+					index,
+					new CustomEvent("close", {
+						detail: { returnTo },
+					}),
+				);
+			}, 0);
+		}
+	}
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <dialog
 	bind:this={dialog}
-	on:close={() => (showModal = false)}
-	on:click|self={() => closeModal(index)}
+	on:close={() => handleClose()}
+	on:click|self={() => handleClose()}
 	class="modal"
 >
 	<div class="modal-content">
@@ -63,19 +98,18 @@
 			<div class="modal-header">
 				<h1>{profName}</h1>
 				<div class="button-group">
-					<button
-						class="action-btn"
-						on:click={() => {
-							reAddProfessor(profName);
-							dialog.close();
-						}}
-					>
-						Allow {instructorType}
-					</button>
-					<button
-						class="close-btn"
-						on:click={() => closeModal(index)}
-					>
+					{#if !isViewOnly}
+						<button
+							class="action-btn"
+							on:click={() => {
+								reAddProfessor(profName);
+								handleClose();
+							}}
+						>
+							Allow {instructorType}
+						</button>
+					{/if}
+					<button class="close-btn" on:click={handleClose}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="24"

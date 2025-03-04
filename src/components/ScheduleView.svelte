@@ -11,10 +11,11 @@
 
 	// Define more precise time constants for better alignment
 	const hourHeight = 60; // Height in pixels for one hour
+	const dayHeaderHeight = 50; // Height of day header
 	let earliestStart = 480; // 8:00 AM in minutes from midnight
 	let latestEnd = 1200; // 8:00 PM in minutes from midnight
-	let totalLength = latestEnd - earliestStart;
-	let scheduleHeight = 800; // Overall height of the schedule container
+	const totalHours = (latestEnd - earliestStart) / 60;
+	const scheduleHeight = totalHours * hourHeight;
 
 	// Generate time labels for the schedule with more precision
 	let timeLabels: string[] = [];
@@ -56,7 +57,7 @@
 					const startDate = createDate(classTime.start_time);
 					const endDate = createDate(classTime.end_time);
 
-					const { startSlot, length } = calculateSlotTimes(
+					const { startPixels, heightPixels } = calculateSlotTimes(
 						startDate,
 						endDate,
 					);
@@ -66,7 +67,7 @@
 							const slot = {
 								sectionCode: scheduleData[element]["number"],
 								days: dayCode,
-								start: startSlot, // percentage
+								startPixels, // pixels
 								startTime: getFormattedTime(startDate),
 								endTime: getFormattedTime(endDate),
 								class: element,
@@ -77,7 +78,7 @@
 								location: `${classTime.building} ${classTime.room}`,
 								prof_rating:
 									scheduleData[element]["prof_weight"],
-								length: length, // percentage
+								heightPixels, // pixels
 								// Add raw time values for overlap detection
 								rawStartTime:
 									startDate.getHours() * 60 +
@@ -193,25 +194,27 @@
 		const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
 		const endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
 
-		// Calculate percentage values with respect to grid dimensions
-		const startSlot = ((startMinutes - earliestStart) / totalLength) * 100;
-		const length = ((endMinutes - startMinutes) / totalLength) * 100;
+		// Calculate position in pixels directly (no percentages)
+		const pixelsPerMinute = hourHeight / 60;
+		const startPixels = (startMinutes - earliestStart) * pixelsPerMinute;
+		const heightPixels = (endMinutes - startMinutes) * pixelsPerMinute;
 
-		return { startSlot, length };
+		return { startPixels, heightPixels };
 	};
 
 	function formatSlots(day: any[]) {
-		return day.sort((a, b) => a.start - b.start);
+		// Change sort from "a.start" to "a.startPixels"
+		return day.sort((a, b) => a.startPixels - b.startPixels);
 	}
 
-	// Update the detail levels to always include time and location
-	function shouldShowDetails(length: number) {
+	// Fix the shouldShowDetails implementation
+	function shouldShowDetails(heightPixels: number) {
 		// For very small slots (less than 30 minutes)
-		if (length < 4) return 0;
+		if (heightPixels < 30) return 0;
 		// For small slots (30-45 minutes)
-		if (length < 8) return 1;
+		if (heightPixels < 45) return 1;
 		// For medium slots (45-75 minutes)
-		if (length < 12) return 2;
+		if (heightPixels < 75) return 2;
 		// For large slots (75+ minutes)
 		return 3;
 	}
@@ -271,9 +274,10 @@
 	</div>
 </div>
 
-<div class="schedule-container" style="height: {scheduleHeight}px;">
-	<!-- Time labels column - ensure exact height matching grid lines -->
-	<div class="time-labels">
+<!-- Redesigned container with CSS Grid for perfect alignment -->
+<div class="schedule-container">
+	<!-- Time labels column with fixed dimensions -->
+	<div class="time-labels" style="padding-top: {dayHeaderHeight}px;">
 		{#each timeLabels as time, i}
 			<div class="time-label" style="height: {hourHeight}px;">
 				{time}
@@ -281,20 +285,20 @@
 		{/each}
 	</div>
 
-	<!-- Grid container -->
-	<div class="grid-container">
-		<!-- Day headers -->
-		<div class="day-headers">
+	<!-- Content area with days and schedule -->
+	<div class="schedule-content">
+		<!-- Day headers with fixed height -->
+		<div class="day-headers" style="height: {dayHeaderHeight}px;">
 			{#each dayNames as day, i}
 				<div class="day-header">{day}</div>
 			{/each}
 		</div>
 
-		<!-- Schedule grid with column grid lines -->
-		<div class="schedule-grid">
-			<!-- Time grid lines - explicit height matching time labels -->
+		<!-- Scrollable grid area with fixed height -->
+		<div class="grid-area" style="height: {scheduleHeight}px;">
+			<!-- Background grid lines -->
 			<div class="grid-lines">
-				{#each timeLabels as time, i}
+				{#each timeLabels as _, i}
 					<div
 						class="grid-line"
 						style="height: {hourHeight}px;"
@@ -302,138 +306,148 @@
 				{/each}
 			</div>
 
-			<!-- Day columns -->
-			{#each daysCodes as day, i}
-				<div class="schedule-column">
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					{#each formatSlots(dayLabels[i] || []) as slot}
-						{@const detailLevel = shouldShowDetails(slot.length)}
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
-						<div
-							class="schedule-slot"
-							style="
-								top: {slot.start}%; 
-								height: {slot.length}%; 
-								background: {colorMap.get(slot.class) || '#f0f0f0'};
-								{slot.horizontalPosition !== undefined
-								? `left: ${slot.horizontalPosition * (100 / slot.totalOverlap)}%; 
-									 width: ${100 / slot.totalOverlap}%;`
-								: 'left: 2px; right: 2px;'}
+			<!-- Day columns with events -->
+			<div class="day-columns">
+				{#each daysCodes as day, i}
+					<div class="schedule-column">
+						{#each formatSlots(dayLabels[i] || []) as slot}
+							<!-- Fix: Calculate detail level for each slot -->
+							{@const detailLevel = shouldShowDetails(
+								slot.heightPixels,
+							)}
+							<!-- Schedule slot with absolute positioning -->
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							<!-- svelte-ignore a11y-no-static-element-interactions -->
+							<div
+								class="schedule-slot"
+								style="
+									top: {slot.startPixels}px; 
+									height: {slot.heightPixels}px; 
+									background: {colorMap.get(slot.class) || '#f0f0f0'};
+									{slot.horizontalPosition !== undefined
+									? `left: ${slot.horizontalPosition * (100 / slot.totalOverlap)}%; 
+											width: ${100 / slot.totalOverlap}%;`
+									: 'left: 2px; right: 2px;'}
 								"
-							on:click={() =>
-								openSectionDetails(
-									slot.class,
-									`${slot.class}-${slot.sectionCode}`,
-								)}
-						>
-							<div class="slot-content">
-								<!-- Detail level 0: Very small slots - stack class and time -->
-								{#if detailLevel === 0}
-									<div class="horizontal-info">
-										<span class="class-name"
-											>{slot.class}</span
-										>
-										<span class="mini-time"
-											>{slot.startTime.replace(
-												":00",
-												"",
-											)}</span
-										>
-									</div>
+								on:click={() =>
+									openSectionDetails(
+										slot.class,
+										`${slot.class}-${slot.sectionCode}`,
+									)}
+							>
+								<div class="slot-content">
+									<!-- Detail level 0: Very small slots - stack class and time -->
+									{#if detailLevel === 0}
+										<div class="horizontal-info">
+											<span class="class-name"
+												>{slot.class}</span
+											>
+											<span class="mini-time"
+												>{slot.startTime.replace(
+													":00",
+													"",
+												)}</span
+											>
+										</div>
 
-									<!-- Detail level 1: Small slots - stack horizontally -->
-								{:else if detailLevel === 1}
-									<div class="class-row">
-										<span class="class-name"
-											>{slot.class}</span
-										>
-										<span class="section-number"
-											>§{slot.sectionCode}</span
-										>
-									</div>
-									<div class="info-row">
-										<span class="slot-location"
-											>{slot.location.split(" ")[0]}</span
-										>
-										<span class="slot-time"
-											>{slot.startTime.replace(
-												":00",
-												"",
-											)}-{slot.endTime.replace(
-												":00",
-												"",
-											)}</span
-										>
-									</div>
+										<!-- Detail level 1: Small slots - stack horizontally -->
+									{:else if detailLevel === 1}
+										<div class="class-row">
+											<span class="class-name"
+												>{slot.class}</span
+											>
+											<span class="section-number"
+												>§{slot.sectionCode}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-location"
+												>{slot.location.split(
+													" ",
+												)[0]}</span
+											>
+											<span class="slot-time"
+												>{slot.startTime.replace(
+													":00",
+													"",
+												)}-{slot.endTime.replace(
+													":00",
+													"",
+												)}</span
+											>
+										</div>
 
-									<!-- Detail level 2: Medium slots - more horizontal stacking -->
-								{:else if detailLevel === 2}
-									<div class="class-row">
-										<span class="class-name"
-											>{slot.class}</span
-										>
-										<span class="section-number"
-											>§{slot.sectionCode}</span
-										>
-									</div>
-									<div class="info-row">
-										<span class="slot-location"
-											>{slot.location}</span
-										>
-									</div>
-									<div class="info-row">
-										<span class="slot-time"
-											>{slot.startTime.replace(
-												":00",
-												"",
-											)}-{slot.endTime.replace(
-												":00",
-												"",
-											)}</span
-										>
-									</div>
+										<!-- Detail level 2: Medium slots - more horizontal stacking -->
+									{:else if detailLevel === 2}
+										<div class="class-row">
+											<span class="class-name"
+												>{slot.class}</span
+											>
+											<span class="section-number"
+												>§{slot.sectionCode}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-location"
+												>{slot.location}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-time"
+												>{slot.startTime.replace(
+													":00",
+													"",
+												)}-{slot.endTime.replace(
+													":00",
+													"",
+												)}</span
+											>
+										</div>
 
-									<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
-								{:else}
-									<div class="class-row">
-										<span class="class-name"
-											>{slot.class}</span
-										>
-										<span class="section-number"
-											>§{slot.sectionCode}</span
-										>
-									</div>
-									<div class="info-row">
-										<span class="slot-location"
-											>{slot.location}</span
-										>
-									</div>
-									<div class="info-row">
-										<span class="slot-time"
-											>{slot.startTime}-{slot.endTime}</span
-										>
-									</div>
-								{/if}
-							</div>
-
-							<!-- Show tooltip on hover for all slots, regardless of size -->
-							<div class="slot-tooltip">
-								<div>
-									<strong>{slot.class}</strong> Section {slot.sectionCode}
-								</div>
-								<div>{slot.startTime} - {slot.endTime}</div>
-								<div>{slot.location}</div>
-								<div>
-									{slot.professor}
-									{#if slot.prof_rating}
-										({Number(slot.prof_rating).toFixed(1)} ⭐)
+										<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
+									{:else}
+										<div class="class-row">
+											<span class="class-name"
+												>{slot.class}</span
+											>
+											<span class="section-number"
+												>§{slot.sectionCode}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-location"
+												>{slot.location}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-time"
+												>{slot.startTime}-{slot.endTime}</span
+											>
+										</div>
 									{/if}
 								</div>
+
+								<!-- Show tooltip on hover for all slots, regardless of size -->
+								<div class="slot-tooltip">
+									<div>
+										<strong>{slot.class}</strong> Section {slot.sectionCode}
+									</div>
+									<div>{slot.startTime} - {slot.endTime}</div>
+									<div>{slot.location}</div>
+									<div>
+										{slot.professor}
+										{#if slot.prof_rating}
+											({Number(slot.prof_rating).toFixed(
+												1,
+											)} ⭐)
+										{/if}
+									</div>
+								</div>
 							</div>
-						</div>
-					{/each}
-				</div>
-			{/each}
+						{/each}
+					</div>
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>
@@ -448,11 +462,12 @@
 {/if}
 
 <style>
+	/* Container uses CSS Grid for precise alignment */
 	.schedule-container {
-		display: flex;
+		display: grid;
+		grid-template-columns: 80px 1fr;
+		grid-template-rows: auto;
 		width: 100%;
-		max-width: 100%;
-		/* Height is now controlled by the scheduleHeight variable */
 		margin-bottom: 40px;
 		border-radius: 8px;
 		overflow: hidden;
@@ -460,45 +475,45 @@
 		box-sizing: border-box;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
-		position: relative; /* Add this for better positioning context */
 	}
 
+	/* Time labels column with exact alignment */
 	.time-labels {
-		width: 80px;
+		position: relative;
 		display: flex;
 		flex-direction: column;
-		padding-top: 50px; /* Match the day-headers height exactly */
 		background-color: #f9f9f9;
 		border-right: 1px solid #eaeaea;
-		z-index: 2; /* Keep time labels above grid for visual clarity */
+		z-index: 2;
+		box-sizing: border-box;
 	}
 
 	.time-label {
-		/* height: 60px; - Now set via inline style for exact matching */
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-size: 0.8rem;
 		color: #666;
 		border-bottom: 1px dashed #eaeaea;
-		box-sizing: border-box; /* Ensure border is included in height calculation */
+		box-sizing: border-box;
+		position: relative;
+		text-align: center;
 	}
 
-	.grid-container {
-		flex: 1;
+	/* Schedule content area containing days and grid */
+	.schedule-content {
 		display: flex;
 		flex-direction: column;
-		overflow: hidden;
-		min-width: 0; /* Allow shrinking below content size if needed */
+		position: relative;
 	}
 
+	/* Day headers with fixed height */
 	.day-headers {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		height: 50px; /* Fixed height to match padding-top of time-labels */
 		background-color: #e21833;
 		color: white;
-		z-index: 2; /* Keep headers above grid */
+		z-index: 2;
 	}
 
 	.day-header {
@@ -509,33 +524,41 @@
 		border-right: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
-	.day-header:last-child {
-		border-right: none;
+	/* Grid area containing both lines and events */
+	.grid-area {
+		position: relative; /* Ensure content is laid out properly */
+		width: 100%;
 	}
 
-	.schedule-grid {
-		position: relative;
-		flex: 1;
-		display: grid;
-		grid-template-columns: repeat(5, 1fr);
-		overflow: hidden;
-	}
-
+	/* Grid lines with exact height matching time labels */
 	.grid-lines {
 		position: absolute;
 		top: 0;
 		left: 0;
 		right: 0;
 		bottom: 0;
-		z-index: 0;
+		z-index: 0; /* Send these behind day-columns */
 		pointer-events: none;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.grid-line {
-		position: relative;
-		/* height: 60px; - Now set via inline style for exact matching */
+		width: 100%;
 		border-bottom: 1px dashed #eaeaea;
-		box-sizing: border-box; /* Ensure border is included in height calculation */
+		box-sizing: border-box;
+	}
+
+	/* Day columns container uses CSS Grid for equal column widths */
+	.day-columns {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		position: relative; /* Keep day-columns within the normal flow */
+		z-index: 1; /* Render above .grid-lines */
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
 	}
 
 	.schedule-column {
@@ -544,14 +567,9 @@
 		height: 100%;
 	}
 
-	.schedule-column:last-child {
-		border-right: none;
-	}
-
+	/* Ensure slots are positioned precisely */
 	.schedule-slot {
 		position: absolute;
-		left: 2px;
-		right: 2px;
 		border-radius: 6px;
 		color: #333;
 		padding: 4px;
@@ -560,7 +578,6 @@
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		transition: all 0.25s ease;
 		z-index: 1;
-		/* No need for any additional margins that might throw off alignment */
 	}
 
 	.schedule-slot:hover {
@@ -579,7 +596,7 @@
 		padding: 4px;
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		/* gap: 2px; */
 		overflow: hidden;
 	}
 
