@@ -53,7 +53,7 @@ export function generateColor(index: number): string {
   return `hsl(${hue}, 70%, 85%)`;
 }
 
-// Generate schedules function - completely reworked
+// Generate schedules function - updated to use the API route proxy
 export async function generateSchedules(): Promise<void> {
   let currentAddedClasses: string[] = [];
   let currentProhibitedTimes: Map<string, string>[] = [];
@@ -100,8 +100,8 @@ export async function generateSchedules(): Promise<void> {
     console.log("Sending schedule request:", requestBody);
 
     try {
-      // Create a more robust direct request
-      const response = await fetch("https://umdscheduler.onrender.com/schedule", {
+      // Use the local API route proxy instead of direct backend call
+      const response = await fetch("/api/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
