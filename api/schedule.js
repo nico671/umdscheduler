@@ -7,7 +7,9 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Forward the request to the actual backend
+        // Forward the request exactly as received to the backend
+        console.log('Forwarding request to backend:', JSON.stringify(req.body));
+
         const response = await fetch('https://umdscheduler.onrender.com/schedule', {
             method: 'POST',
             headers: {
@@ -23,12 +25,14 @@ export default async function handler(req, res) {
             data = await response.json();
         } else {
             data = await response.text();
+            console.log('Non-JSON response:', data);
         }
 
         // Return the response from the backend
         if (!response.ok) {
             return res.status(response.status).json({
                 error: typeof data === 'string' ? data : 'Failed to generate schedules',
+                details: typeof data === 'string' ? undefined : data
             });
         }
 

@@ -53,7 +53,7 @@ export function generateColor(index: number): string {
   return `hsl(${hue}, 70%, 85%)`;
 }
 
-// Generate schedules function - updated to use the API route proxy
+// Generate schedules function - fixed to match backend API requirements
 export async function generateSchedules(): Promise<void> {
   let currentAddedClasses: string[] = [];
   let currentProhibitedTimes: Map<string, string>[] = [];
@@ -89,12 +89,16 @@ export async function generateSchedules(): Promise<void> {
       return timeMap;
     });
 
-    // Create a clean and simple request object
+    // Create request object with the correct structure based on backend error logs
     const requestBody = {
-      classes: currentAddedClasses,
-      semester: selectedSemester || "202401",
-      prohibitedInstructors: currentProhibitedProfessors,
-      prohibitedTimes: formattedProhibitedTimes
+      wanted_classes: currentAddedClasses, // The backend expects 'wanted_classes' not 'classes'
+      restrictions: {
+        semester: selectedSemester || "202401", // Move semester inside restrictions
+        minSeats: 1,
+        prohibitedInstructors: currentProhibitedProfessors,
+        prohibitedTimes: formattedProhibitedTimes,
+        required_classes: currentAddedClasses // Keep this for backward compatibility
+      }
     };
 
     console.log("Sending schedule request:", requestBody);
