@@ -155,7 +155,7 @@ export function removeProhibitedTime(index: number): void {
     prohibitedTimes.set([...currentTimes]);
 }
 
-// Format time restriction for display
+// Format time restriction for display - more compact version
 export function formatTimeRestriction(timeMap: Map<string, string> | Record<string, string>): string {
     // Ensure we're working with a Map
     const map = timeMap instanceof Map ? timeMap : new Map(Object.entries(timeMap));
@@ -164,28 +164,35 @@ export function formatTimeRestriction(timeMap: Map<string, string> | Record<stri
     const start = formatTimeForDisplay((map.get("start_time") || "") as string);
     const end = formatTimeForDisplay((map.get("end_time") || "") as string);
 
-    // Convert day code to display format
+    // Make day display more compact
     let dayDisplay = "";
     switch (days) {
-        case "M": dayDisplay = "Monday"; break;
-        case "Tu": dayDisplay = "Tuesday"; break;
-        case "W": dayDisplay = "Wednesday"; break;
-        case "Th": dayDisplay = "Thursday"; break;
-        case "F": dayDisplay = "Friday"; break;
+        case "M": dayDisplay = "Mon"; break;
+        case "Tu": dayDisplay = "Tue"; break;
+        case "W": dayDisplay = "Wed"; break;
+        case "Th": dayDisplay = "Thu"; break;
+        case "F": dayDisplay = "Fri"; break;
         default: dayDisplay = days;
     }
 
-    return `${dayDisplay}: ${start} - ${end}`;
+    // More compact time display
+    return `${dayDisplay}: ${start}-${end}`;
 }
 
-// Format time string for display
+// Format time string for display - more compact version
 export function formatTimeForDisplay(timeString: string): string {
     // Extract hour and minute from format like "08:00am"
     const match = timeString.match(/^(\d{1,2}):(\d{2})(am|pm)$/i);
     if (!match) return timeString;
 
     const [_, hour, minute, period] = match;
-    return `${hour}:${minute} ${period.toUpperCase()}`;
+    const hourNum = parseInt(hour);
+
+    // Skip leading zero on hours and only show minutes if not :00
+    const hourDisplay = hourNum.toString();
+    const minuteDisplay = minute === "00" ? "" : `:${minute}`;
+
+    return `${hourDisplay}${minuteDisplay}${period.toUpperCase()}`;
 }
 
 // Fetch class details and update professor associations
@@ -424,4 +431,56 @@ export function handleScheduleScroll(event: Event, loadingMore = false): void {
     if (scrollTop + clientHeight >= scrollHeight - 300) {
         addNewSchedules();
     }
+}
+
+// Helper function to check if two time restrictions are equal
+export function areTimeRestrictionsEqual(
+    restriction1: Map<string, string> | Record<string, string>,
+    restriction2: Map<string, string> | Record<string, string>
+): boolean {
+    // Convert both to Maps for consistent handling
+    const map1 = restriction1 instanceof Map ? restriction1 : new Map(Object.entries(restriction1));
+    const map2 = restriction2 instanceof Map ? restriction2 : new Map(Object.entries(restriction2));
+
+    // Check if all relevant properties match
+    return (
+        map1.get("days") === map2.get("days") &&
+        map1.get("start_time") === map2.get("start_time") &&
+        map1.get("end_time") === map2.get("end_time")
+    );
+}
+
+// Function to add time restriction checking for duplicates
+export function addTimeRestriction(
+    restriction: Map<string, string> | Record<string, string>,
+    currentRestrictions: (Map<string, string> | Record<string, string>)[]
+): (Map<string, string> | Record<string, string>)[] {
+    // Check if an identical restriction already exists
+    const isDuplicate = currentRestrictions.some(existingRestriction =>
+        areTimeRestrictionsEqual(existingRestriction, restriction)
+    );
+
+    // Only add if not a duplicate
+    if (!isDuplicate) {
+        return [...currentRestrictions, restriction];
+    }
+
+    // Return original array if duplicate found
+    return currentRestrictions;
+}
+
+// Function to add multiple time restrictions checking for duplicates
+export function addMultipleTimeRestrictions(
+    newRestrictions: (Map<string, string> | Record<string, string>)[],
+    currentRestrictions: (Map<string, string> | Record<string, string>)[]
+): (Map<string, string> | Record<string, string>)[] {
+    // Start with current restrictions
+    let updatedRestrictions = [...currentRestrictions];
+
+    // Add each new restriction checking for duplicates
+    for (const restriction of newRestrictions) {
+        updatedRestrictions = addTimeRestriction(restriction, updatedRestrictions);
+    }
+
+    return updatedRestrictions;
 }

@@ -263,190 +263,211 @@
 	const avgProfRating = calculateAverageRating();
 </script>
 
-<!-- Add a header above the schedule container -->
-<div class="schedule-header">
-	<div class="schedule-info">
-		<h3 class="schedule-number">Schedule #{scheduleIndex + 1}</h3>
-		<div class="rating-badge">
-			<span class="rating-label">Avg. Professor Rating:</span>
-			<span class="rating-value">{avgProfRating} ⭐</span>
+<!-- Updated to ensure full width -->
+<div class="schedule-wrapper">
+	<div class="schedule-header">
+		<!-- Updated schedule header -->
+		<div class="schedule-info">
+			<div class="schedule-number">
+				<span class="schedule-badge">#{scheduleIndex + 1}</span>
+				<h3>Schedule</h3>
+			</div>
+			<div class="rating-badge">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					stroke="none"
+				>
+					<polygon
+						points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+					></polygon>
+				</svg>
+				<span class="rating-value">{avgProfRating}</span>
+				<span class="rating-label">Avg. Professor Rating</span>
+			</div>
 		</div>
 	</div>
-</div>
 
-<!-- Redesigned container with CSS Grid for perfect alignment -->
-<div class="schedule-container">
-	<!-- Time labels column with fixed dimensions -->
-	<div class="time-labels" style="padding-top: {dayHeaderHeight}px;">
-		{#each timeLabels as time, i}
-			<div class="time-label" style="height: {hourHeight}px;">
-				{time}
-			</div>
-		{/each}
-	</div>
-
-	<!-- Content area with days and schedule -->
-	<div class="schedule-content">
-		<!-- Day headers with fixed height -->
-		<div class="day-headers" style="height: {dayHeaderHeight}px;">
-			{#each dayNames as day, i}
-				<div class="day-header">{day}</div>
+	<!-- Redesigned container with CSS Grid for perfect alignment -->
+	<div class="schedule-container">
+		<!-- Time labels column with fixed dimensions -->
+		<div class="time-labels" style="padding-top: {dayHeaderHeight}px;">
+			{#each timeLabels as time, i}
+				<div class="time-label" style="height: {hourHeight}px;">
+					{time}
+				</div>
 			{/each}
 		</div>
 
-		<!-- Scrollable grid area with fixed height -->
-		<div class="grid-area" style="height: {scheduleHeight}px;">
-			<!-- Background grid lines -->
-			<div class="grid-lines">
-				{#each timeLabels as _, i}
-					<div
-						class="grid-line"
-						style="height: {hourHeight}px;"
-					></div>
+		<!-- Content area with days and schedule -->
+		<div class="schedule-content">
+			<!-- Day headers with fixed height -->
+			<div class="day-headers" style="height: {dayHeaderHeight}px;">
+				{#each dayNames as day, i}
+					<div class="day-header">{day}</div>
 				{/each}
 			</div>
 
-			<!-- Day columns with events -->
-			<div class="day-columns">
-				{#each daysCodes as day, i}
-					<div class="schedule-column">
-						{#each formatSlots(dayLabels[i] || []) as slot}
-							<!-- Fix: Calculate detail level for each slot -->
-							{@const detailLevel = shouldShowDetails(
-								slot.heightPixels,
-							)}
-							<!-- Schedule slot with absolute positioning -->
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<!-- svelte-ignore a11y-no-static-element-interactions -->
-							<div
-								class="schedule-slot"
-								style="
-									top: {slot.startPixels}px; 
-									height: {slot.heightPixels}px; 
-									background: {colorMap.get(slot.class) || '#f0f0f0'};
-									{slot.horizontalPosition !== undefined
-									? `left: ${slot.horizontalPosition * (100 / slot.totalOverlap)}%; 
-											width: ${100 / slot.totalOverlap}%;`
-									: 'left: 2px; right: 2px;'}
-								"
-								on:click={() =>
-									openSectionDetails(
-										slot.class,
-										`${slot.class}-${slot.sectionCode}`,
-									)}
-							>
-								<div class="slot-content">
-									<!-- Detail level 0: Very small slots - stack class and time -->
-									{#if detailLevel === 0}
-										<div class="horizontal-info">
-											<span class="class-name"
-												>{slot.class}</span
-											>
-											<span class="mini-time"
-												>{slot.startTime.replace(
-													":00",
-													"",
-												)}</span
-											>
-										</div>
+			<!-- Scrollable grid area with fixed height -->
+			<div class="grid-area" style="height: {scheduleHeight}px;">
+				<!-- Background grid lines -->
+				<div class="grid-lines">
+					{#each timeLabels as _, i}
+						<div
+							class="grid-line"
+							style="height: {hourHeight}px;"
+						></div>
+					{/each}
+				</div>
 
-										<!-- Detail level 1: Small slots - stack horizontally -->
-									{:else if detailLevel === 1}
-										<div class="class-row">
-											<span class="class-name"
-												>{slot.class}</span
-											>
-											<span class="section-number"
-												>§{slot.sectionCode}</span
-											>
-										</div>
-										<div class="info-row">
-											<span class="slot-location"
-												>{slot.location.split(
-													" ",
-												)[0]}</span
-											>
-											<span class="slot-time"
-												>{slot.startTime.replace(
-													":00",
-													"",
-												)}-{slot.endTime.replace(
-													":00",
-													"",
-												)}</span
-											>
-										</div>
+				<!-- Day columns with events -->
+				<div class="day-columns">
+					{#each daysCodes as day, i}
+						<div class="schedule-column">
+							{#each formatSlots(dayLabels[i] || []) as slot}
+								<!-- Fix: Calculate detail level for each slot -->
+								{@const detailLevel = shouldShowDetails(
+									slot.heightPixels,
+								)}
+								<!-- Schedule slot with absolute positioning -->
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
+								<div
+									class="schedule-slot"
+									style="
+										top: {slot.startPixels}px; 
+										height: {slot.heightPixels}px; 
+										background: {colorMap.get(slot.class) || '#f0f0f0'};
+										{slot.horizontalPosition !== undefined
+										? `left: ${slot.horizontalPosition * (100 / slot.totalOverlap)}%; 
+												width: ${100 / slot.totalOverlap}%;`
+										: 'left: 2px; right: 2px;'}
+									"
+									on:click={() =>
+										openSectionDetails(
+											slot.class,
+											`${slot.class}-${slot.sectionCode}`,
+										)}
+								>
+									<div class="slot-content">
+										<!-- Detail level 0: Very small slots - stack class and time -->
+										{#if detailLevel === 0}
+											<div class="horizontal-info">
+												<span class="class-name"
+													>{slot.class}</span
+												>
+												<span class="mini-time"
+													>{slot.startTime.replace(
+														":00",
+														"",
+													)}</span
+												>
+											</div>
 
-										<!-- Detail level 2: Medium slots - more horizontal stacking -->
-									{:else if detailLevel === 2}
-										<div class="class-row">
-											<span class="class-name"
-												>{slot.class}</span
-											>
-											<span class="section-number"
-												>§{slot.sectionCode}</span
-											>
-										</div>
-										<div class="info-row">
-											<span class="slot-location"
-												>{slot.location}</span
-											>
-										</div>
-										<div class="info-row">
-											<span class="slot-time"
-												>{slot.startTime.replace(
-													":00",
-													"",
-												)}-{slot.endTime.replace(
-													":00",
-													"",
-												)}</span
-											>
-										</div>
+											<!-- Detail level 1: Small slots - stack horizontally -->
+										{:else if detailLevel === 1}
+											<div class="class-row">
+												<span class="class-name"
+													>{slot.class}</span
+												>
+												<span class="section-number"
+													>§{slot.sectionCode}</span
+												>
+											</div>
+											<div class="info-row">
+												<span class="slot-location"
+													>{slot.location.split(
+														" ",
+													)[0]}</span
+												>
+												<span class="slot-time"
+													>{slot.startTime.replace(
+														":00",
+														"",
+													)}-{slot.endTime.replace(
+														":00",
+														"",
+													)}</span
+												>
+											</div>
 
-										<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
-									{:else}
-										<div class="class-row">
-											<span class="class-name"
-												>{slot.class}</span
-											>
-											<span class="section-number"
-												>§{slot.sectionCode}</span
-											>
-										</div>
-										<div class="info-row">
-											<span class="slot-location"
-												>{slot.location}</span
-											>
-										</div>
-										<div class="info-row">
-											<span class="slot-time"
-												>{slot.startTime}-{slot.endTime}</span
-											>
-										</div>
-									{/if}
-								</div>
+											<!-- Detail level 2: Medium slots - more horizontal stacking -->
+										{:else if detailLevel === 2}
+											<div class="class-row">
+												<span class="class-name"
+													>{slot.class}</span
+												>
+												<span class="section-number"
+													>§{slot.sectionCode}</span
+												>
+											</div>
+											<div class="info-row">
+												<span class="slot-location"
+													>{slot.location}</span
+												>
+											</div>
+											<div class="info-row">
+												<span class="slot-time"
+													>{slot.startTime.replace(
+														":00",
+														"",
+													)}-{slot.endTime.replace(
+														":00",
+														"",
+													)}</span
+												>
+											</div>
 
-								<!-- Show tooltip on hover for all slots, regardless of size -->
-								<div class="slot-tooltip">
-									<div>
-										<strong>{slot.class}</strong> Section {slot.sectionCode}
-									</div>
-									<div>{slot.startTime} - {slot.endTime}</div>
-									<div>{slot.location}</div>
-									<div>
-										{slot.professor}
-										{#if slot.prof_rating}
-											({Number(slot.prof_rating).toFixed(
-												1,
-											)} ⭐)
+											<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
+										{:else}
+											<div class="class-row">
+												<span class="class-name"
+													>{slot.class}</span
+												>
+												<span class="section-number"
+													>§{slot.sectionCode}</span
+												>
+											</div>
+											<div class="info-row">
+												<span class="slot-location"
+													>{slot.location}</span
+												>
+											</div>
+											<div class="info-row">
+												<span class="slot-time"
+													>{slot.startTime}-{slot.endTime}</span
+												>
+											</div>
 										{/if}
 									</div>
+
+									<!-- Show tooltip on hover for all slots, regardless of size -->
+									<div class="slot-tooltip">
+										<div>
+											<strong>{slot.class}</strong>
+											Section {slot.sectionCode}
+										</div>
+										<div>
+											{slot.startTime} - {slot.endTime}
+										</div>
+										<div>{slot.location}</div>
+										<div>
+											{slot.professor}
+											{#if slot.prof_rating}
+												({Number(
+													slot.prof_rating,
+												).toFixed(1)} ⭐)
+											{/if}
+										</div>
+									</div>
 								</div>
-							</div>
-						{/each}
-					</div>
-				{/each}
+							{/each}
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -462,16 +483,24 @@
 {/if}
 
 <style>
+	.schedule-wrapper {
+		width: 100%;
+		margin: 0 0 2rem 0;
+		overflow-x: auto; /* Allow horizontal scroll only within this component if needed */
+	}
+
 	/* Container uses CSS Grid for precise alignment */
 	.schedule-container {
 		display: grid;
 		grid-template-columns: 80px 1fr;
 		grid-template-rows: auto;
 		width: 100%;
-		margin-bottom: 40px;
+		min-width: 600px; /* Minimum width to prevent squishing */
+		max-width: 100%;
+		margin: 0 0 40px 0;
 		border-radius: 8px;
 		overflow: hidden;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+		box-shadow: var(--shadow-sm);
 		box-sizing: border-box;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
@@ -505,6 +534,7 @@
 		display: flex;
 		flex-direction: column;
 		position: relative;
+		width: 100%;
 	}
 
 	/* Day headers with fixed height */
@@ -682,11 +712,11 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 12px 16px;
-		background-color: #f8f8f8;
-		border-top-left-radius: 8px;
-		border-top-right-radius: 8px;
-		border-bottom: 2px solid #e21833;
+		padding: var(--space-3) var(--space-4);
+		background-color: white;
+		border-top-left-radius: var(--radius-lg);
+		border-top-right-radius: var(--radius-lg);
+		border-bottom: 2px solid var(--primary);
 		margin-bottom: -1px; /* Connect with schedule container */
 	}
 
@@ -698,31 +728,53 @@
 	}
 
 	.schedule-number {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.schedule-number h3 {
 		margin: 0;
-		color: #333;
-		font-size: 1.2rem;
+		font-size: 1.125rem;
 		font-weight: 600;
+		color: var(--neutral-800);
+	}
+
+	.schedule-badge {
+		background-color: var(--primary);
+		color: white;
+		border-radius: var(--radius-full);
+		padding: var(--space-1) var(--space-2);
+		font-size: 0.875rem;
+		font-weight: 600;
+		min-width: 24px;
+		text-align: center;
 	}
 
 	.rating-badge {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--space-2);
 		background-color: white;
-		padding: 6px 12px;
-		border-radius: 20px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-full);
+		box-shadow: var(--shadow-sm);
+		color: var(--neutral-600);
 	}
 
-	.rating-label {
-		color: #666;
-		font-size: 0.9rem;
+	.rating-badge svg {
+		color: #ffc107;
 	}
 
 	.rating-value {
-		color: #e21833;
-		font-weight: bold;
-		font-size: 1rem;
+		color: var(--neutral-900);
+		font-weight: 600;
+		font-size: 0.875rem;
+	}
+
+	.rating-label {
+		color: var(--neutral-600);
+		font-size: 0.75rem;
 	}
 
 	/* Improved slot content layout */
@@ -807,5 +859,31 @@
 		text-align: right;
 		flex-shrink: 0;
 		margin-left: 4px;
+	}
+
+	/* Make the schedule more responsive */
+	@media (max-width: 768px) {
+		.schedule-container {
+			display: flex;
+			flex-direction: column;
+			width: 100%;
+			overflow-x: auto; /* Allow horizontal scroll on narrow screens */
+		}
+
+		.time-labels {
+			display: none; /* Hide on small screens to save space */
+		}
+
+		.schedule-content {
+			min-width: 600px; /* Minimum width to ensure readability */
+		}
+
+		.schedule-wrapper {
+			margin: 0 -16px; /* Negative margin to allow schedule to break out of container */
+			padding: 0 16px; /* Add padding to compensate and maintain visual alignment */
+			width: calc(100% + 32px); /* Compensate for negative margins */
+		}
+
+		/* ...other mobile styles... */
 	}
 </style>

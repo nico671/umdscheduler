@@ -2,11 +2,17 @@
 	import { createEventDispatcher } from "svelte";
 
 	export let showTimeSelectionModal = false;
-	// Changed to const export with proper type since it's not being used inside the component
 	export const prohibitedTimes: Array<any> = [];
 
 	let dialog: HTMLDialogElement;
-	let selectedDay = "Monday";
+	// Convert single day selection to array of selected days
+	let selectedDays = {
+		Monday: false,
+		Tuesday: false,
+		Wednesday: false,
+		Thursday: false,
+		Friday: false,
+	};
 	let startHour = "8";
 	let startMinute = "00";
 	let startAMPM = "AM";
@@ -14,7 +20,14 @@
 	let endMinute = "00";
 	let endAMPM = "AM";
 
-	const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+	const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+	const dayCodes = {
+		Monday: "M",
+		Tuesday: "Tu",
+		Wednesday: "W",
+		Thursday: "Th",
+		Friday: "F",
+	};
 	const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
 	const minutes = ["00", "15", "30", "45"];
 	const ampm = ["AM", "PM"];
@@ -23,43 +36,40 @@
 
 	$: if (dialog && showTimeSelectionModal) dialog.showModal();
 
+	// Computed property to check if at least one day is selected
+	$: hasDaySelected = Object.values(selectedDays).some(
+		(selected) => selected,
+	);
+
 	function closeModal() {
 		dispatch("close");
 		dialog.close();
 	}
 
 	function handleSubmit() {
-		// Convert day to abbreviated form as needed by the backend
-		let dayCode;
-		switch (selectedDay) {
-			case "Monday":
-				dayCode = "M";
-				break;
-			case "Tuesday":
-				dayCode = "Tu";
-				break;
-			case "Wednesday":
-				dayCode = "W";
-				break;
-			case "Thursday":
-				dayCode = "Th";
-				break;
-			case "Friday":
-				dayCode = "F";
-				break;
-		}
+		// Create a time restriction for each selected day
+		const selectedDayEntries = Object.entries(selectedDays)
+			.filter(([_, selected]) => selected)
+			.map(([dayName, _]) => dayName);
 
 		// Convert times to standardized format
 		const startTime = formatTime(startHour, startMinute, startAMPM);
 		const endTime = formatTime(endHour, endMinute, endAMPM);
 
-		// Create the time restriction as a Map
-		const timeRestriction = new Map();
-		timeRestriction.set("days", dayCode);
-		timeRestriction.set("start_time", startTime);
-		timeRestriction.set("end_time", endTime);
+		// Create a restriction for each selected day
+		const restrictions = selectedDayEntries.map((dayName) => {
+			const timeRestriction = new Map();
+			timeRestriction.set(
+				"days",
+				dayCodes[dayName as keyof typeof dayCodes],
+			);
+			timeRestriction.set("start_time", startTime);
+			timeRestriction.set("end_time", endTime);
+			return timeRestriction;
+		});
 
-		dispatch("add", timeRestriction);
+		// Dispatch all restrictions
+		dispatch("addMultiple", restrictions);
 	}
 
 	function formatTime(hour: string, minute: string, ampm: string) {
@@ -74,6 +84,14 @@
 
 		// Format as a string
 		return `${hourNum.toString().padStart(2, "0")}:${minute}${ampm.toLowerCase()}`;
+	}
+
+	function toggleAllDays(select: boolean) {
+		for (const day of dayNames) {
+			selectedDays[day as keyof typeof selectedDays] = select;
+		}
+		// Force UI update
+		selectedDays = { ...selectedDays };
 	}
 </script>
 
@@ -108,64 +126,96 @@
 
 		<form on:submit|preventDefault={handleSubmit}>
 			<div class="form-group">
-				<label for="day">Day:</label>
-				<select id="day" bind:value={selectedDay}>
-					{#each days as day}
-						<option value={day}>{day}</option>
+				<label class="form-label">Select Days</label>
+				<div class="days-grid">
+					{#each dayNames as day}
+						<label class="day-checkbox">
+							<input
+								type="checkbox"
+								bind:checked={selectedDays[day]}
+							/>
+							<span class="checkbox-display"
+								>{day.substring(0, 3)}</span
+							>
+						</label>
 					{/each}
-				</select>
-			</div>
-
-			<div class="time-section">
-				<h3>Start Time:</h3>
-				<div class="time-inputs">
-					<select bind:value={startHour}>
-						{#each hours as hour}
-							<option value={hour}>{hour}</option>
-						{/each}
-					</select>
-					<span>:</span>
-					<select bind:value={startMinute}>
-						{#each minutes as minute}
-							<option value={minute}>{minute}</option>
-						{/each}
-					</select>
-					<select bind:value={startAMPM}>
-						{#each ampm as period}
-							<option value={period}>{period}</option>
-						{/each}
-					</select>
+				</div>
+				<div class="day-actions">
+					<button
+						type="button"
+						class="btn-link"
+						on:click={() => toggleAllDays(true)}>Select All</button
+					>
+					<button
+						type="button"
+						class="btn-link"
+						on:click={() => toggleAllDays(false)}>Clear All</button
+					>
 				</div>
 			</div>
 
-			<div class="time-section">
-				<h3>End Time:</h3>
-				<div class="time-inputs">
-					<select bind:value={endHour}>
-						{#each hours as hour}
-							<option value={hour}>{hour}</option>
-						{/each}
-					</select>
-					<span>:</span>
-					<select bind:value={endMinute}>
-						{#each minutes as minute}
-							<option value={minute}>{minute}</option>
-						{/each}
-					</select>
-					<select bind:value={endAMPM}>
-						{#each ampm as period}
-							<option value={period}>{period}</option>
-						{/each}
-					</select>
+			<div class="time-container">
+				<div class="time-section">
+					<label class="form-label">Start Time</label>
+					<div class="time-inputs">
+						<select bind:value={startHour} class="time-select">
+							{#each hours as hour}
+								<option value={hour}>{hour}</option>
+							{/each}
+						</select>
+						<span class="time-separator">:</span>
+						<select bind:value={startMinute} class="time-select">
+							{#each minutes as minute}
+								<option value={minute}>{minute}</option>
+							{/each}
+						</select>
+						<select bind:value={startAMPM} class="ampm-select">
+							{#each ampm as period}
+								<option value={period}>{period}</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+
+				<div class="time-section">
+					<label class="form-label">End Time</label>
+					<div class="time-inputs">
+						<select bind:value={endHour} class="time-select">
+							{#each hours as hour}
+								<option value={hour}>{hour}</option>
+							{/each}
+						</select>
+						<span class="time-separator">:</span>
+						<select bind:value={endMinute} class="time-select">
+							{#each minutes as minute}
+								<option value={minute}>{minute}</option>
+							{/each}
+						</select>
+						<select bind:value={endAMPM} class="ampm-select">
+							{#each ampm as period}
+								<option value={period}>{period}</option>
+							{/each}
+						</select>
+					</div>
 				</div>
 			</div>
 
-			<div class="button-container">
-				<button type="button" class="cancel-btn" on:click={closeModal}
-					>Cancel</button
+			<div class="form-footer">
+				<button
+					type="button"
+					class="btn btn-outline"
+					on:click={closeModal}>Cancel</button
 				>
-				<button type="submit" class="submit-btn">Add Restriction</button
+				<button
+					type="submit"
+					class="btn btn-primary"
+					disabled={!hasDaySelected}
 				>
+					Add Restriction{selectedDays &&
+					Object.values(selectedDays).filter(Boolean).length > 1
+						? "s"
+						: ""}
+				</button>
 			</div>
 		</form>
 	</div>
@@ -173,17 +223,17 @@
 
 <style>
 	.modal {
-		max-width: 600px;
-		width: 90%;
-		border-radius: 12px;
+		max-width: 450px;
+		width: 95%;
+		border-radius: var(--radius-lg);
 		border: none;
 		padding: 0;
-		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+		box-shadow: var(--shadow-lg);
 		overflow: hidden;
 	}
 
 	.modal-content {
-		padding: 24px;
+		padding: var(--space-5);
 		max-height: 85vh;
 		overflow-y: auto;
 	}
@@ -192,106 +242,229 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 24px;
-		border-bottom: 1px solid #eee;
-		padding-bottom: 16px;
+		margin-bottom: var(--space-5);
+		border-bottom: 1px solid var(--neutral-200);
+		padding-bottom: var(--space-4);
 	}
 
 	.modal-header h1 {
 		margin: 0;
-		font-size: 1.8rem;
-		color: #e21833;
+		font-size: 1.5rem;
+		color: var(--primary);
 	}
 
 	.close-btn {
 		background: transparent;
 		border: none;
 		cursor: pointer;
-		padding: 6px;
+		padding: var(--space-1);
+		color: var(--neutral-600);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		transition: background-color 0.2s;
+		transition: background-color var(--transition-fast);
 	}
 
 	.close-btn:hover {
-		background-color: rgba(0, 0, 0, 0.05);
+		background-color: var(--neutral-100);
 	}
 
 	.form-group {
-		margin-bottom: 20px;
+		margin-bottom: var(--space-5);
 	}
 
-	.form-group label {
+	.form-label {
 		display: block;
-		margin-bottom: 8px;
+		margin-bottom: var(--space-3);
 		font-weight: 500;
+		color: var(--neutral-800);
 	}
 
-	select {
-		width: 100%;
-		padding: 10px 12px;
-		border: 1px solid #ddd;
-		border-radius: 6px;
-		font-size: 16px;
-		appearance: auto;
+	/* Days grid with improved styling */
+	.days-grid {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: var(--space-2);
+		margin-bottom: var(--space-3);
+	}
+
+	.day-checkbox {
+		position: relative;
+		display: block;
+	}
+
+	.day-checkbox input {
+		position: absolute;
+		opacity: 0;
+		cursor: pointer;
+		height: 0;
+		width: 0;
+	}
+
+	.checkbox-display {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--neutral-100);
+		color: var(--neutral-700);
+		border: 1px solid var(--neutral-300);
+		height: 40px;
+		border-radius: var(--radius-md);
+		font-weight: 500;
+		cursor: pointer;
+		transition: all var(--transition-fast);
+		user-select: none;
+	}
+
+	.day-checkbox input:checked + .checkbox-display {
+		background-color: var(--primary-light);
+		color: var(--primary);
+		border-color: var(--primary);
+	}
+
+	.day-checkbox:hover .checkbox-display {
+		background-color: var(--neutral-200);
+	}
+
+	.day-checkbox input:checked:hover + .checkbox-display {
+		background-color: var(--primary-light);
+		opacity: 0.9;
+	}
+
+	.day-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: var(--space-3);
+		margin-top: var(--space-2);
+	}
+
+	.btn-link {
+		background: none;
+		border: none;
+		color: var(--primary);
+		font-size: 0.875rem;
+		font-weight: 500;
+		padding: var(--space-1) 0;
+		cursor: pointer;
+		text-decoration: none;
+		transition: opacity var(--transition-fast);
+	}
+
+	.btn-link:hover {
+		text-decoration: underline;
+		opacity: 0.9;
+	}
+
+	/* Time inputs with improved styling - now stacked vertically */
+	.time-container {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		margin-bottom: var(--space-5);
 	}
 
 	.time-section {
-		margin-bottom: 20px;
-	}
-
-	.time-section h3 {
-		margin: 0 0 8px 0;
-		font-size: 16px;
-		font-weight: 500;
+		width: 100%;
 	}
 
 	.time-inputs {
 		display: flex;
 		align-items: center;
-		gap: 8px;
+		gap: var(--space-2);
+		width: 100%;
 	}
 
-	.time-inputs select {
-		width: auto;
+	select {
+		height: 40px;
+		border: 1px solid var(--neutral-300);
+		border-radius: var(--radius-md);
+		background-color: white;
+		padding: 0 var(--space-2);
+		font-size: 1rem;
+		color: var(--neutral-800);
+		transition: border-color var(--transition-fast);
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23757575' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 8px center;
+		background-size: 16px;
+		padding-right: 28px;
 	}
 
-	.time-inputs span {
+	select:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 2px rgba(226, 24, 51, 0.1);
+	}
+
+	/* Make time selects more prominent with vertical layout */
+	.time-select {
+		width: 70px;
+		flex-grow: 1;
+	}
+
+	.ampm-select {
+		width: 80px;
+	}
+
+	.time-separator {
 		font-weight: bold;
+		font-size: 1.2rem;
+		color: var(--neutral-600);
 	}
 
-	.button-container {
+	/* Form footer */
+	.form-footer {
 		display: flex;
-		gap: 12px;
 		justify-content: flex-end;
-		margin-top: 24px;
+		gap: var(--space-3);
+		padding-top: var(--space-4);
+		border-top: 1px solid var(--neutral-200);
 	}
 
-	.cancel-btn {
-		background-color: #f0f0f0;
-		border: none;
-		padding: 10px 16px;
-		border-radius: 6px;
-		cursor: pointer;
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-2) var(--space-4);
+		border-radius: var(--radius-md);
 		font-weight: 500;
+		border: none;
+		cursor: pointer;
+		transition:
+			background-color var(--transition-fast),
+			transform var(--transition-fast),
+			box-shadow var(--transition-fast);
 	}
 
-	.submit-btn {
-		background-color: #e21833;
-		border: none;
+	.btn-primary {
+		background-color: var(--primary);
 		color: white;
-		padding: 10px 16px;
-		border-radius: 6px;
-		cursor: pointer;
-		font-weight: 500;
 	}
 
-	.submit-btn:hover {
-		background-color: #c91528;
+	.btn-primary:hover:not(:disabled) {
+		background-color: var(--primary-dark);
+		box-shadow: var(--shadow-md);
 	}
 
+	.btn-primary:disabled {
+		background-color: var(--neutral-400);
+		cursor: not-allowed;
+	}
+
+	.btn-outline {
+		background-color: transparent;
+		border: 1px solid var(--neutral-300);
+	}
+
+	.btn-outline:hover {
+		background-color: var(--neutral-100);
+	}
+
+	/* Dialog animations */
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(2px);
@@ -312,16 +485,10 @@
 		}
 	}
 
-	dialog[open]::backdrop {
-		animation: fade 0.2s ease-out;
-	}
-
-	@keyframes fade {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
+	/* Media queries for better responsiveness */
+	@media (max-width: 500px) {
+		.days-grid {
+			grid-template-columns: repeat(3, 1fr);
 		}
 	}
 </style>
