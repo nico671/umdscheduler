@@ -5,6 +5,7 @@
 	import TimeSelectionModal from "../components/TimeSelectionModal.svelte";
 	import ProfessorModal from "../components/ProfessorModal.svelte";
 	import ScheduleView from "../components/ScheduleView.svelte";
+	import SemesterSelector from "../components/SemesterSelector.svelte";
 	import "../styles/page.css";
 	import "./styles/page-styles.css";
 	import "../styles/global.css"; // Import global styles
@@ -30,9 +31,10 @@
 		generatedSchedules,
 		addTimeRestriction,
 		addMultipleTimeRestrictions,
+		availableSemesters,
+		currentSemester,
+		fetchSemesters,
 	} from "./page-logic";
-
-	let scrollContainer: HTMLElement | null = null;
 
 	// Reactive statements to manage state
 	$: sortedSchedules = logic.sortSchedules($schedules);
@@ -46,12 +48,24 @@
 		});
 	}
 
-	onMount(async () => {
-		// Fetch available classes
+	// Handle semester change to reload classes
+	function handleSemesterChange() {
+		// Clear current schedules and classes when semester changes
+		$schedules = [];
+		$generatedSchedules = [];
+		// Reset error
+		$error = null;
+
+		// Refresh available classes for the new semester
+		fetchAvailableClasses($currentSemester);
+	}
+
+	// Function to fetch available classes with semester parameter
+	async function fetchAvailableClasses(semester: string) {
 		try {
 			const url = new URL("https://api.umd.io/v1/courses/list");
 			url.searchParams.set("sort", "course_id,-credits");
-			url.searchParams.set("semester", "202501");
+			url.searchParams.set("semester", semester);
 
 			const response = await fetch(url);
 			const data = await response.json();
@@ -63,10 +77,20 @@
 				err instanceof Error ? err.message : "Failed to fetch classes";
 			console.error("Error fetching classes:", err);
 		}
+	}
+
+	onMount(async () => {
+		// Fetch list of available semesters
+		await fetchSemesters();
+
+		// Initial fetch of available classes
+		if ($currentSemester) {
+			fetchAvailableClasses($currentSemester);
+		}
 
 		// Initialize class-professor tracking
 		$addedClasses.forEach((className) => {
-			logic.fetchClassDetails(className);
+			logic.fetchClassDetails(className, $currentSemester);
 		});
 	});
 </script>
@@ -74,7 +98,10 @@
 <div class="app-container">
 	<header class="app-header">
 		<div class="header-content">
-			<h1 class="app-title">UMD Scheduler</h1>
+			<div class="header-left">
+				<h1 class="app-title">UMD Scheduler</h1>
+				<SemesterSelector onChange={handleSemesterChange} />
+			</div>
 			<div class="header-actions">
 				<button
 					class="btn btn-outline"
@@ -443,6 +470,12 @@
 		align-items: center;
 	}
 
+	.header-left {
+		display: flex;
+		align-items: center;
+		gap: var(--space-4);
+	}
+
 	.app-title {
 		font-size: 1.5rem;
 		font-weight: 700;
@@ -530,7 +563,7 @@
 		background-color: var(--primary-light);
 		border-color: #f8d7dc;
 		cursor: default; /* Change cursor to default since it's not clickable */
-		padding: var(--space-1) var(--space-2); /* Reduced padding */
+		padding: var(--space-1) var (--space-2); /* Reduced padding */
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -698,6 +731,12 @@
 			flex-direction: column;
 			align-items: flex-start;
 			gap: var(--space-3);
+		}
+
+		.header-left {
+			width: 100%;
+			flex-wrap: wrap;
+			margin-bottom: var(--space-2);
 		}
 
 		.header-actions {

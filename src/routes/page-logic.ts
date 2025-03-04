@@ -38,6 +38,10 @@ export const error: Writable<string | null> = writable(null);
 export const viewProfessorInfo: Writable<ProfessorViewInfo[]> = writable([]);
 export const classProfessors: Writable<Record<string, string[]>> = writable({});
 
+// Add semester to store and initialize with current semester
+export const currentSemester: Writable<string> = writable("");
+export const availableSemesters: Writable<string[]> = writable([]);
+
 // Theme colors
 export const umdRed = "#e21833";
 export const umdGold = "#FFD200";
@@ -61,6 +65,9 @@ export async function generateSchedules(): Promise<void> {
   prohibitedProfessors.subscribe(
     (value) => (currentProhibitedProfessors = value),
   )();
+
+  let selectedSemester: string = "";
+  currentSemester.subscribe((value) => (selectedSemester = value))();
 
   if (currentAddedClasses.length === 0) {
     error.set("Please add at least one class before generating schedules");
@@ -90,6 +97,7 @@ export async function generateSchedules(): Promise<void> {
         prohibitedInstructors: currentProhibitedProfessors,
         prohibitedTimes: formattedProhibitedTimes,
         required_classes: currentAddedClasses,
+        semester: selectedSemester || "202508",
       },
     };
 
@@ -224,12 +232,20 @@ export function formatTimeForDisplay(timeString: string): string {
 }
 
 // Fetch class details and update professor associations
-export async function fetchClassDetails(className: string): Promise<void> {
+export async function fetchClassDetails(className: string, semester?: string): Promise<void> {
   let currentClassProfs: Record<string, string[]> = {};
+  let selectedSemester: string = "";
+
   classProfessors.subscribe((value) => (currentClassProfs = value))();
+  currentSemester.subscribe((value) => (selectedSemester = value))();
+
+  // Use provided semester or fall back to selected semester
+  const semesterToUse = semester || selectedSemester || "202501";
 
   try {
     const url = new URL(`https://api.umd.io/v1/courses/${className}`);
+    url.searchParams.set("semester", semesterToUse);
+
     const response = await fetch(url);
     const data = await response.json();
 
@@ -533,4 +549,99 @@ export function addMultipleTimeRestrictions(
   }
 
   return updatedRestrictions;
+}
+
+// Format semester code to display format (YYYYMM to "Season YYYY")
+export function formatSemester(semesterCode: string): string {
+  if (!semesterCode || semesterCode.length !== 6) {
+    return "Unknown Semester";
+  }
+
+  const year = semesterCode.substring(0, 4);
+  const month = semesterCode.substring(4, 6);
+
+  let season = "Unknown";
+  // UMD semester codes: 01=Winter, 05=Spring, 08=Fall, 12=Summer
+  switch (month) {
+    case "01": season = "Winter"; break;
+    case "05": season = "Spring"; break;
+    case "08": season = "Fall"; break;
+    case "12": season = "Summer"; break;
+  }
+
+  return `${season} ${year}`;
+}
+
+// Function to fetch available semesters
+export async function fetchSemesters(): Promise<void> {
+  try {
+    const response = await fetch("https://api.umd.io/v1/courses/semesters");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch semesters: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      // Make sure all elements are strings before sorting
+      const semestersAsStrings = data.map(item => String(item));
+
+      // Sort semesters in descending order (newest first)
+      const sortedSemesters = [...semestersAsStrings].sort((a, b) => {
+        // Ensure we're comparing strings and handle potential invalid values
+        return String(b).localeCompare(String(a));
+      });
+
+      // Find the current semester (most recent non-future semester)
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+
+      // Find the most recent semester that isn't in the future
+      let mostRecentSemester = sortedSemesters[0]; // Default to newest
+
+      for (const semester of sortedSemesters) {
+        if (semester.length === 6) {
+          const semesterYear = parseInt(semester.substring(0, 4));
+          const semesterMonth = parseInt(semester.substring(4, 6));
+
+          // Convert semester month code to approximate real month
+          // (01=January/Winter, 05=May/Spring, 08=August/Fall, 12=December/Winter session)
+          let realSemesterMonth;
+          switch (semesterMonth) {
+            case 1: realSemesterMonth = 1; break;  // Winter - January
+            case 5: realSemesterMonth = 5; break;  // Spring - May
+            case 8: realSemesterMonth = 8; break;  // Fall - August
+            case 12: realSemesterMonth = 12; break; // Winter session - December
+            default: realSemesterMonth = semesterMonth;
+          }
+
+          // Check if semester is current or past (not future)
+          if (semesterYear < currentYear ||
+            (semesterYear === currentYear && realSemesterMonth <= currentMonth + 2)) { // Allow planning 2 months ahead
+            mostRecentSemester = semester;
+            break; // Found our semester, stop looking
+          }
+        }
+      }
+
+      availableSemesters.set(sortedSemesters);
+
+      // Set to the most recent practical semester
+      if (mostRecentSemester) {
+        currentSemester.set(mostRecentSemester);
+        console.log(`Using semester: ${formatSemester(mostRecentSemester)}`);
+      } else {
+        // Fallback to Spring 2024 if no appropriate semester found
+        currentSemester.set("202401");
+        console.log("No current semester found, using fallback: Spring 2024");
+      }
+    } else {
+      console.error("Unexpected response format from semesters API:", data);
+      currentSemester.set("202401"); // Spring 2024 as fallback
+    }
+  } catch (error) {
+    console.error("Error fetching semesters:", error);
+    currentSemester.set("202401"); // Spring 2024 as fallback
+  }
 }

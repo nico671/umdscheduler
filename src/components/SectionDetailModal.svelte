@@ -1,10 +1,11 @@
 <script lang="ts">
     import { onMount, createEventDispatcher } from "svelte";
+    import { currentSemester } from "../routes/page-logic";
 
     export let showModal: boolean = false;
     export let sectionId: string = "";
     export let courseId: string = "";
-    export let semester: string = "202501"; // Default to Spring 2025
+    export let semester: string = ""; // Changed to use the current semester from the store
 
     const dispatch = createEventDispatcher();
     let dialog: HTMLDialogElement;
@@ -19,16 +20,19 @@
     // Watch for changes to showModal and sectionId props
     $: if (dialog && showModal && sectionId) {
         dialog.showModal();
-        fetchSectionDetails();
+        // Use selected semester or fallback to current semester
+        const semesterToUse = semester || $currentSemester || "202501";
+        fetchSectionDetails(semesterToUse);
     }
 
-    async function fetchSectionDetails() {
+    async function fetchSectionDetails(semesterParam: string = "") {
         isLoading = true;
         error = null;
 
         try {
+            const semesterToUse = semesterParam || $currentSemester || "202501";
             const response = await fetch(
-                `https://api.umd.io/v1/courses/sections/${sectionId}?semester=${semester}`,
+                `https://api.umd.io/v1/courses/sections/${sectionId}?semester=${semesterToUse}`,
             );
 
             if (!response.ok) {
