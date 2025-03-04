@@ -53,7 +53,7 @@ export function generateColor(index: number): string {
   return `hsl(${hue}, 70%, 85%)`;
 }
 
-// Generate schedules function - fixed to match backend API requirements
+// Generate schedules function - updated to always get latest semester
 export async function generateSchedules(): Promise<void> {
   let currentAddedClasses: string[] = [];
   let currentProhibitedTimes: Map<string, string>[] = [];
@@ -66,8 +66,8 @@ export async function generateSchedules(): Promise<void> {
     (value) => (currentProhibitedProfessors = value),
   )();
 
-  let selectedSemester: string = "";
-  currentSemester.subscribe((value) => (selectedSemester = value))();
+  // Always get the latest semester value directly from the store
+  const selectedSemester = get(currentSemester);
 
   if (currentAddedClasses.length === 0) {
     error.set("Please add at least one class before generating schedules");
@@ -91,16 +91,18 @@ export async function generateSchedules(): Promise<void> {
 
     // Create request object with the correct structure based on backend error logs
     const requestBody = {
-      wanted_classes: currentAddedClasses, // The backend expects 'wanted_classes' not 'classes'
+      wanted_classes: currentAddedClasses,
       restrictions: {
-        semester: selectedSemester || "202401", // Move semester inside restrictions
+        semester: selectedSemester || "202401", // Use the directly accessed semester
         minSeats: 1,
         prohibitedInstructors: currentProhibitedProfessors,
         prohibitedTimes: formattedProhibitedTimes,
-        required_classes: currentAddedClasses // Keep this for backward compatibility
+        required_classes: currentAddedClasses
       }
     };
 
+    // Log the semester being used
+    console.log(`Generating schedules for semester: ${selectedSemester} (${formatSemester(selectedSemester)})`);
     console.log("Sending schedule request:", requestBody);
 
     try {
@@ -245,13 +247,17 @@ export function formatTimeForDisplay(timeString: string): string {
 // Fetch class details and update professor associations
 export async function fetchClassDetails(className: string, semester?: string): Promise<void> {
   let currentClassProfs: Record<string, string[]> = {};
-  let selectedSemester: string = "";
 
+  // Get latest class professors data
   classProfessors.subscribe((value) => (currentClassProfs = value))();
-  currentSemester.subscribe((value) => (selectedSemester = value))();
+
+  // Get the semester directly from the store for consistency
+  const selectedSemester = get(currentSemester);
 
   // Use provided semester or fall back to selected semester
-  const semesterToUse = semester || selectedSemester || "202501";
+  const semesterToUse = semester || selectedSemester || "202401";
+
+  console.log(`Fetching details for ${className} with semester: ${semesterToUse}`);
 
   try {
     const url = new URL(`https://api.umd.io/v1/courses/${className}`);
