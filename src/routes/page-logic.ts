@@ -53,7 +53,7 @@ export function generateColor(index: number): string {
   return `hsl(${hue}, 70%, 85%)`;
 }
 
-// Generate schedules function
+// Generate schedules function - completely reworked
 export async function generateSchedules(): Promise<void> {
   let currentAddedClasses: string[] = [];
   let currentProhibitedTimes: Map<string, string>[] = [];
@@ -81,85 +81,74 @@ export async function generateSchedules(): Promise<void> {
   error.set(null);
 
   try {
-    // Fix the data structure for prohibited times
+    // Format prohibited times consistently
     const formattedProhibitedTimes = currentProhibitedTimes.map((timeMap) => {
-      // Handle both Map objects and plain objects
       if (timeMap instanceof Map) {
         return Object.fromEntries(timeMap);
       }
       return timeMap;
     });
 
-    const requestData = {
-      wanted_classes: currentAddedClasses,
-      restrictions: {
-        minSeats: 1,
-        prohibitedInstructors: currentProhibitedProfessors,
-        prohibitedTimes: formattedProhibitedTimes,
-        required_classes: currentAddedClasses,
-        semester: selectedSemester || "202508",
-      },
+    // Create a clean and simple request object
+    const requestBody = {
+      classes: currentAddedClasses,
+      semester: selectedSemester || "202401",
+      prohibitedInstructors: currentProhibitedProfessors,
+      prohibitedTimes: formattedProhibitedTimes
     };
 
-    console.log(
-      "Sending request to generate schedules:",
-      JSON.stringify(requestData),
-    );
+    console.log("Sending schedule request:", requestBody);
 
     try {
-      console.log("Attempting to fetch schedules from backend with CORS workaround...");
-
-      const simplifiedRequest = {
-        wanted_classes: currentAddedClasses,
-        semester: selectedSemester || "202508",
-        restrictions: {
-          prohibitedInstructors: currentProhibitedProfessors,
-          prohibitedTimes: formattedProhibitedTimes,
-        }
-      };
-
-      // Add jsonp parameter to work around CORS
-      const jsonpCallback = 'jsonp_callback_' + Math.round(100000 * Math.random());
-
-      // Create a JSONP script element instead of using fetch
-      return new Promise((resolve) => {
-        // First, create the global callback function
-        (window as { [key: string]: any })[jsonpCallback] = function (data: any) {
-          // Process the received data
-          console.log("JSONP data received:", data);
-          processScheduleData(data);
-          generatingSchedules.set(false);
-
-          // Clean up
-          document.body.removeChild(script);
-          delete (window as unknown as { [key: string]: unknown })[jsonpCallback];
-          resolve();
-        };
-
-        // Create script tag with the JSONP URL
-        const script = document.createElement('script');
-        const encodedData = encodeURIComponent(JSON.stringify(simplifiedRequest));
-        script.src = `https://umdscheduler.onrender.com/schedule?callback=${jsonpCallback}&data=${encodedData}`;
-        script.onerror = () => {
-          error.set("Failed to connect to the schedule generator. Please try again later.");
-          generatingSchedules.set(false);
-          document.body.removeChild(script);
-          delete (window as unknown as { [key: string]: unknown })[jsonpCallback];
-          resolve();
-        };
-        document.body.appendChild(script);
+      // Create a more robust direct request
+      const response = await fetch("https://umdscheduler.onrender.com/schedule", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody),
+        // Set a reasonable timeout
+        signal: AbortSignal.timeout(60000) // 1 minute timeout
       });
-    } catch (fetchError) {
-      console.error("JSONP operation failed:", fetchError);
-      error.set("Schedule generation failed. Please try again later.");
+
+      // Check if the response is valid
+      if (!response.ok) {
+        let errorMessage = `Server returned ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // If we can't parse the error as JSON, use the status text
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      // Read the response
+      const data = await response.json();
+
+      // Handle the data
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        error.set("No possible schedules found with your constraints");
+      } else {
+        processScheduleData(data);
+      }
+    } catch (fetchError: unknown) {
+      console.error("Schedule generation failed:", fetchError);
+
+      if (fetchError instanceof Error && fetchError.name === "AbortError") {
+        error.set("Request timed out. The server might be overloaded. Please try again later.");
+      } else if (fetchError instanceof Error && fetchError.message.includes("Failed to fetch")) {
+        error.set("Network error. The server might be down. Please try again later.");
+      } else {
+        error.set(fetchError instanceof Error ? fetchError.message : "Failed to generate schedules. Please try again later.");
+      }
     }
   } catch (err) {
-    console.error("Error generating schedules:", err);
-    error.set(
-      err instanceof Error
-        ? `Error: ${err.message}`
-        : "An error occurred while generating schedules",
-    );
+    console.error("Error in generateSchedules:", err);
+    error.set(err instanceof Error ? err.message : "An unexpected error occurred");
   } finally {
     generatingSchedules.set(false);
   }
