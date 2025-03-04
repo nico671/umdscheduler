@@ -107,13 +107,13 @@ export async function generateSchedules(): Promise<void> {
     );
 
     try {
-      // Direct fetch to backend with updated URL
+      // Direct fetch to backend with updated URL and origin
       const response = await fetch("https://umdscheduler.onrender.com/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Origin: "http://localhost:5173",
+          Origin: "https://umdscheduler.vercel.app"
         },
         body: JSON.stringify(requestData),
         mode: "cors",
