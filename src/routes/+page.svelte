@@ -518,6 +518,8 @@
 		box-shadow: var(--shadow-sm);
 		overflow: hidden;
 		transition: var(--transition-normal);
+		display: flex; /* Use flexbox for layout */
+		flex-direction: column; /* Stack children vertically */
 	}
 
 	.restriction-box:hover {
@@ -532,6 +534,9 @@
 		background-color: var(--neutral-50);
 		border-bottom: 1px solid var(--neutral-200);
 		margin: 0;
+		text-align: center; /* Center the title text */
+		width: 100%; /* Ensure full width */
+		box-sizing: border-box; /* Include padding in width calculation */
 	}
 
 	.restriction-items {
@@ -540,6 +545,7 @@
 		flex-wrap: wrap;
 		gap: var(--space-2);
 		min-height: 80px;
+		flex-grow: 1; /* Allow items area to grow */
 	}
 
 	.restriction-button {
@@ -618,7 +624,7 @@
 		justify-content: center;
 		padding: var(--space-7);
 		text-align: center;
-		color: var(--neutral-600);
+		color: var (--neutral-600);
 		background-color: white;
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-sm);
