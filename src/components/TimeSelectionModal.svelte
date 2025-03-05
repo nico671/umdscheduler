@@ -20,7 +20,17 @@
 	let endMinute = "00";
 	let endAMPM = "AM";
 
-	const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+	type DayKey = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday";
+
+	// Ensure dayNames are of this type
+	const dayNames: DayKey[] = [
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+	];
+
 	const dayCodes = {
 		Monday: "M",
 		Tuesday: "Tu",
