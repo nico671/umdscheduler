@@ -40,7 +40,7 @@ def get_unused_var(assignment, variables, domains):
 
 
 def domains_values(var, assignment, domains):
-    return [domain for domain in domains[var] if domain not in assignment.values()]
+    return domains[var]
 
 
 def parse_time(time_str):
@@ -153,9 +153,6 @@ def create_schedule(wanted_classes, restrictions):
 
     domains = {}
     no_open_sections = []
-
-    # TODO: implement required classes and restrictions more effectively
-    # required_classes = restrictions.get('required_classes', [])
 
     # Call your backtracking function with the input data
     print("Wanted classes:", variables)
