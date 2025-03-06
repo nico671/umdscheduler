@@ -206,28 +206,6 @@
 		return day.sort((a, b) => a.startPixels - b.startPixels);
 	}
 
-	// This function is no longer needed and can be removed
-	function shouldShowDetails(heightPixels: number) {
-		return 0; // We'll use one consistent detail level
-	}
-
-	// Format professor name to be shorter
-	function formatProfName(fullName: string): string {
-		if (!fullName) return "TBA";
-
-		// If there's a comma, assume it's "Last, First" format
-		if (fullName.includes(",")) {
-			const parts = fullName.split(",");
-			return parts[0]; // Just return the last name
-		}
-
-		// Otherwise split by spaces and use first + last initial
-		const names = fullName.trim().split(" ");
-		if (names.length <= 1) return fullName;
-
-		return names[0]; // Just return the first name
-	}
-
 	// Function to calculate average professor rating
 	function calculateAverageRating(): string {
 		if (!scheduleData) return "N/A";
@@ -350,9 +328,7 @@
 										</div>
 										<div class="info-row">
 											<span class="slot-location"
-												>{slot.location.split(
-													" ",
-												)[0]}</span
+												>{slot.location}</span
 											>
 											<span class="slot-time"
 												>{slot.startTime.replace(
