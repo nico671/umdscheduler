@@ -506,22 +506,88 @@
 									</div>
 
 									<!-- Show tooltip on hover for all slots, regardless of size -->
-									<div class="slot-tooltip">
-										<div>
+									<div
+										class="slot-tooltip"
+										style="background: {colorMap.get(
+											slot.class,
+										)
+											? colorMap.get(slot.class) + 'f0'
+											: 'rgba(240, 240, 240, 0.95)'};"
+									>
+										<div class="tooltip-header">
 											<strong>{slot.class}</strong>
-											Section {slot.sectionCode}
+											<span class="tooltip-section"
+												>Section {slot.sectionCode}</span
+											>
 										</div>
-										<div>
-											{slot.startTime} - {slot.endTime}
-										</div>
-										<div>{slot.location}</div>
-										<div>
-											{slot.professor}
-											{#if slot.prof_rating}
-												({Number(
-													slot.prof_rating,
-												).toFixed(1)} ⭐)
-											{/if}
+										<div class="tooltip-info">
+											<div class="tooltip-time">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="12"
+													height="12"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+												>
+													<circle
+														cx="12"
+														cy="12"
+														r="10"
+													></circle>
+													<polyline
+														points="12 6 12 12 16 14"
+													></polyline>
+												</svg>
+												{slot.startTime} - {slot.endTime}
+											</div>
+											<div class="tooltip-location">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="12"
+													height="12"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+												>
+													<path
+														d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
+													></path>
+													<circle
+														cx="12"
+														cy="10"
+														r="3"
+													></circle>
+												</svg>
+												{slot.location}
+											</div>
+											<div class="tooltip-professor">
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													width="12"
+													height="12"
+													viewBox="0 0 24 24"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+												>
+													<path
+														d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+													></path>
+													<circle cx="12" cy="7" r="4"
+													></circle>
+												</svg>
+												{slot.professor}
+												{#if slot.prof_rating}
+													<span class="tooltip-rating"
+														>({Number(
+															slot.prof_rating,
+														).toFixed(1)} ⭐)</span
+													>
+												{/if}
+											</div>
 										</div>
 									</div>
 								</div>
@@ -719,18 +785,41 @@
 	.slot-tooltip {
 		display: none;
 		position: absolute;
-		background: rgba(255, 255, 255, 0.95);
-		border: 1px solid #ddd;
+		top: 100%; /* Position below the slot */
+		left: 0;
+		right: 0;
 		border-radius: 6px;
-		padding: 8px 12px;
-		min-width: 200px;
-		box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+		padding: 8px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		z-index: 1000;
-		top: 0;
-		left: 100%;
-		font-size: 0.8rem;
+		font-size: 0.85rem;
 		line-height: 1.5;
 		color: #333;
+		margin-top: 4px; /* Small gap between slot and tooltip */
+		width: 250px; /* Fixed width for consistency */
+		text-align: left;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	/* For slots near the bottom of the schedule, show tooltip above */
+	.schedule-slot:nth-last-child(-n + 3) .slot-tooltip {
+		top: auto;
+		bottom: 100%;
+		margin-top: 0;
+		margin-bottom: 4px;
+	}
+
+	/* For slots near the right edge, align tooltip differently */
+	.schedule-column:nth-child(4) .slot-tooltip,
+	.schedule-column:nth-child(5) .slot-tooltip {
+		left: auto;
+		right: -125px; /* Half the width */
+	}
+
+	/* For slots near the left edge, align tooltip differently */
+	.schedule-column:nth-child(1) .slot-tooltip,
+	.schedule-column:nth-child(2) .slot-tooltip {
+		left: -50px;
 	}
 
 	/* Ensure tooltip stays visible and doesn't get cut off */
@@ -738,118 +827,44 @@
 		display: block;
 	}
 
-	/* For slots too far right, show tooltip on the left */
-	.schedule-column:nth-child(4) .slot-tooltip,
-	.schedule-column:nth-child(5) .slot-tooltip {
-		left: auto;
-		right: 100%;
-	}
-
-	/* Making the schedule more responsive */
-	@media (min-width: 1200px) {
-		.class-name {
-			font-size: 0.95rem;
-		}
-
-		.section-number,
-		.slot-location,
-		.slot-time {
-			font-size: 0.85rem;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.class-name {
-			font-size: 0.75rem;
-		}
-
-		.section-number,
-		.slot-location,
-		.slot-time {
-			font-size: 0.7rem;
-		}
-	}
-
-	/* Schedule header styling */
-	.schedule-header {
+	/* Tooltip content styling */
+	.tooltip-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: var(--space-3) var(--space-4);
-		background-color: white;
-		border-top-left-radius: var(--radius-lg);
-		border-top-right-radius: var(--radius-lg);
-		border-bottom: 2px solid var(--primary);
-		margin-bottom: -1px; /* Connect with schedule container */
+		margin-bottom: 8px;
+		padding-bottom: 4px;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
-	.schedule-info {
-		display: flex;
-		justify-content: space-between;
-		width: 100%;
-		align-items: center;
-	}
-
-	.schedule-number {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-	}
-
-	.schedule-number h3 {
-		margin: 0;
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: var(--neutral-800);
-	}
-
-	.schedule-badge {
-		background-color: var(--primary);
-		color: white;
-		border-radius: var(--radius-full);
-		padding: var(--space-1) var(--space-2);
-		font-size: 0.875rem;
-		font-weight: 600;
-		min-width: 24px;
-		text-align: center;
-	}
-
-	.rating-badge {
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-		background-color: white;
-		padding: var(--space-2) var(--space-3);
-		border-radius: var(--radius-full);
-		box-shadow: var(--shadow-sm);
-		color: var(--neutral-600);
-	}
-
-	.rating-badge svg {
-		color: #ffc107;
-	}
-
-	.rating-value {
-		color: var(--neutral-900);
-		font-weight: 600;
-		font-size: 0.875rem;
-	}
-
-	.rating-label {
-		color: var(--neutral-600);
+	.tooltip-section {
 		font-size: 0.75rem;
+		opacity: 0.8;
 	}
 
-	/* Improved slot content layout */
-	.slot-content {
-		height: 100%;
-		width: 100%;
-		padding: 4px;
+	.tooltip-info {
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
-		overflow: hidden;
-		position: relative; /* For absolute positioning of hover elements */
+		gap: 4px;
+	}
+
+	.tooltip-time,
+	.tooltip-location,
+	.tooltip-professor {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 0.85rem;
+	}
+
+	.tooltip-professor {
+		white-space: normal; /* Allow wrapping for long professor names */
+		line-height: 1.3;
+	}
+
+	.tooltip-rating {
+		margin-left: 4px;
+		font-size: 0.8rem;
 	}
 
 	/* Hover information styling */
@@ -857,16 +872,17 @@
 		display: none; /* Hidden by default */
 		opacity: 0;
 		transition: opacity 0.15s ease-in-out;
-		background-color: rgba(0, 0, 0, 0.6);
+		background-color: rgba(0, 0, 0, 0.7);
 		color: white;
 		position: absolute;
 		bottom: 0;
 		left: 0;
 		right: 0;
-		padding: 3px 6px;
+		padding: 4px 8px;
 		font-size: 0.75rem;
 		border-bottom-left-radius: 4px;
 		border-bottom-right-radius: 4px;
+		z-index: 3;
 	}
 
 	/* Show hover information on hover */
