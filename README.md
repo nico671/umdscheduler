@@ -10,7 +10,6 @@ A Python-based backend service for generating class schedules for University of 
 - Support for custom restrictions:
   - Prohibited instructors
   - Time constraints
-  - Section preferences
 
 ## Prerequisites
 
@@ -60,7 +59,8 @@ Creates possible schedules based on provided courses and restrictions.
         "start": "10:00am",
         "end": "11:00am"
       }
-    ]
+    ],
+    "semester": "202508",
   }
 }
 ```

@@ -15,11 +15,10 @@ def backtracking(assignment, variables, res, domains):
 
         assignment["prof_weight"] = round(mean(prof_weights), 2)
 
-        # print(assignment['prof_weight'])
         res.append(assignment.copy())  # Make a deep copy of the assignment
         assignment.pop("prof_weight")
         return
-
+    # else continue with backtracking, building up the schedule
     # Choose an unassigned variable
     var = get_unused_var(assignment, variables, domains)
 
