@@ -9,7 +9,6 @@
 	export let scheduleData: any;
 	export let scheduleIndex: number = 0;
 
-	// Define more precise time constants for better alignment
 	const hourHeight = 60; // Height in pixels for one hour
 	const dayHeaderHeight = 50; // Height of day header
 	let earliestStart = 480; // 8:00 AM in minutes from midnight
@@ -207,16 +206,9 @@
 		return day.sort((a, b) => a.startPixels - b.startPixels);
 	}
 
-	// Fix the shouldShowDetails implementation
+	// This function is no longer needed and can be removed
 	function shouldShowDetails(heightPixels: number) {
-		// For very small slots (less than 30 minutes)
-		if (heightPixels < 30) return 0;
-		// For small slots (30-45 minutes)
-		if (heightPixels < 45) return 1;
-		// For medium slots (45-75 minutes)
-		if (heightPixels < 75) return 2;
-		// For large slots (75+ minutes)
-		return 3;
+		return 0; // We'll use one consistent detail level
 	}
 
 	// Format professor name to be shorter
@@ -263,10 +255,8 @@
 	const avgProfRating = calculateAverageRating();
 </script>
 
-<!-- Updated to ensure full width -->
 <div class="schedule-wrapper">
 	<div class="schedule-header">
-		<!-- Restored original schedule header styling -->
 		<div class="schedule-info">
 			<div class="schedule-number">
 				<span class="schedule-badge">#{scheduleIndex + 1}</span>
@@ -291,7 +281,6 @@
 		</div>
 	</div>
 
-	<!-- Redesigned container with CSS Grid for perfect alignment -->
 	<div class="schedule-container">
 		<!-- Time labels column with fixed dimensions -->
 		<div class="time-labels" style="padding-top: {dayHeaderHeight}px;">
@@ -329,10 +318,6 @@
 					{#each daysCodes as day, i}
 						<div class="schedule-column">
 							{#each formatSlots(dayLabels[i] || []) as slot}
-								<!-- Fix: Calculate detail level for each slot -->
-								{@const detailLevel = shouldShowDetails(
-									slot.heightPixels,
-								)}
 								<!-- Schedule slot with absolute positioning -->
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
 								<!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -354,155 +339,47 @@
 										)}
 								>
 									<div class="slot-content">
-										<!-- Detail level 0: Very small slots - stack class and time -->
-										{#if detailLevel === 0}
-											<div class="horizontal-info">
-												<span class="class-name"
-													>{slot.class}</span
-												>
-												<span class="mini-time"
-													>{slot.startTime.replace(
-														":00",
-														"",
-													)}</span
-												>
-											</div>
-											<!-- Professor info (hidden until hover) -->
-											<div class="hover-info">
-												<span class="professor-info">
-													{formatProfName(
-														slot.professor,
-													)}
-													{#if slot.prof_rating}
-														<span class="rating"
-															>({Number(
-																slot.prof_rating,
-															).toFixed(1)} ⭐)</span
-														>
-													{/if}
-												</span>
-											</div>
+										<!-- Consistent layout for all slots -->
+										<div class="class-row">
+											<span class="class-name"
+												>{slot.class}</span
+											>
+											<span class="section-number"
+												>§{slot.sectionCode}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-location"
+												>{slot.location.split(
+													" ",
+												)[0]}</span
+											>
+										</div>
+										<div class="info-row">
+											<span class="slot-time"
+												>{slot.startTime.replace(
+													":00",
+													"",
+												)}-{slot.endTime.replace(
+													":00",
+													"",
+												)}</span
+											>
+										</div>
 
-											<!-- Detail level 1: Small slots - stack horizontally -->
-										{:else if detailLevel === 1}
-											<div class="class-row">
-												<span class="class-name"
-													>{slot.class}</span
-												>
-												<span class="section-number"
-													>§{slot.sectionCode}</span
-												>
-											</div>
-											<div class="info-row">
-												<span class="slot-location"
-													>{slot.location.split(
-														" ",
-													)[0]}</span
-												>
-												<span class="slot-time"
-													>{slot.startTime.replace(
-														":00",
-														"",
-													)}-{slot.endTime.replace(
-														":00",
-														"",
-													)}</span
-												>
-											</div>
-											<!-- Professor info (hidden until hover) -->
-											<div class="hover-info">
-												<span class="professor-info">
-													{formatProfName(
-														slot.professor,
-													)}
-													{#if slot.prof_rating}
-														<span class="rating"
-															>({Number(
-																slot.prof_rating,
-															).toFixed(1)} ⭐)</span
-														>
-													{/if}
-												</span>
-											</div>
-
-											<!-- Detail level 2: Medium slots - more horizontal stacking -->
-										{:else if detailLevel === 2}
-											<div class="class-row">
-												<span class="class-name"
-													>{slot.class}</span
-												>
-												<span class="section-number"
-													>§{slot.sectionCode}</span
-												>
-											</div>
-											<div class="info-row">
-												<span class="slot-location"
-													>{slot.location}</span
-												>
-											</div>
-											<div class="info-row">
-												<span class="slot-time"
-													>{slot.startTime.replace(
-														":00",
-														"",
-													)}-{slot.endTime.replace(
-														":00",
-														"",
-													)}</span
-												>
-											</div>
-											<!-- Professor info (hidden until hover) -->
-											<div class="hover-info">
-												<span class="professor-info">
-													{formatProfName(
-														slot.professor,
-													)}
-													{#if slot.prof_rating}
-														<span class="rating"
-															>({Number(
-																slot.prof_rating,
-															).toFixed(1)} ⭐)</span
-														>
-													{/if}
-												</span>
-											</div>
-
-											<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
-										{:else}
-											<div class="class-row">
-												<span class="class-name"
-													>{slot.class}</span
-												>
-												<span class="section-number"
-													>§{slot.sectionCode}</span
-												>
-											</div>
-											<div class="info-row">
-												<span class="slot-location"
-													>{slot.location}</span
-												>
-											</div>
-											<div class="info-row">
-												<span class="slot-time"
-													>{slot.startTime}-{slot.endTime}</span
-												>
-											</div>
-											<!-- Professor info (hidden until hover) -->
-											<div class="hover-info">
-												<span class="professor-info">
-													{formatProfName(
-														slot.professor,
-													)}
-													{#if slot.prof_rating}
-														<span class="rating"
-															>({Number(
-																slot.prof_rating,
-															).toFixed(1)} ⭐)</span
-														>
-													{/if}
-												</span>
-											</div>
-										{/if}
+										<!-- Professor info (hidden until hover) -->
+										<div class="hover-info">
+											<span class="professor-info">
+												{slot.professor}
+												{#if slot.prof_rating}
+													<span class="rating"
+														>({Number(
+															slot.prof_rating,
+														).toFixed(1)} ⭐)</span
+													>
+												{/if}
+											</span>
+										</div>
 									</div>
 
 									<!-- Show tooltip on hover for all slots, regardless of size -->
@@ -749,27 +626,57 @@
 		z-index: 10;
 	}
 
+	/* Improved slot content layout */
 	.slot-content {
 		height: 100%;
 		width: 100%;
-		padding: 4px;
+		padding: 6px;
 		display: flex;
 		flex-direction: column;
-		/* gap: 2px; */
+		justify-content: space-between; /* Space items evenly in the container */
 		overflow: hidden;
+		position: relative; /* For absolute positioning of hover elements */
+	}
+
+	.class-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.info-row {
+		display: flex;
+		justify-content: flex-start; /* Left align info */
+		align-items: center;
+		width: 100%;
+		overflow: hidden;
+		font-size: 0.75rem;
+		line-height: 1.2;
 	}
 
 	/* Class name is the only bold element */
 	.class-name {
 		font-weight: bold;
-		font-size: 0.8rem;
+		font-size: 0.85rem;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		flex: 1;
+	}
+
+	/* Section number now positioned inline */
+	.section-number {
+		font-size: 0.75rem;
+		opacity: 0.8;
+		font-weight: normal;
+		white-space: nowrap;
+		padding-left: 4px;
+		flex-shrink: 0;
 	}
 
 	/* All other text is consistent weight and size */
-	.section-number,
 	.slot-location,
 	.slot-time {
 		font-weight: normal;
@@ -777,10 +684,32 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		color: #333;
 	}
 
-	/* Remove any specific styling for different detail levels */
+	/* Remove mini-time styles as we're not using that layout anymore */
+
+	/* Hover information styling remains the same */
+	.hover-info {
+		display: none; /* Hidden by default */
+		opacity: 0;
+		transition: opacity 0.15s ease-in-out;
+		background-color: rgba(0, 0, 0, 0.7);
+		color: white;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 4px 8px;
+		font-size: 0.75rem;
+		border-bottom-left-radius: 4px;
+		border-bottom-right-radius: 4px;
+		z-index: 3;
+	}
+
+	.schedule-slot:hover .hover-info {
+		display: block;
+		opacity: 1;
+	}
 
 	.slot-tooltip {
 		display: none;
@@ -918,15 +847,6 @@
 		font-size: 0.7rem;
 	}
 
-	/* Horizontal information layout */
-	.horizontal-info {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		width: 100%;
-		overflow: hidden;
-	}
-
 	.class-row {
 		display: flex;
 		justify-content: space-between;
@@ -952,12 +872,6 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		flex: 1;
-	}
-
-	.mini-time {
-		font-size: 0.7rem;
-		white-space: nowrap;
-		margin-left: 4px;
 	}
 
 	/* Section number now positioned inline */
