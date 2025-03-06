@@ -318,7 +318,8 @@
 					{#each timeLabels as _, i}
 						<div
 							class="grid-line"
-							style="height: {hourHeight}px;"
+							style="top: {i *
+								hourHeight}px; height: {hourHeight}px;"
 						></div>
 					{/each}
 				</div>
@@ -504,6 +505,7 @@
 		box-sizing: border-box;
 		border-top-left-radius: 0;
 		border-top-right-radius: 0;
+		background-color: white;
 	}
 
 	/* Time labels column with exact alignment */
@@ -560,9 +562,10 @@
 	.grid-area {
 		position: relative; /* Ensure content is laid out properly */
 		width: 100%;
+		background-color: white;
 	}
 
-	/* Grid lines with exact height matching time labels */
+	/* Grid lines with exact height matching time labels - FIXED */
 	.grid-lines {
 		position: absolute;
 		top: 0;
@@ -571,14 +574,16 @@
 		bottom: 0;
 		z-index: 0; /* Send these behind day-columns */
 		pointer-events: none;
-		display: flex;
-		flex-direction: column;
 	}
 
 	.grid-line {
+		position: absolute; /* Absolute positioning for precise placement */
 		width: 100%;
 		border-bottom: 1px solid #eaeaea;
 		box-sizing: border-box;
+		height: 1px; /* Visual height of line is 1px */
+		left: 0;
+		right: 0;
 	}
 
 	/* Day columns container uses CSS Grid for equal column widths */
@@ -589,6 +594,7 @@
 		top: 0;
 		width: 100%;
 		height: 100%;
+		z-index: 1; /* Above grid lines, below event slots */
 	}
 
 	.schedule-column {
@@ -607,17 +613,14 @@
 		overflow: hidden;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		transition: all 0.25s ease;
-		z-index: 1;
+		z-index: 2; /* Above grid lines and day columns */
+		cursor: pointer;
 	}
 
 	.schedule-slot:hover {
 		transform: scale(1.02);
 		box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
 		z-index: 10;
-	}
-
-	.schedule-slot:hover .slot-tooltip {
-		display: block;
 	}
 
 	.slot-content {

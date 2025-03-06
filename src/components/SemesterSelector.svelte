@@ -27,7 +27,7 @@
         aria-label="Select semester"
     >
         {#if $availableSemesters.length === 0}
-            <option value="202501">Loading semesters...</option>
+            <option value="202508">Loading semesters...</option>
         {:else}
             {#each $availableSemesters as semester}
                 <option value={semester}>{formatSemester(semester)}</option>
