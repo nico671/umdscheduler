@@ -340,104 +340,42 @@
 												)}</span
 											>
 										</div>
-										<!-- Professor info (hidden until hover) -->
-										<div class="hover-info">
-											<span class="professor-info">
-												{slot.professor}
-												{#if slot.prof_rating}
-													<span class="rating"
-														>({Number(
-															slot.prof_rating,
-														).toFixed(1)} ⭐)</span
-													>
-												{/if}
-											</span>
-										</div>
 									</div>
 
 									<!-- Show tooltip on hover for all slots, regardless of size -->
 									<div
 										class="slot-tooltip"
-										style="background: {colorMap.get(
-											slot.class,
-										)
-											? colorMap.get(slot.class) + 'f0'
-											: 'rgba(240, 240, 240, 0.95)'};"
+										style="
+											background: {colorMap.get(slot.class) || '#f0f0f0'};
+											border-color: {colorMap.get(slot.class)
+											? 'rgba(0, 0, 0, 0.1)'
+											: 'rgba(0, 0, 0, 0.1)'};
+										"
 									>
-										<div class="tooltip-header">
-											<strong>{slot.class}</strong>
-											<span class="tooltip-section"
-												>Section {slot.sectionCode}</span
+										<div class="tooltip-professor">
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="12"
+												height="12"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
 											>
-										</div>
-										<div class="tooltip-info">
-											<div class="tooltip-time">
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													width="12"
-													height="12"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
+												<path
+													d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+												></path>
+												<circle cx="12" cy="7" r="4"
+												></circle>
+											</svg>
+											{slot.professor}
+											{#if slot.prof_rating}
+												<span class="tooltip-rating"
+													>({Number(
+														slot.prof_rating,
+													).toFixed(1)} ⭐)</span
 												>
-													<circle
-														cx="12"
-														cy="12"
-														r="10"
-													></circle>
-													<polyline
-														points="12 6 12 12 16 14"
-													></polyline>
-												</svg>
-												{slot.startTime} - {slot.endTime}
-											</div>
-											<div class="tooltip-location">
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													width="12"
-													height="12"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-												>
-													<path
-														d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
-													></path>
-													<circle
-														cx="12"
-														cy="10"
-														r="3"
-													></circle>
-												</svg>
-												{slot.location}
-											</div>
-											<div class="tooltip-professor">
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													width="12"
-													height="12"
-													viewBox="0 0 24 24"
-													fill="none"
-													stroke="currentColor"
-													stroke-width="2"
-												>
-													<path
-														d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
-													></path>
-													<circle cx="12" cy="7" r="4"
-													></circle>
-												</svg>
-												{slot.professor}
-												{#if slot.prof_rating}
-													<span class="tooltip-rating"
-														>({Number(
-															slot.prof_rating,
-														).toFixed(1)} ⭐)</span
-													>
-												{/if}
-											</div>
+											{/if}
 										</div>
 									</div>
 								</div>
@@ -586,7 +524,7 @@
 		color: #333;
 		padding: 4px;
 		box-sizing: border-box;
-		overflow: hidden;
+		overflow: visible; /* Changed from hidden to allow tooltip to extend outside */
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		transition: all 0.25s ease;
 		z-index: 2; /* Above grid lines and day columns */
@@ -659,165 +597,63 @@
 		text-overflow: ellipsis;
 	}
 
-	/* Remove mini-time styles as we're not using that layout anymore */
-
-	/* Hover information styling remains the same */
-	.hover-info {
-		display: none; /* Hidden by default */
-		opacity: 0;
-		transition: opacity 0.15s ease-in-out;
-		background-color: rgba(0, 0, 0, 0.7);
-		color: white;
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		padding: 4px 8px;
-		font-size: 0.75rem;
-		border-bottom-left-radius: 4px;
-		border-bottom-right-radius: 4px;
-		z-index: 3;
-	}
-
-	.schedule-slot:hover .hover-info {
-		display: block;
-		opacity: 1;
-	}
-
+	/* Tooltip redesigned to appear as an extension of the slot */
 	.slot-tooltip {
 		display: none;
 		position: absolute;
-		top: 100%; /* Position below the slot */
-		left: 0;
-		right: 0;
-		border-radius: 6px;
+		top: calc(100% - 1px); /* Overlap slightly to connect with slot */
+		left: -1px; /* Align with parent border */
+		right: -1px;
+		border-radius: 0 0 6px 6px; /* Round only bottom corners */
 		padding: 8px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		z-index: 1000;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		z-index: 1;
 		font-size: 0.85rem;
-		line-height: 1.5;
+		line-height: 1.4;
 		color: #333;
-		margin-top: 4px; /* Small gap between slot and tooltip */
-		width: 250px; /* Fixed width for consistency */
-		text-align: left;
 		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-top: none; /* Remove top border for seamless connection */
+		transform-origin: top center;
+		transition:
+			transform 0.2s,
+			opacity 0.2s;
+		opacity: 0;
+		transform: scaleY(0.8);
+		pointer-events: none; /* Don't interfere with slot click events */
+	}
+
+	.schedule-slot:hover .slot-tooltip {
+		display: block;
+		opacity: 1;
+		transform: scaleY(1);
+		pointer-events: auto; /* Re-enable pointer events when visible */
 	}
 
 	/* For slots near the bottom of the schedule, show tooltip above */
-	.schedule-slot:nth-last-child(-n + 3) .slot-tooltip {
+	.schedule-column:nth-last-child(-n + 2)
+		.schedule-slot:nth-last-child(-n + 2)
+		.slot-tooltip {
 		top: auto;
-		bottom: 100%;
-		margin-top: 0;
-		margin-bottom: 4px;
+		bottom: calc(100% - 1px);
+		border-radius: 6px 6px 0 0; /* Round top corners instead */
+		border-bottom: none;
+		border-top: 1px solid rgba(0, 0, 0, 0.1);
+		transform-origin: bottom center;
 	}
 
-	/* For slots near the right edge, align tooltip differently */
-	.schedule-column:nth-child(4) .slot-tooltip,
-	.schedule-column:nth-child(5) .slot-tooltip {
-		left: auto;
-		right: -125px; /* Half the width */
-	}
-
-	/* For slots near the left edge, align tooltip differently */
-	.schedule-column:nth-child(1) .slot-tooltip,
-	.schedule-column:nth-child(2) .slot-tooltip {
-		left: -50px;
-	}
-
-	/* Ensure tooltip stays visible and doesn't get cut off */
-	.schedule-slot:hover .slot-tooltip {
-		display: block;
-	}
-
-	/* Tooltip content styling */
-	.tooltip-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 8px;
-		padding-bottom: 4px;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-	}
-
-	.tooltip-section {
-		font-size: 0.75rem;
-		opacity: 0.8;
-	}
-
-	.tooltip-info {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.tooltip-time,
-	.tooltip-location,
+	/* Tooltip content styling - simplified to remove lines */
 	.tooltip-professor {
 		display: flex;
 		align-items: center;
 		gap: 6px;
-		font-size: 0.85rem;
-	}
-
-	.tooltip-professor {
 		white-space: normal; /* Allow wrapping for long professor names */
 		line-height: 1.3;
+		width: 100%;
 	}
 
 	.tooltip-rating {
 		margin-left: 4px;
 		font-size: 0.8rem;
-	}
-
-	/* Hover information styling */
-	.hover-info {
-		display: none; /* Hidden by default */
-		opacity: 0;
-		transition: opacity 0.15s ease-in-out;
-		background-color: rgba(0, 0, 0, 0.7);
-		color: white;
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		padding: 4px 8px;
-		font-size: 0.75rem;
-		border-bottom-left-radius: 4px;
-		border-bottom-right-radius: 4px;
-		z-index: 3;
-	}
-
-	/* Show hover information on hover */
-	.schedule-slot:hover .hover-info {
-		display: block;
-		opacity: 1;
-	}
-
-	/* Add a darker background overlay effect when hovering */
-	.schedule-slot:hover .slot-content::before {
-		content: "";
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.05);
-		pointer-events: none;
-	}
-
-	.professor-info {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.rating {
-		margin-left: 4px;
-		font-size: 0.7rem;
 	}
 
 	.class-row {

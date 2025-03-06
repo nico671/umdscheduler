@@ -9,6 +9,12 @@ A Svelte app serving as a frontend for the UMDScheduler project, an application 
 - **Schedule Optimization**: Algorithm to suggest optimal schedules based on preferences
 - **Professor Ratings**: View professor ratings and reviews integrated from PlanetTerp, a review site for UMD classes and professors.
 
+## Screenshots
+
+![Example Image](screenshots/homescreen_base.png)
+![Example Image](screenshots/generated_schedules.png)
+![Example Image](screenshots/add_class_modal.png)
+
 ## Getting Started
 
 ### Prerequisites
@@ -60,13 +66,6 @@ We welcome contributions from the community! Here's how you can help:
 - Follow the existing code style
 - Write meaningful commit messages
 - Include comments in your code
-- Write tests for new features
-
-## Screenshots
-
-![Example Image](screenshots/homescreen_base.png)
-![Example Image](screenshots/generated_schedules.png)
-![Example Image](screenshots/add_class_modal.png)
 
 ## Technologies Used
 

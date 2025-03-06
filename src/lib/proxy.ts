@@ -5,12 +5,12 @@ export async function fetchWithProxy<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  // Connect directly to the backend server
-  const apiUrl = "http://127.0.0.1:5000";
+  // Use the hosted API instead of local backend
+  const apiUrl = "https://umdscheduler.onrender.com";
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const fullUrl = `${apiUrl}${normalizedPath}`;
 
-  console.log(`Making request to backend: ${fullUrl}`);
+  console.log(`Making request to hosted API: ${fullUrl}`);
 
   try {
     const response = await fetch(fullUrl, {
@@ -19,9 +19,8 @@ export async function fetchWithProxy<T>(
         ...options.headers,
         Accept: "application/json",
         "Content-Type": "application/json",
-        Origin: "http://localhost:5173",
       },
-      credentials: "omit",
+      // Enable CORS
       mode: "cors",
     });
 
