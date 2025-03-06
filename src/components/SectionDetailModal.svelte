@@ -124,24 +124,9 @@
             </div>
 
             <div class="section-grid">
-                <div class="section-info">
-                    <!-- Display seat availability -->
-                    <div class="availability">
-                        <div class="availability-item">
-                            <span class="label">Total Seats:</span>
-                            <span class="value">{sectionData.seats}</span>
-                        </div>
-                        <div class="availability-item">
-                            <span class="label">Open Seats:</span>
-                            <span class="value">{openSeats}</span>
-                        </div>
-                        <div class="availability-item">
-                            <span class="label">Waitlist:</span>
-                            <span class="value">{waitlist}</span>
-                        </div>
-                    </div>
-
-                    <!-- Display instructor information -->
+                <!-- Left column - Class Details -->
+                <div class="section-details">
+                    <!-- Instructors section - Moved here from section-info -->
                     <div class="instructors-container">
                         <h3>Instructors</h3>
                         <ul class="instructors-list">
@@ -154,9 +139,28 @@
                             {/if}
                         </ul>
                     </div>
+
+                    <!-- Seat availability moved below instructors -->
+                    <div class="availability">
+                        <h3>Seat Information</h3>
+                        <div class="availability-grid">
+                            <div class="availability-item">
+                                <span class="label">Total Seats:</span>
+                                <span class="value">{sectionData.seats}</span>
+                            </div>
+                            <div class="availability-item">
+                                <span class="label">Open Seats:</span>
+                                <span class="value">{openSeats}</span>
+                            </div>
+                            <div class="availability-item">
+                                <span class="label">Waitlist:</span>
+                                <span class="value">{waitlist}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Display meeting information -->
+                <!-- Right column - Meeting Times -->
                 <div class="meetings-container">
                     <h3>Meeting Times & Locations</h3>
                     {#if sectionData.meetings && sectionData.meetings.length > 0}
@@ -250,38 +254,41 @@
         background-color: rgba(0, 0, 0, 0.05);
     }
 
+    /* Updated section grid to balance columns */
     .section-grid {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 24px;
     }
 
-    @media (min-width: 768px) {
-        .section-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-
-    .section-info {
+    /* Renamed from section-info to section-details */
+    .section-details {
         display: flex;
         flex-direction: column;
         gap: 20px;
     }
 
+    /* Updated availability styling with heading */
     .availability {
         background-color: #f8f8f8;
         border-radius: 8px;
         padding: 16px;
     }
 
+    .availability h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+
+    .availability-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
     .availability-item {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 8px;
-    }
-
-    .availability-item:last-child {
-        margin-bottom: 0;
     }
 
     .label {
@@ -299,6 +306,11 @@
         color: #333;
     }
 
+    /* Updated instructors styling to match the new position */
+    .instructors-container {
+        margin-bottom: 16px;
+    }
+
     .instructors-list,
     .meetings-list {
         list-style: none;
@@ -307,14 +319,18 @@
     }
 
     .instructors-list li {
-        padding: 8px 0;
-        border-bottom: 1px solid #eee;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        background-color: #f8f8f8;
+        border-radius: 6px;
+        font-weight: 500;
     }
 
     .instructors-list li:last-child {
-        border-bottom: none;
+        margin-bottom: 0;
     }
 
+    /* Meeting item styling unchanged */
     .meeting-item {
         display: grid;
         grid-template-columns: auto 1fr;
@@ -351,6 +367,14 @@
         font-style: italic;
     }
 
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .section-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Loading and animation styles unchanged */
     .loading {
         display: flex;
         flex-direction: column;
