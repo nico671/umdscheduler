@@ -266,7 +266,7 @@
 <!-- Updated to ensure full width -->
 <div class="schedule-wrapper">
 	<div class="schedule-header">
-		<!-- Updated schedule header -->
+		<!-- Restored original schedule header styling -->
 		<div class="schedule-info">
 			<div class="schedule-number">
 				<span class="schedule-badge">#{scheduleIndex + 1}</span>
@@ -1015,5 +1015,75 @@
 		}
 
 		/* ...other mobile styles... */
+	}
+
+	/* Restore original schedule header styling */
+	.schedule-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--space-3) var(--space-4);
+		background-color: white;
+		border-top-left-radius: var(--radius-lg);
+		border-top-right-radius: var(--radius-lg);
+		border-bottom: 2px solid var(--primary);
+		margin-bottom: -1px; /* Connect with schedule container */
+	}
+
+	.schedule-info {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		align-items: center;
+	}
+
+	.schedule-number {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.schedule-number h3 {
+		margin: 0;
+		font-size: 1.125rem;
+		font-weight: 600;
+		color: var(--neutral-800);
+	}
+
+	.schedule-badge {
+		background-color: var(--primary);
+		color: white;
+		border-radius: var(--radius-full);
+		padding: var(--space-1) var(--space-2);
+		font-size: 0.875rem;
+		font-weight: 600;
+		min-width: 24px;
+		text-align: center;
+	}
+
+	.rating-badge {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		background-color: white;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius-full);
+		box-shadow: var(--shadow-sm);
+		color: var(--neutral-600);
+	}
+
+	.rating-badge svg {
+		color: #ffc107;
+	}
+
+	.rating-value {
+		color: var(--neutral-900);
+		font-weight: 600;
+		font-size: 0.875rem;
+	}
+
+	.rating-label {
+		color: var(--neutral-600);
+		font-size: 0.75rem;
 	}
 </style>

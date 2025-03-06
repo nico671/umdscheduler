@@ -136,6 +136,7 @@
 
 		<form on:submit|preventDefault={handleSubmit}>
 			<div class="form-group">
+				<!-- svelte-ignore a11y-label-has-associated-control -->
 				<label class="form-label">Select Days</label>
 				<div class="days-grid">
 					{#each dayNames as day}
@@ -166,6 +167,7 @@
 
 			<div class="time-container">
 				<div class="time-section">
+					<!-- svelte-ignore a11y-label-has-associated-control -->
 					<label class="form-label">Start Time</label>
 					<div class="time-inputs">
 						<select bind:value={startHour} class="time-select">
@@ -188,6 +190,7 @@
 				</div>
 
 				<div class="time-section">
+					<!-- svelte-ignore a11y-label-has-associated-control -->
 					<label class="form-label">End Time</label>
 					<div class="time-inputs">
 						<select bind:value={endHour} class="time-select">
