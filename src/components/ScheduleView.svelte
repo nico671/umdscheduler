@@ -367,6 +367,21 @@
 													)}</span
 												>
 											</div>
+											<!-- Professor info (hidden until hover) -->
+											<div class="hover-info">
+												<span class="professor-info">
+													{formatProfName(
+														slot.professor,
+													)}
+													{#if slot.prof_rating}
+														<span class="rating"
+															>({Number(
+																slot.prof_rating,
+															).toFixed(1)} ⭐)</span
+														>
+													{/if}
+												</span>
+											</div>
 
 											<!-- Detail level 1: Small slots - stack horizontally -->
 										{:else if detailLevel === 1}
@@ -393,6 +408,21 @@
 														"",
 													)}</span
 												>
+											</div>
+											<!-- Professor info (hidden until hover) -->
+											<div class="hover-info">
+												<span class="professor-info">
+													{formatProfName(
+														slot.professor,
+													)}
+													{#if slot.prof_rating}
+														<span class="rating"
+															>({Number(
+																slot.prof_rating,
+															).toFixed(1)} ⭐)</span
+														>
+													{/if}
+												</span>
 											</div>
 
 											<!-- Detail level 2: Medium slots - more horizontal stacking -->
@@ -421,6 +451,21 @@
 													)}</span
 												>
 											</div>
+											<!-- Professor info (hidden until hover) -->
+											<div class="hover-info">
+												<span class="professor-info">
+													{formatProfName(
+														slot.professor,
+													)}
+													{#if slot.prof_rating}
+														<span class="rating"
+															>({Number(
+																slot.prof_rating,
+															).toFixed(1)} ⭐)</span
+														>
+													{/if}
+												</span>
+											</div>
 
 											<!-- Detail level 3: Large slots - optimal layout with horizontal elements -->
 										{:else}
@@ -441,6 +486,21 @@
 												<span class="slot-time"
 													>{slot.startTime}-{slot.endTime}</span
 												>
+											</div>
+											<!-- Professor info (hidden until hover) -->
+											<div class="hover-info">
+												<span class="professor-info">
+													{formatProfName(
+														slot.professor,
+													)}
+													{#if slot.prof_rating}
+														<span class="rating"
+															>({Number(
+																slot.prof_rating,
+															).toFixed(1)} ⭐)</span
+														>
+													{/if}
+												</span>
 											</div>
 										{/if}
 									</div>
@@ -789,6 +849,57 @@
 		flex-direction: column;
 		gap: 2px;
 		overflow: hidden;
+		position: relative; /* For absolute positioning of hover elements */
+	}
+
+	/* Hover information styling */
+	.hover-info {
+		display: none; /* Hidden by default */
+		opacity: 0;
+		transition: opacity 0.15s ease-in-out;
+		background-color: rgba(0, 0, 0, 0.6);
+		color: white;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		padding: 3px 6px;
+		font-size: 0.75rem;
+		border-bottom-left-radius: 4px;
+		border-bottom-right-radius: 4px;
+	}
+
+	/* Show hover information on hover */
+	.schedule-slot:hover .hover-info {
+		display: block;
+		opacity: 1;
+	}
+
+	/* Add a darker background overlay effect when hovering */
+	.schedule-slot:hover .slot-content::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.05);
+		pointer-events: none;
+	}
+
+	.professor-info {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.rating {
+		margin-left: 4px;
+		font-size: 0.7rem;
 	}
 
 	/* Horizontal information layout */
