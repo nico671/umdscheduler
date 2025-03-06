@@ -342,9 +342,9 @@
 										height: {slot.heightPixels}px; 
 										background: {colorMap.get(slot.class) || '#f0f0f0'};
 										{slot.horizontalPosition !== undefined
-										? `left: ${slot.horizontalPosition * (100 / slot.totalOverlap)}%; 
-												width: ${100 / slot.totalOverlap}%;`
-										: 'left: 2px; right: 2px;'}
+										? `left: calc(${slot.horizontalPosition * (100 / slot.totalOverlap)}%); 
+												width: calc(${100 / slot.totalOverlap}%);`
+										: 'left: 0; right: 0;'}
 									"
 									on:click={() =>
 										openSectionDetails(
@@ -515,18 +515,20 @@
 		border-right: 1px solid #eaeaea;
 		z-index: 2;
 		box-sizing: border-box;
+		padding: 0; /* Remove padding */
 	}
 
 	.time-label {
 		display: flex;
-		align-items: center;
+		align-items: flex-start; /* Align to top */
 		justify-content: center;
 		font-size: 0.8rem;
 		color: #666;
-		border-bottom: 1px dashed #eaeaea;
+		border-bottom: 1px solid #eaeaea;
 		box-sizing: border-box;
 		position: relative;
 		text-align: center;
+		padding-top: 4px; /* Small top padding */
 	}
 
 	/* Schedule content area containing days and grid */
@@ -575,7 +577,7 @@
 
 	.grid-line {
 		width: 100%;
-		border-bottom: 1px dashed #eaeaea;
+		border-bottom: 1px solid #eaeaea;
 		box-sizing: border-box;
 	}
 
@@ -583,10 +585,8 @@
 	.day-columns {
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
-		position: relative; /* Keep day-columns within the normal flow */
-		z-index: 1; /* Render above .grid-lines */
+		position: absolute; /* Position absolutely to align with grid lines */
 		top: 0;
-		left: 0;
 		width: 100%;
 		height: 100%;
 	}
