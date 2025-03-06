@@ -354,8 +354,6 @@
 													" ",
 												)[0]}</span
 											>
-										</div>
-										<div class="info-row">
 											<span class="slot-time"
 												>{slot.startTime.replace(
 													":00",
@@ -366,7 +364,6 @@
 												)}</span
 											>
 										</div>
-
 										<!-- Professor info (hidden until hover) -->
 										<div class="hover-info">
 											<span class="professor-info">
