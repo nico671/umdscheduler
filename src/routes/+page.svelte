@@ -451,8 +451,8 @@
 		flex-direction: column;
 		min-height: 100vh;
 		width: 100%; /* Full width */
-		margin: 0; /* No margin */
-		padding: 0; /* No padding at container level */
+		margin: 0;
+		padding: 0;
 		overflow-x: hidden; /* Prevent horizontal scroll */
 	}
 
@@ -469,18 +469,20 @@
 
 	.header-content {
 		width: 100%;
-		max-width: 1400px; /* Content area max width */
+		max-width: 100%; /* Use full width */
 		margin: 0 auto;
 		padding: 0 var(--space-4); /* Padding on the content */
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		box-sizing: border-box; /* Include padding in width calculation */
 	}
 
 	.header-left {
 		display: flex;
 		align-items: center;
 		gap: var(--space-4);
+		flex: 1; /* Take up available space */
 	}
 
 	.app-title {
@@ -493,23 +495,25 @@
 	.header-actions {
 		display: flex;
 		gap: var(--space-3);
+		flex: 1; /* Take up available space */
+		justify-content: flex-end; /* Align buttons to the right */
 	}
 
 	.app-main {
 		padding: var(--space-5) var(--space-4);
 		flex: 1;
-		width: 100%;
-		max-width: 1400px;
-		margin: 0 auto;
+		width: 100%; /* Full width */
+		box-sizing: border-box;
 		overflow-x: hidden; /* Ensure content doesn't overflow */
 	}
 
 	/* Restrictions styling */
 	.restrictions-container {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		grid-template-columns: repeat(3, 1fr); /* Three equal columns */
 		gap: var(--space-5);
 		margin-bottom: var(--space-6);
+		width: 100%;
 	}
 
 	.restriction-box {
@@ -520,6 +524,8 @@
 		transition: var(--transition-normal);
 		display: flex; /* Use flexbox for layout */
 		flex-direction: column; /* Stack children vertically */
+		width: 100%; /* Ensure full width within grid cell */
+		height: 100%; /* Fill the grid cell height */
 	}
 
 	.restriction-box:hover {
@@ -546,6 +552,7 @@
 		gap: var(--space-2);
 		min-height: 80px;
 		flex-grow: 1; /* Allow items area to grow */
+		width: 100%; /* Full width */
 	}
 
 	.restriction-button {
@@ -632,7 +639,7 @@
 
 	.empty-state-icon {
 		color: var(--neutral-400);
-		margin-bottom: var(--space-4);
+		margin-bottom: var (--space-4);
 	}
 
 	.empty-state h2 {
@@ -710,7 +717,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-5);
-		width: 100%;
+		width: 100%; /* Full width */
 		overflow-x: hidden;
 	}
 
@@ -739,6 +746,15 @@
 	}
 
 	/* Responsive styles */
+	@media (max-width: 1200px) {
+		.restrictions-container {
+			grid-template-columns: repeat(
+				2,
+				1fr
+			); /* Two equal columns on medium screens */
+		}
+	}
+
 	@media (max-width: 768px) {
 		.header-content {
 			flex-direction: column;
@@ -756,6 +772,7 @@
 			width: 100%;
 			flex-wrap: wrap;
 			gap: var(--space-2);
+			justify-content: flex-start; /* Left align on mobile */
 		}
 
 		.btn {
@@ -765,7 +782,7 @@
 		}
 
 		.restrictions-container {
-			grid-template-columns: 1fr;
+			grid-template-columns: 1fr; /* Single column on mobile */
 		}
 
 		/* Fix potential overflow in the schedule view */
@@ -775,13 +792,15 @@
 		}
 
 		.app-main {
-			padding: var(--space-3) var (--space-3);
+			padding: var(--space-3) var(--space-3);
 		}
 
 		/* Make buttons stack vertically on very small screens */
-		.header-actions {
-			flex-direction: column;
-			width: 100%;
+		@media (max-width: 480px) {
+			.header-actions {
+				flex-direction: column;
+				width: 100%;
+			}
 		}
 	}
 </style>
