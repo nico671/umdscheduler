@@ -2,11 +2,11 @@
 	import { createEventDispatcher } from "svelte";
 	import { onMount } from "svelte";
 
-	export let colorMap: Map<string, string>;
+	// export let colorMap: Map<string, string>;
 	export let showAddClassModal: boolean;
 	export let availableClasses: string[] = [];
 	export let addedClasses: string[] = [];
-	export let showModals: boolean[] = [];
+	// export let showModals: boolean[] = [];
 
 	const dispatch = createEventDispatcher();
 	let dialog: HTMLDialogElement;

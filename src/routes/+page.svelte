@@ -323,8 +323,6 @@
 		availableClasses={$availableClasses}
 		addedClasses={$addedClasses}
 		showAddClassModal={$showAddClassModal}
-		colorMap={$colorMap}
-		showModals={$showClassModals}
 		on:close={() => ($showAddClassModal = false)}
 		on:add={(event) => {
 			const data = event.detail;
