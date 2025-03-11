@@ -53,6 +53,7 @@ export function generateColor(index: number): string {
   return `hsl(${hue}, 70%, 85%)`;
 }
 
+
 // Generate schedules function - updated to always get latest semester
 export async function generateSchedules(): Promise<void> {
   let currentAddedClasses: string[] = [];
@@ -69,8 +70,8 @@ export async function generateSchedules(): Promise<void> {
   // Always get the latest semester value directly from the store
   const selectedSemester = get(currentSemester);
 
-  if (currentAddedClasses.length === 0) {
-    error.set("Please add at least one class before generating schedules");
+  if (currentAddedClasses.length < 2) {
+    error.set("Please add at least two classes before generating schedules");
     return;
   }
 
@@ -622,4 +623,44 @@ export async function fetchSemesters(): Promise<void> {
     console.error("Error fetching semesters:", error);
     currentSemester.set("202401"); // Spring 2024 as fallback
   }
+}
+
+// Function to fetch available classes with semester parameter
+export async function fetchAvailableClasses(semester: string): Promise<void> {
+  try {
+    const url = new URL("https://api.umd.io/v1/courses/list");
+    url.searchParams.set("sort", "course_id,-credits");
+    url.searchParams.set("semester", semester);
+
+    console.log(
+      `Fetching available classes for semester: ${semester} (${formatSemester(semester)})`,
+    );
+
+    const response = await fetch(url);
+    const data = await response.json();
+    availableClasses.set(data.map(
+      (item: { course_id: string }) => item.course_id,
+    ));
+  } catch (err) {
+    error.set(
+      err instanceof Error ? err.message : "Failed to fetch classes"
+    );
+    console.error("Error fetching classes:", err);
+  }
+}
+
+// Handle semester change to reload classes
+export function handleSemesterChange(): void {
+  // Clear current schedules and classes when semester changes
+  schedules.set([]);
+  generatedSchedules.set([]);
+  error.set(null);
+
+  // Clear added classes when semester changes to prevent conflicts
+  addedClasses.set([]);
+  showClassModals.set([]);
+
+  // Refresh available classes for the new semester
+  const semester = get(currentSemester);
+  fetchAvailableClasses(semester);
 }
