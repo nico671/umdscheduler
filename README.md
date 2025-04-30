@@ -1,6 +1,6 @@
 # UMDScheduler
 
-UMDScheduler is a web-based application designed to help students at the University of Maryland (UMD) efficiently manage their course schedules. The application allows users to input their desired courses and generates a schedule that minimizes conflicts and maximizes free time.
+UMDScheduler is a web-based application designed to help students at the University of Maryland (UMD) efficiently generate their course schedules. The application allows users to input their desired courses and generates a schedule that minimizes conflicts, maximizes free time and ensures they get the best professors.
 
 Try it out at [umdscheduler.vercel.app](https://umdscheduler.vercel.app/)!
 
