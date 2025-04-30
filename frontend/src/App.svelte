@@ -7,7 +7,6 @@
 <Router>
     <div class="app">
         <Route path="/" component={Home} />
-        <!-- Add more routes as needed -->
     </div>
 </Router>
 
