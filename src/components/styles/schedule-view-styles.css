@@ -335,7 +335,6 @@
     margin-left: 4px;
 }
 
-/* Make the schedule more responsive */
 @media (max-width: 768px) {
     .schedule-container {
         display: flex;
@@ -357,17 +356,12 @@
 
     .schedule-wrapper {
         margin: 0 -16px;
-        /* Negative margin to allow schedule to break out of container */
         padding: 0 16px;
-        /* Add padding to compensate and maintain visual alignment */
         width: calc(100% + 32px);
-        /* Compensate for negative margins */
     }
 
-    /* ...other mobile styles... */
 }
 
-/* Restore original schedule header styling */
 .schedule-header {
     display: flex;
     justify-content: space-between;
@@ -378,7 +372,6 @@
     border-top-right-radius: var(--radius-lg);
     border-bottom: 2px solid var(--primary);
     margin-bottom: -1px;
-    /* Connect with schedule container */
 }
 
 .schedule-info {

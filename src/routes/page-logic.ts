@@ -56,45 +56,35 @@ export function generateColor(index: number): string {
 
 // Generate schedules function - updated to always get latest semester
 export async function generateSchedules(): Promise<void> {
-  let currentAddedClasses: string[] = [];
-  let currentProhibitedTimes: Map<string, string>[] = [];
-  let currentProhibitedProfessors: string[] = [];
-
-  // Get current values from stores
-  addedClasses.subscribe((value) => (currentAddedClasses = value))();
-  prohibitedTimes.subscribe((value) => (currentProhibitedTimes = value))();
-  prohibitedProfessors.subscribe(
-    (value) => (currentProhibitedProfessors = value),
-  )();
-
-  // Always get the latest semester value directly from the store
+  // Get current values directly using get() for simplicity
+  const currentAddedClasses = get(addedClasses);
+  const currentProhibitedTimes = get(prohibitedTimes);
+  const currentProhibitedProfessors = get(prohibitedProfessors);
   const selectedSemester = get(currentSemester);
 
+  // Validate minimum requirements
   if (currentAddedClasses.length < 2) {
     error.set("Please add at least two classes before generating schedules");
     return;
   }
 
+  // Reset state
   generatedSchedules.set([]);
   schedules.set([]);
-  currentAmountLoaded.set(0);
-  generatingSchedules.set(true);
   error.set(null);
+  generatingSchedules.set(true);
 
   try {
     // Format prohibited times consistently
-    const formattedProhibitedTimes = currentProhibitedTimes.map((timeMap) => {
-      if (timeMap instanceof Map) {
-        return Object.fromEntries(timeMap);
-      }
-      return timeMap;
-    });
+    const formattedProhibitedTimes = currentProhibitedTimes.map(timeMap =>
+      timeMap instanceof Map ? Object.fromEntries(timeMap) : timeMap
+    );
 
-    // Create request object with the correct structure based on backend error logs
+    // Create request object
     const requestBody = {
       wanted_classes: currentAddedClasses,
       restrictions: {
-        semester: selectedSemester || "202401", // Use the directly accessed semester
+        semester: selectedSemester || "202401",
         minSeats: 1,
         prohibitedInstructors: currentProhibitedProfessors,
         prohibitedTimes: formattedProhibitedTimes,
@@ -102,60 +92,50 @@ export async function generateSchedules(): Promise<void> {
       }
     };
 
-    // Log the semester being used
     console.log(`Generating schedules for semester: ${selectedSemester} (${formatSemester(selectedSemester)})`);
-    console.log("Sending schedule request:", requestBody);
 
-    try {
-      // Use the local API route proxy instead of direct backend call
-      const response = await fetch("/api/schedule", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody),
-        // Set a reasonable timeout
-        signal: AbortSignal.timeout(60000) // 1 minute timeout
-      });
+    const response = await fetch("/api/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(60000)
+    });
 
-      // Check if the response is valid
-      if (!response.ok) {
-        let errorMessage = `Server returned ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = await response.json();
-          if (errorData && errorData.error) {
-            errorMessage = errorData.error;
-          }
-        } catch (e) {
-          // If we can't parse the error as JSON, use the status text
-        }
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMsg = `Server returned ${response.status}`;
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData?.error) errorMsg = errorData.error;
+      } catch {/* Use default error message if JSON parsing fails */ }
 
-        throw new Error(errorMessage);
-      }
+      throw new Error(errorMsg);
+    }
 
-      // Read the response
-      const data = await response.json();
+    const data = await response.json();
 
-      // Handle the data
-      if (!data || (Array.isArray(data) && data.length === 0)) {
-        error.set("No possible schedules found with your constraints");
-      } else {
-        processScheduleData(data);
-      }
-    } catch (fetchError: unknown) {
-      console.error("Schedule generation failed:", fetchError);
-
-      if (fetchError instanceof Error && fetchError.name === "AbortError") {
-        error.set("Request timed out. The server might be overloaded. Please try again later.");
-      } else if (fetchError instanceof Error && fetchError.message.includes("Failed to fetch")) {
-        error.set("Network error. The server might be down. Please try again later.");
-      } else {
-        error.set(fetchError instanceof Error ? fetchError.message : "Failed to generate schedules. Please try again later.");
-      }
+    // Set data directly to both stores at once
+    if (!data?.length) {
+      error.set("No possible schedules found with your constraints");
+    } else {
+      generatedSchedules.set(data);
+      schedules.set(data);
+      currentAmountLoaded.set(data.length);
+      console.log(`Loaded ${data.length} schedules`);
     }
   } catch (err) {
-    console.error("Error in generateSchedules:", err);
-    error.set(err instanceof Error ? err.message : "An unexpected error occurred");
+    console.error("Schedule generation failed:", err);
+
+    // Simplified error handling
+    if (err instanceof Error) {
+      if (err.name === "AbortError") {
+        error.set("Request timed out. The server might be overloaded.");
+      } else {
+        error.set(err.message);
+      }
+    } else {
+      error.set("Failed to generate schedules. Please try again later.");
+    }
   } finally {
     generatingSchedules.set(false);
   }
@@ -174,11 +154,6 @@ export function processScheduleData(data: any): void {
     schedules.set(data);
     console.log(`Loaded all ${data.length} schedules at once`);
   }
-}
-
-// Keep this function but simplify it since we're loading everything at once
-export function addNewSchedules(): boolean {
-  return false; // No more schedules to load
 }
 
 // More utility functions for the page component
@@ -495,20 +470,6 @@ export function shade(color: string, percent: number): string {
   const l = Math.max(parseInt(match[3], 10) - percent, 0);
 
   return `hsl(${h}, ${s}%, ${l}%)`;
-}
-
-// Add new scroll handler for improved infinite scroll
-export function handleScheduleScroll(event: Event, loadingMore = false): void {
-  if (loadingMore) return;
-
-  const target = event.target as HTMLElement;
-  if (!target) return;
-
-  const { scrollTop, scrollHeight, clientHeight } = target;
-  // Trigger load when within 300px of the bottom
-  if (scrollTop + clientHeight >= scrollHeight - 300) {
-    addNewSchedules();
-  }
 }
 
 // Helper function to check if two time restrictions are equal
