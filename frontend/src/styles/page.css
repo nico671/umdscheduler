@@ -1,0 +1,192 @@
+@import "./modal.css";
+
+:root {
+  --umd-red: #e21833;
+  --umd-gold: #ffd200;
+  --gray-100: #f0f0f0;
+  --gray-200: #64646443;
+  --gray-300: #646464b2;
+  --border-radius-sm: 8px;
+  --border-radius-md: 15px;
+  --border-radius-lg: 25px;
+  --spacing-xs: 0.3vw;
+  --spacing-sm: 1vh;
+  --spacing-md: 2vh;
+}
+
+/* Override default margin and padding for entire document */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Prevent horizontal scrolling */
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-family);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+.container {
+  font-family: var(--font-family);
+  padding: var(--spacing-sm);
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: white;
+  padding: var(--spacing-sm);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--gray-100);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+}
+
+.header-title {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 48px);
+  color: var(--umd-red);
+}
+
+.header-button {
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-sm);
+  border: none;
+  color: black;
+  cursor: pointer;
+  font-size: clamp(14px, 1.5vw, 24px);
+  font-weight: 500;
+  padding: 1rem;
+  transition: all 200ms ease;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: var(--gray-200);
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.restrictions-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  margin: var(--spacing-md) 0;
+}
+
+.restriction-title {
+  padding: 12px 16px;
+  margin: 0;
+  color: var(--umd-red);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.restriction-box {
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius-md);
+  padding: 0;
+  min-height: 150px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.restriction-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  flex: 1;
+  align-content: flex-start;
+  overflow-y: auto;
+  max-height: 250px;
+  padding: 0 16px 16px;
+  box-sizing: border-box;
+}
+
+.restriction-button {
+  background-color: var(--gray-200);
+  border: 2px solid var(--gray-300);
+  border-radius: var(--border-radius-lg);
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  margin: 2px;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.restriction-box h2 {
+  margin-bottom: var(--spacing-sm);
+  font-size: 1.2rem;
+  color: var(--umd-red);
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--gray-200);
+  border-top-color: var(--umd-red);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Add responsive layout for smaller screens */
+@media (max-width: 768px) {
+  .restrictions-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  /* Remove this media query or keep it empty */
+}

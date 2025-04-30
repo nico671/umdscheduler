@@ -1,0 +1,976 @@
+/* Header styles */
+.header {
+  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  padding: 1vh;
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  position: sticky;
+  box-sizing: border-box;
+}
+
+/* Main content area */
+main {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Schedules container */
+.schedules-container {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Headings */
+h2 {
+  padding-left: 0vh;
+  padding-top: 1vh;
+  margin: 0px;
+}
+
+/* Restriction boxes */
+.restriction-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 15vh;
+  padding: 0;
+  margin: 0;
+  border-radius: 15px;
+  background-color: #f0f0f0;
+}
+
+.restriction-title {
+  padding: 12px 16px;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.restriction-items {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 16px 16px;
+  margin-bottom: 1vh;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+/* No schedules message */
+#no-sched-div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Restriction buttons */
+.restriction-button {
+  border-radius: 25px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  padding-left: 12px;
+  width: fit-content;
+  height: auto;
+  margin: 4px;
+  transition: all 0.2s ease;
+  color: #333;
+  cursor: pointer;
+}
+
+.restriction-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Header buttons */
+.header-button {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  border-width: 0;
+  color: black;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-size: 1.5vw;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  padding: 1vw;
+  text-align: center;
+  transition: all 200ms;
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* Host component */
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Error message */
+.error-message {
+  color: var(--umd-red);
+  padding: 15px;
+  background-color: rgba(226, 24, 51, 0.1);
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner p {
+  margin-top: 20px;
+  color: #666;
+}
+
+/* Schedule info */
+.schedules-info {
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schedules-info h2 {
+  margin: 0;
+  color: var(--umd-red);
+}
+
+.schedules-info p {
+  color: #666;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  /* Full width */
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+}
+
+.app-header {
+  background-color: white;
+  padding: var(--space-4) 0;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--neutral-200);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  /* Full width */
+}
+
+.header-content {
+  width: 100%;
+  max-width: 100%;
+  /* Use full width */
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  /* Padding on the content */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  /* Take up available space */
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex: 1;
+  /* Take up available space */
+  justify-content: flex-end;
+  /* Align buttons to the right */
+}
+
+.app-main {
+  padding: var(--space-5) var(--space-4);
+  flex: 1;
+  width: 100%;
+  /* Full width */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  /* Ensure content doesn't overflow */
+}
+
+/* Restrictions styling */
+.restrictions-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Three equal columns */
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  width: 100%;
+}
+
+.restriction-box {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition-normal);
+  display: flex;
+  /* Use flexbox for layout */
+  flex-direction: column;
+  /* Stack children vertically */
+  width: 100%;
+  /* Ensure full width within grid cell */
+  height: 100%;
+  /* Fill the grid cell height */
+}
+
+.restriction-box:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.restriction-title {
+  padding: var(--space-3) var(--space-4);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+  background-color: var(--neutral-50);
+  border-bottom: 1px solid var(--neutral-200);
+  margin: 0;
+  text-align: center;
+  /* Center the title text */
+  width: 100%;
+  /* Ensure full width */
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+}
+
+.restriction-items {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 80px;
+  flex-grow: 1;
+  /* Allow items area to grow */
+  width: 100%;
+  /* Full width */
+}
+
+.restriction-button {
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--neutral-300);
+  background-color: var(--neutral-100);
+  color: var(--neutral-800);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.restriction-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.professor-restriction {
+  background-color: var(--neutral-100);
+  border-color: var(--neutral-300);
+}
+
+.time-restriction {
+  background-color: var(--primary-light);
+  border-color: #f8d7dc;
+  cursor: default;
+  /* Change cursor to default since it's not clickable */
+  padding: var(--space-1) var (--space-2);
+  /* Reduced padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  /* Reduced gap */
+  font-size: 0.75rem;
+  /* Smaller font size */
+  height: 1.75rem;
+  /* Explicit height to make it smaller */
+  min-height: auto;
+  /* Override any min-height */
+  line-height: 1;
+  /* Tighter line height */
+}
+
+.restriction-text {
+  font-size: 0.75rem;
+  /* Smaller font size */
+  white-space: nowrap;
+  /* Prevent text wrapping */
+}
+
+.remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 1px;
+  /* Smaller padding */
+  border-radius: 50%;
+  margin-left: var(--space-1);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  width: 16px;
+  /* Explicit width */
+  height: 16px;
+  /* Explicit height */
+  min-width: 16px;
+  /* Ensure it doesn't grow */
+}
+
+.remove-icon {
+  color: var (--neutral-500);
+  width: 12px;
+  /* Smaller icon */
+  height: 12px;
+  /* Smaller icon */
+  min-width: 12px;
+  /* Force size */
+  min-height: 12px;
+  /* Force size */
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7);
+  text-align: center;
+  color: var (--neutral-600);
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-state-icon {
+  color: var(--neutral-400);
+  margin-bottom: var (--space-4);
+}
+
+.empty-state h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--neutral-800);
+}
+
+.empty-state p {
+  max-width: 400px;
+  color: var(--neutral-600);
+}
+
+/* Loading spinner */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(226, 24, 51, 0.1);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Schedules */
+.schedules-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.schedules-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--neutral-900);
+}
+
+.schedules-count {
+  color: var(--neutral-600);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  background-color: var(--primary);
+  color: white;
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  font-weight: 600;
+  margin-right: var(--space-2);
+  font-size: 0.75rem;
+}
+
+.schedules-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  /* Full width */
+  overflow-x: hidden;
+}
+
+/* Error message */
+.error-message {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid var(--error);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
+  border-radius: var(--radius-md);
+  color: var(--neutral-800);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Empty state indicators */
+.restriction-items:empty::before {
+  content: "None added";
+  color: var (--neutral-500);
+  font-style: italic;
+  font-size: 0.875rem;
+  width: 100%;
+  text-align: center;
+  padding: var(--space-3) 0;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .restrictions-container {
+    grid-template-columns: repeat(2,
+        1fr);
+    /* Two equal columns on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .header-left {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2);
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-start;
+    /* Left align on mobile */
+  }
+
+  .btn {
+    flex: 1;
+    min-width: 0;
+    /* Allow buttons to shrink */
+    font-size: 0.85rem;
+    /* Smaller text on mobile */
+  }
+
+  .restrictions-container {
+    grid-template-columns: 1fr;
+    /* Single column on mobile */
+  }
+
+  /* Fix potential overflow in the schedule view */
+  .schedules-container {
+    width: 100%;
+    overflow-x: auto;
+    /* Allow horizontal scroll if needed */
+  }
+
+  .app-main {
+    padding: var(--space-3) var(--space-3);
+  }
+
+  /* Make buttons stack vertically on very small screens */
+  @media (max-width: 480px) {
+    .header-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+  }
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  /* Full width */
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+}
+
+.app-header {
+  background-color: white;
+  padding: var(--space-4) 0;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--neutral-200);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  /* Full width */
+}
+
+.header-content {
+  width: 100%;
+  max-width: 100%;
+  /* Use full width */
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  /* Padding on the content */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  /* Take up available space */
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex: 1;
+  /* Take up available space */
+  justify-content: flex-end;
+  /* Align buttons to the right */
+}
+
+.app-main {
+  padding: var(--space-5) var(--space-4);
+  flex: 1;
+  width: 100%;
+  /* Full width */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  /* Ensure content doesn't overflow */
+}
+
+/* Restrictions styling */
+.restrictions-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Three equal columns */
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  width: 100%;
+}
+
+.restriction-box {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition-normal);
+  display: flex;
+  /* Use flexbox for layout */
+  flex-direction: column;
+  /* Stack children vertically */
+  width: 100%;
+  /* Ensure full width within grid cell */
+  height: 100%;
+  /* Fill the grid cell height */
+}
+
+.restriction-box:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.restriction-title {
+  padding: var(--space-3) var(--space-4);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+  background-color: var(--neutral-50);
+  border-bottom: 1px solid var(--neutral-200);
+  margin: 0;
+  text-align: center;
+  /* Center the title text */
+  width: 100%;
+  /* Ensure full width */
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+}
+
+.restriction-items {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 80px;
+  flex-grow: 1;
+  /* Allow items area to grow */
+  width: 100%;
+  /* Full width */
+}
+
+.restriction-button {
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--neutral-300);
+  background-color: var(--neutral-100);
+  color: var(--neutral-800);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.restriction-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.professor-restriction {
+  background-color: var(--neutral-100);
+  border-color: var(--neutral-300);
+}
+
+.time-restriction {
+  background-color: var(--primary-light);
+  border-color: #f8d7dc;
+  cursor: default;
+  /* Change cursor to default since it's not clickable */
+  padding: var(--space-1) var (--space-2);
+  /* Reduced padding */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  /* Reduced gap */
+  font-size: 0.75rem;
+  /* Smaller font size */
+  height: 1.75rem;
+  /* Explicit height to make it smaller */
+  min-height: auto;
+  /* Override any min-height */
+  line-height: 1;
+  /* Tighter line height */
+}
+
+.restriction-text {
+  font-size: 0.75rem;
+  /* Smaller font size */
+  white-space: nowrap;
+  /* Prevent text wrapping */
+}
+
+.remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 1px;
+  /* Smaller padding */
+  border-radius: 50%;
+  margin-left: var(--space-1);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  width: 16px;
+  /* Explicit width */
+  height: 16px;
+  /* Explicit height */
+  min-width: 16px;
+  /* Ensure it doesn't grow */
+}
+
+.remove-icon {
+  color: var (--neutral-500);
+  width: 12px;
+  /* Smaller icon */
+  height: 12px;
+  /* Smaller icon */
+  min-width: 12px;
+  /* Force size */
+  min-height: 12px;
+  /* Force size */
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7);
+  text-align: center;
+  color: var (--neutral-600);
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.empty-state-icon {
+  color: var(--neutral-400);
+  margin-bottom: var (--space-4);
+}
+
+.empty-state h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  color: var(--neutral-800);
+}
+
+.empty-state p {
+  max-width: 400px;
+  color: var(--neutral-600);
+}
+
+/* Loading spinner */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(226, 24, 51, 0.1);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Schedules */
+.schedules-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.schedules-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--neutral-900);
+}
+
+.schedules-count {
+  color: var(--neutral-600);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  background-color: var(--primary);
+  color: white;
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  font-weight: 600;
+  margin-right: var(--space-2);
+  font-size: 0.75rem;
+}
+
+.schedules-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  /* Full width */
+  overflow-x: hidden;
+}
+
+/* Error message */
+.error-message {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid var(--error);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
+  border-radius: var(--radius-md);
+  color: var(--neutral-800);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Empty state indicators */
+.restriction-items:empty::before {
+  content: "None added";
+  color: var (--neutral-500);
+  font-style: italic;
+  font-size: 0.875rem;
+  width: 100%;
+  text-align: center;
+  padding: var(--space-3) 0;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .restrictions-container {
+    grid-template-columns: repeat(2,
+        1fr);
+    /* Two equal columns on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .header-left {
+    width: 100%;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2);
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: flex-start;
+    /* Left align on mobile */
+  }
+
+  .btn {
+    flex: 1;
+    min-width: 0;
+    /* Allow buttons to shrink */
+    font-size: 0.85rem;
+    /* Smaller text on mobile */
+  }
+
+  .restrictions-container {
+    grid-template-columns: 1fr;
+    /* Single column on mobile */
+  }
+
+  /* Fix potential overflow in the schedule view */
+  .schedules-container {
+    width: 100%;
+    overflow-x: auto;
+    /* Allow horizontal scroll if needed */
+  }
+
+  .app-main {
+    padding: var(--space-3) var(--space-3);
+  }
+
+  /* Make buttons stack vertically on very small screens */
+  @media (max-width: 480px) {
+    .header-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+  }
+}
