@@ -568,13 +568,17 @@ export async function fetchSemesters(): Promise<void> {
       // Sort semesters in descending order (newest first)
       const sortedSemesters = [...semestersAsStrings].sort((a, b) => String(b).localeCompare(String(a)));
 
+      // Limit to only the 3 most recent semesters
+      const recentSemesters = sortedSemesters.slice(0, 3);
+
       // Always select most recent semester by default (first in sorted list)
-      const mostRecentSemester = sortedSemesters[0] || "202401"; // Fallback if list is empty
+      const mostRecentSemester = recentSemesters[0] || "202401"; // Fallback if list is empty
 
       console.log(`Setting current semester to: ${mostRecentSemester} (${formatSemester(mostRecentSemester)})`);
+      console.log(`Available semesters limited to the 3 most recent: ${recentSemesters.map(sem => formatSemester(sem)).join(', ')}`);
 
-      // Update stores
-      availableSemesters.set(sortedSemesters);
+      // Update stores with limited semesters
+      availableSemesters.set(recentSemesters);
       currentSemester.set(mostRecentSemester);
     } else {
       console.error("Unexpected response format from semesters API:", data);

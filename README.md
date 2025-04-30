@@ -2,6 +2,8 @@
 
 A Svelte app serving as a frontend for the UMDScheduler project, an application enabling UMD students to create better schedules, more easily.
 
+Try it out at [umdscheduler.vercel.app](https://umdscheduler.vercel.app/)!
+
 ## Features
 
 - **Course Search**: Easily search for courses by department, course number, or keywords
