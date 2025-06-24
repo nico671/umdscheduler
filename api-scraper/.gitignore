@@ -1,0 +1,5 @@
+notebooks/
+common/__pycache__/
+resources/__pycache__/
+.venv/
+resources/courses/__pycache__/
