@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from flask import jsonify
 from flask_restful import Resource
 
 TESTUDO_HOME_URL = "https://app.testudo.umd.edu/soc/"
@@ -24,4 +25,5 @@ def _semester_fetcher():
 
 class Semesters(Resource):
     def get(self):
-        return _semester_fetcher()
+        response = jsonify(semesters=_semester_fetcher())
+        return response

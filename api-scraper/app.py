@@ -1,6 +1,6 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Api
-
 from resources.courses.all_courses import AllCoursesList
 from resources.courses.all_courses_mini import AllCoursesListMini
 from resources.courses.semesters import Semesters
@@ -8,6 +8,7 @@ from resources.departments import Departments
 from resources.majors import Majors
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app)
 
 api.add_resource(Majors, "/majors")
