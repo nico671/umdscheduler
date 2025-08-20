@@ -189,3 +189,54 @@ def validate_section_ids(section_ids_str):
             raise ValueError(f"Invalid section part in section ID: '{section_id}'. Section part missing.")
     
     return section_ids
+
+
+def validate_course_ids(course_ids_str):
+    """
+    Validate and parse course IDs parameter.
+    Accepts comma-separated course IDs in format DEPTNNN with up to 2 trailing characters.
+    
+    Returns list of validated course IDs.
+    """
+    if not course_ids_str:
+        raise ValueError("course_ids parameter is required")
+    
+    course_ids = [cid.strip().upper() for cid in course_ids_str.split(",")]
+    
+    for course_id in course_ids:
+        # Validate format: should be like CMSC131, ENGL101, CMSC388F, etc.
+        if len(course_id) < 4:
+            raise ValueError(f"Invalid course ID format: '{course_id}'. Expected format: DEPTNNN with optional trailing characters.")
+        
+        # Extract department part (should be letters)
+        dept_part = ""
+        num_part = ""
+        trailing_part = ""
+        
+        # Find where numbers start
+        i = 0
+        while i < len(course_id) and course_id[i].isalpha():
+            dept_part += course_id[i]
+            i += 1
+        
+        # Extract number part
+        while i < len(course_id) and course_id[i].isdigit():
+            num_part += course_id[i]
+            i += 1
+        
+        # Extract trailing characters (if any)
+        while i < len(course_id):
+            trailing_part += course_id[i]
+            i += 1
+        
+        # Validate parts
+        if len(dept_part) < 2:
+            raise ValueError(f"Invalid department code in course ID: '{course_id}'. Department code too short.")
+        
+        if len(num_part) < 3:
+            raise ValueError(f"Invalid course number in course ID: '{course_id}'. Course number should be at least 3 digits.")
+        
+        if len(trailing_part) > 2:
+            raise ValueError(f"Invalid course ID format: '{course_id}'. Too many trailing characters (max 2 allowed).")
+    
+    return course_ids
