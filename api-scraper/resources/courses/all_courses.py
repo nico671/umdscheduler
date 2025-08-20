@@ -1,162 +1,147 @@
-import bs4 as BeautifulSoup
-import requests
-from flask_restful import Resource, reqparse
+import os
+import sqlite3
+from pathlib import Path
 
+from flask_restful import Resource, reqparse
 from resources.courses.utils.all_courses_utils import (
-    SINGLE_DEPT_COURSES,
     int_or_string,
     validate_geneds,
     validate_min_credits,
     validate_semester,
 )
-from resources.departments import _depts_fetcher
 
 
 def get_all_courses(
     semester, min_credits, min_credits_comparator, dept_id=None, gen_eds=None
 ):
-    if dept_id:
-        dept_code_list = [dept_id]
-    else:
-        all_depts = _depts_fetcher()
-        dept_code_list = []
-        for dept in all_depts:
-            for key in dept:
-                dept_code_list.append(key)
-    all_courses = []
+    project_root = Path(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    )
+    db_path = project_root / "db" / "courses.sqlite"
 
-    for dept in dept_code_list:
-        url = SINGLE_DEPT_COURSES.format(semester=semester, dept_code=dept)
-        dept_courses = []
-        resp = requests.get(url)
-        if resp.status_code != 200:
-            raise ValueError(
-                f"Failed to fetch courses for semester {semester} and department {dept}. Status code: {resp.status_code}"
+    if not db_path.exists():
+        raise ValueError(
+            "Database not found. Please run the scraper first to populate the database."
+        )
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row  # This enables column access by name
+    c = conn.cursor()
+
+    try:
+        # Build the base query
+        query = """
+        SELECT DISTINCT 
+            c.course_id,
+            c.course_name,
+            c.course_credits,
+            c.grading_method as course_grading_method,
+            c.description as course_description,
+            c.prerequisites,
+            c.corequisites,
+            c.restrictions,
+            c.formerly,
+            c.crosslisted_as,
+            c.credit_granted_for,
+            d.dept_code,
+            d.dept_name
+        FROM courses c
+        JOIN departments d ON c.dept_id = d.id
+        """
+
+        params = []
+        conditions = []
+
+        # Add department filter
+        if dept_id:
+            conditions.append("d.dept_code = ?")
+            params.append(dept_id)
+
+        # Add credits filter
+        if min_credits_comparator:
+            if min_credits_comparator == "eq":
+                conditions.append("c.course_credits = ?")
+            elif min_credits_comparator == "lt":
+                conditions.append("c.course_credits < ?")
+            elif min_credits_comparator == "gt":
+                conditions.append("c.course_credits > ?")
+            elif min_credits_comparator == "geq":
+                conditions.append("c.course_credits >= ?")
+            elif min_credits_comparator == "leq":
+                conditions.append("c.course_credits <= ?")
+            params.append(min_credits)
+        else:
+            conditions.append("c.course_credits >= ?")
+            params.append(min_credits)
+
+        # Add gen_eds filter
+        if gen_eds:
+            placeholders = ",".join("?" * len(gen_eds))
+            conditions.append(f"""
+                c.id IN (
+                    SELECT DISTINCT cg.course_id 
+                    FROM course_geneds cg 
+                    JOIN geneds g ON cg.gened_id = g.id 
+                    WHERE g.name IN ({placeholders})
+                )
+            """)
+            params.extend(gen_eds)
+
+        # Combine conditions
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY d.dept_code, c.course_id"
+
+        c.execute(query, params)
+        rows = c.fetchall()
+
+        all_courses = []
+        for row in rows:
+            # Get geneds for this course
+            c.execute(
+                """
+                SELECT g.name 
+                FROM geneds g 
+                JOIN course_geneds cg ON g.id = cg.gened_id 
+                WHERE cg.course_id = ?
+            """,
+                (row["course_id"],),
             )
-        soup = BeautifulSoup.BeautifulSoup(resp.text, "html.parser")
-        courses_container = soup.find("div", {"id": "courses-page"})
-        dept_info = courses_container.find("div", {"class": "course-prefix-info"})
-        dept_code = dept_info.find("span", {"class": "course-prefix-abbr"}).text.strip()
-        dept_name = dept_info.find("span", {"class": "course-prefix-name"}).text.strip()
-        courses_list = courses_container.find("div", {"class": "courses-container"})
-        for course in courses_list.find_all("div", {"class": "course"}):
-            # basic info
-            course_code = course.find("div", {"class": "course-id"}).text.strip()
-            course_name = course.find("span", {"class": "course-title"}).text.strip()
-            course_credits = course.find(
-                "span", {"class": "course-min-credits"}
-            ).text.strip()
 
-            if min_credits_comparator:
-                if (
-                    min_credits_comparator == "eq"
-                    and int(course_credits) != min_credits
-                ):
-                    continue
-                elif (
-                    min_credits_comparator == "lt"
-                    and int(course_credits) >= min_credits
-                ):
-                    continue
-                elif (
-                    min_credits_comparator == "gt"
-                    and int(course_credits) <= min_credits
-                ):
-                    continue
-                elif (
-                    min_credits_comparator == "geq"
-                    and int(course_credits) < min_credits
-                ):
-                    continue
-                elif (
-                    min_credits_comparator == "leq"
-                    and int(course_credits) > min_credits
-                ):
-                    continue
-            else:
-                if int(course_credits) < min_credits:
-                    continue
+            gened_rows = c.fetchall()
+            gened_list = [gened["name"] for gened in gened_rows]
 
-            course_grading_method = course.find(
-                "span", {"class": "grading-method"}
-            ).text.strip()
-            # geneds
-            course_geneds_wrapper = course.find("span", {"class": "course-subcategory"})
-            gened_list = []
-            if course_geneds_wrapper is not None:
-                for gened in course_geneds_wrapper.find_all("a"):
-                    gened_name = gened.text.strip()
-                    gened_list.append(gened_name)
-            else:
-                print("No geneds found for this course.")
-            if gen_eds:
-                if not any(gened in gened_list for gened in gen_eds):
-                    continue
-            # extra info (description, restrictions, prerequisites, etc.)
-            extra_info = course.find_all("div", {"class": "approved-course-text"})
-            course_description = ""
-            coreqs = ""  # done
-            prereqs = ""  # done
-            formerly = ""  # done
-            restrictions = ""  # done
-            additional_info = []
-            crosslisted_as = ""
-            credit_granted_for = ""  # done
-            for e in extra_info:
-                if not e.find_all("div"):
-                    course_description = e.text.strip()
-                else:
-                    for div in e.find_all("div"):
-                        strong_children = [
-                            c for c in div.find_all("strong", recursive=False)
-                        ]
-                        if not strong_children:
-                            continue
-                        other_tag_children = [
-                            c
-                            for c in div.find_all(recursive=False)
-                            if c.name != "strong"
-                        ]
-                        if other_tag_children:
-                            continue
-                        sub_text = div.text.strip()
-                        if "Prerequisite" in sub_text:
-                            # print("Found prerequisites", sub_text)
-                            prereqs = sub_text
-
-                        elif "Corequisite" in sub_text:
-                            coreqs = sub_text
-                        elif "Restriction" in sub_text:
-                            restrictions = sub_text
-                        elif "Credit only granted for" in sub_text:
-                            credit_granted_for = sub_text
-                        elif "Formerly" in sub_text:
-                            formerly = sub_text
-                        elif "Cross-listed with" in sub_text:
-                            crosslisted_as = sub_text
-                        else:
-                            additional_info.append(sub_text)
-            curr_course = {}
-            curr_course["course_id"] = course_code
-            curr_course["course_name"] = course_name
-            curr_course["course_credits"] = course_credits
-            curr_course["course_grading_method"] = course_grading_method
-            curr_course["dept_code"] = dept_code
-            curr_course["dept_name"] = dept_name
-            curr_course["geneds"] = gened_list
-            curr_course["course_description"] = course_description
-            curr_course["additional_info"] = {
-                "prerequisites": prereqs,
-                "corequisites": coreqs,
-                "restrictions": restrictions,
-                "formerly": formerly,
-                "crosslisted_as": crosslisted_as,
-                "credit_granted_for": credit_granted_for,
-                "additional_info": additional_info,
+            # Build the course object
+            curr_course = {
+                "course_id": row["course_id"],
+                "course_name": row["course_name"],
+                "course_credits": str(
+                    row["course_credits"]
+                ),  # Keep as string for consistency
+                "course_grading_method": row["course_grading_method"],
+                "dept_code": row["dept_code"],
+                "dept_name": row["dept_name"],
+                "geneds": gened_list,
+                "course_description": row["course_description"] or "",
+                "additional_info": {
+                    "prerequisites": row["prerequisites"] or "",
+                    "corequisites": row["corequisites"] or "",
+                    "restrictions": row["restrictions"] or "",
+                    "formerly": row["formerly"] or "",
+                    "crosslisted_as": row["crosslisted_as"] or "",
+                    "credit_granted_for": row["credit_granted_for"] or "",
+                    "additional_info": [],  # This was for extra unstructured info
+                },
             }
-            dept_courses.append(curr_course)
-        all_courses.extend(dept_courses)
-    return all_courses
+            all_courses.append(curr_course)
+
+        return all_courses
+
+    except sqlite3.Error as e:
+        raise ValueError(f"Database error: {e}")
+    finally:
+        conn.close()
 
 
 class AllCoursesList(Resource):
@@ -173,7 +158,7 @@ class AllCoursesList(Resource):
             "min_credits",
             type=str,
             required=True,
-            help='min_credits parameter must be in the form "<number>|<comparator>"',
+            help='min_credits parameter can be a number (default: <=) or in format "<number>|<comparator>" (eq, lt, gt, geq, leq)',
             location="args",
         )
         parser.add_argument(
@@ -190,6 +175,34 @@ class AllCoursesList(Resource):
             help='GenEd requirement code (e.g., "DSNS"). To provide multiple codes, use a comma-separated list (e.g., "DSNS,DSNL")',
             location="args",
         )
+        args = parser.parse_args()
+
+        try:
+            semester = validate_semester(args["semester"])
+            min_credits, min_credits_comparator = validate_min_credits(
+                args["min_credits"]
+            )
+            dept_id = args.get("dept_id")
+            gened_list = validate_geneds(args.get("gen_ed"))
+
+            all_courses = get_all_courses(
+                semester,
+                min_credits,
+                min_credits_comparator,
+                dept_id=dept_id,
+                gen_eds=gened_list,
+            )
+
+            if not all_courses:
+                return {"message": "No courses found for the given parameters."}, 404
+            return {"courses": all_courses}, 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception:
+            return {
+                "error": "An unexpected error occurred while fetching courses."
+            }, 500
         args = parser.parse_args()
         semester = validate_semester(args["semester"])
         min_credits, min_credits_comparator = validate_min_credits(args["min_credits"])

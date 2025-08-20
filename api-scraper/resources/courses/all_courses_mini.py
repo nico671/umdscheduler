@@ -1,44 +1,56 @@
-import requests
-from bs4 import BeautifulSoup
-from flask_restful import Resource, reqparse
+import os
+import sqlite3
+from pathlib import Path
 
+from flask_restful import Resource, reqparse
 from resources.courses.utils.all_courses_utils import (
-    SINGLE_DEPT_COURSES,
     int_or_string,
     validate_semester,
 )
-from resources.departments import _depts_fetcher
 
 
 def get_all_courses_mini(semester):
-    all_depts = _depts_fetcher()
-    dept_code_list = []
-    for dept in all_depts:
-        for key in dept:
-            dept_code_list.append(key)
-    all_courses = []
-    for dept in dept_code_list:
-        url = SINGLE_DEPT_COURSES.format(semester=semester, dept_code=dept)
-        dept_courses = []
-        resp = requests.get(url)
-        if resp.status_code != 200:
-            raise ValueError(
-                f"Failed to fetch courses for semester {semester} and department {dept}. Status code: {resp.status_code}"
-            )
-        soup = BeautifulSoup(resp.text, "html.parser")
-        courses_list = soup.find("div", {"class": "courses-container"})
-        for course in courses_list.find_all("div", {"class": "course"}):
-            # basic info
-            course_code = course.find("div", {"class": "course-id"}).text.strip()
-            course_name = course.find("span", {"class": "course-title"}).text.strip()
-            dept_courses.append(
+    """
+    Fetch all courses from the SQLite database.
+    Note: semester parameter is kept for API compatibility but not used
+    since the database contains current semester data.
+    """
+    project_root = Path(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    )
+    db_path = project_root / "db" / "courses.sqlite"
+
+    if not db_path.exists():
+        raise ValueError(f"Database not found at {db_path}")
+
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row  # This allows dict-like access to rows
+    c = conn.cursor()
+
+    try:
+        # Query to get all courses with their department information
+        c.execute("""
+            SELECT c.course_id, c.course_name, d.dept_code
+            FROM courses c
+            JOIN departments d ON c.dept_id = d.id
+            ORDER BY d.dept_code, c.course_id
+        """)
+
+        rows = c.fetchall()
+        all_courses = []
+
+        for row in rows:
+            all_courses.append(
                 {
-                    "course_code": course_code,
-                    "course_name": course_name,
+                    "course_code": row["course_id"],
+                    "course_name": row["course_name"],
                 }
             )
-        all_courses.extend(dept_courses)
-    return all_courses
+
+        return all_courses
+
+    finally:
+        conn.close()
 
 
 class AllCoursesListMini(Resource):
