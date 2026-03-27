@@ -2,11 +2,10 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import dbmanager
 import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
-
-import dbmanager
 
 TESTUDO_HOME_URL = "https://app.testudo.umd.edu/soc/"
 TESTUDO_DEPT_URL = "https://app.testudo.umd.edu/soc/{current_semester}/{dept_abbr}"
@@ -324,8 +323,6 @@ def scrape_available_course_codes_for_dept(dept_code, dept_name, curr_sem_code):
 
 if __name__ == "__main__":
     start_time = time.time()
-    all_courses_info = []
-    no_course_div_found_courses = []
     available_depts, curr_sem_code = (
         scrape_all_available_departments_for_current_semester()
     )

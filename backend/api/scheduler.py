@@ -1,5 +1,6 @@
+import re
 from datetime import datetime
-from typing import Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import requests
 
@@ -142,8 +143,132 @@ def _get_course_sections_from_db(cursor, course_code: str, semester: str) -> Lis
     return sections
 
 
+def _parse_min_credits(credits_value: Optional[str]) -> int:
+    if credits_value is None:
+        return 0
+
+    credits_text = str(credits_value).strip()
+    if not credits_text:
+        return 0
+
+    match = re.match(r"^(\d+)(?:\s*-\s*(\d+))?$", credits_text)
+    if not match:
+        return 0
+
+    first = int(match.group(1))
+    second = match.group(2)
+    if second is None:
+        return first
+    return min(first, int(second))
+
+
+def _get_course_min_credits_map(course_codes: Sequence[str]) -> Dict[str, int]:
+    if not course_codes:
+        return {}
+
+    with get_db_connection() as cursor:
+        cursor.execute(
+            """
+            SELECT course_code, credits
+            FROM courses
+            WHERE course_code = ANY(%s)
+        """,
+            (list(course_codes),),
+        )
+        rows = cursor.fetchall()
+
+    return {row["course_code"]: _parse_min_credits(row.get("credits")) for row in rows}
+
+
+def _sections_conflict(section_a: Dict, section_b: Dict) -> bool:
+    for time1 in section_a.get("meetings", []):
+        days1 = _parse_days_to_tokens(time1.get("days", ""))
+        if not days1:
+            continue
+
+        start1 = time1.get("start_time", "")
+        end1 = time1.get("end_time", "")
+        if not start1 or not end1:
+            continue
+
+        for time2 in section_b.get("meetings", []):
+            days2 = _parse_days_to_tokens(time2.get("days", ""))
+            if not days2:
+                continue
+
+            start2 = time2.get("start_time", "")
+            end2 = time2.get("end_time", "")
+            if not start2 or not end2:
+                continue
+
+            if days1.intersection(days2) and time_overlap(start1, end1, start2, end2):
+                return True
+    return False
+
+
+def _schedule_signature(schedule: Dict[str, Dict]) -> Tuple[Tuple[str, str], ...]:
+    return tuple(
+        sorted(
+            (course_code, str(section.get("section_code", "")))
+            for course_code, section in schedule.items()
+        )
+    )
+
+
+def _expand_schedule_with_optional_courses(
+    base_schedule: Dict[str, Dict],
+    optional_course_codes: Sequence[str],
+    optional_domains: Dict[str, List[Dict]],
+    course_min_credits: Dict[str, int],
+    max_credits: Optional[int],
+) -> List[Dict[str, Dict]]:
+    base = dict(base_schedule)
+    base_credits = sum(course_min_credits.get(course_code, 0) for course_code in base)
+
+    if max_credits is not None and base_credits > max_credits:
+        return []
+
+    expanded: List[Dict[str, Dict]] = []
+
+    def _dfs_optional(idx: int, current: Dict[str, Dict], current_credits: int):
+        if idx >= len(optional_course_codes):
+            expanded.append(current.copy())
+            return
+
+        course_code = optional_course_codes[idx]
+        sections = optional_domains.get(course_code, [])
+
+        # Option 1: skip this optional course.
+        _dfs_optional(idx + 1, current, current_credits)
+
+        # Option 2: include one viable section from this optional course.
+        course_credits = course_min_credits.get(course_code, 0)
+        for section in sections:
+            if (
+                max_credits is not None
+                and current_credits + course_credits > max_credits
+            ):
+                continue
+
+            if any(
+                _sections_conflict(section, existing) for existing in current.values()
+            ):
+                continue
+
+            current[course_code] = section
+            _dfs_optional(idx + 1, current, current_credits + course_credits)
+            del current[course_code]
+
+    _dfs_optional(0, base, base_credits)
+    return expanded
+
+
 def preprocess_restrictions(
-    required_courses, excluded_profs, time_constraints, semester
+    required_courses,
+    excluded_profs,
+    time_constraints,
+    semester,
+    only_open_seats: bool = True,
 ):
     VARIABLES = required_courses
     DOMAINS = {}
@@ -156,6 +281,8 @@ def preprocess_restrictions(
             filtered_sections = []
 
             for section in sections:
+                if "FC" in section.get("section_code", ""):
+                    continue  # TODO: handle freshman connection sections specially later, must be all FC or no FC
                 # excluded professors
                 section_instructors = section.get("instructors", [])
                 if excluded_set and any(
@@ -190,8 +317,8 @@ def preprocess_restrictions(
                             break
                     if conflict:
                         continue
-                # open seats must be >=1
-                if section.get("open_seats", 0) < 1:
+                # if requested, only include sections with at least one open seat
+                if only_open_seats and section.get("open_seats", 0) < 1:
                     continue
 
                 filtered_sections.append(section)
@@ -280,11 +407,14 @@ def get_prof_ratings(professors, excluded_profs):
             data = response.json()
             if "error" in data:
                 prof_ratings[prof] = 0
+            elif data["average_rating"] is None:
+                prof_ratings[prof] = 0  # default to 0
             else:
                 prof_ratings[prof] = data["average_rating"]
         except Exception as e:
             print(f"Error fetching rating for professor {prof}: {e}")
             prof_ratings[prof] = 0
+    prof_ratings["Instructor: TBA"] = 0  # assign average rating for TBA instructors
     return prof_ratings
 
 
@@ -407,13 +537,34 @@ def build_schedules(
     excluded_profs: Optional[Sequence[str]] = None,
     time_constraints: Optional[Sequence[Tuple[str, str, str]]] = None,
     max_schedules: int = 50,
+    optional_courses: Optional[Sequence[str]] = None,
+    max_credits: Optional[int] = None,
+    min_credits: Optional[int] = None,
+    only_open_seats: bool = True,
 ):
     VARIABLES, DOMAINS = preprocess_restrictions(
         required_courses=required_courses,
         excluded_profs=excluded_profs,
         time_constraints=time_constraints,
         semester=semester,
+        only_open_seats=only_open_seats,
     )
+
+    normalized_optional = []
+    required_set = set(required_courses)
+    for course_code in optional_courses or []:
+        if course_code and course_code not in required_set:
+            normalized_optional.append(course_code)
+
+    _, OPTIONAL_DOMAINS = preprocess_restrictions(
+        required_courses=normalized_optional,
+        excluded_profs=excluded_profs,
+        time_constraints=time_constraints,
+        semester=semester,
+        only_open_seats=only_open_seats,
+    )
+
+    ALL_DOMAINS = {**DOMAINS, **OPTIONAL_DOMAINS}
 
     # If any required course has no viable sections, no schedules are possible.
     if any(len(DOMAINS.get(course, [])) == 0 for course in required_courses):
@@ -421,7 +572,7 @@ def build_schedules(
 
     # Collect all professors from all sections
     full_profs = []
-    for course_name, domain in DOMAINS.items():
+    for course_name, domain in ALL_DOMAINS.items():
         for section in domain:
             profs = section.get("instructors", [])
             full_profs.extend(profs)
@@ -430,7 +581,7 @@ def build_schedules(
     gpa_cache = {}
 
     # Pre-calculate GPA for each unique professor-course combination
-    for course_name, domain in DOMAINS.items():
+    for course_name, domain in ALL_DOMAINS.items():
         # Get unique professor combinations for this course
         prof_combos = set()
         for section in domain:
@@ -447,7 +598,7 @@ def build_schedules(
                 )
 
     # Add GPA data to each section in the domains
-    for course_name, domain in DOMAINS.items():
+    for course_name, domain in ALL_DOMAINS.items():
         for section in domain:
             profs = tuple(sorted(section.get("instructors", [])))
             cache_key = (course_name, profs)
@@ -456,32 +607,105 @@ def build_schedules(
     # Get professor ratings
     prof_ratings = get_prof_ratings(full_profs, excluded_profs)
 
-    # Generate schedules using backtracking
-    schedules = backtrack_schedules(VARIABLES, DOMAINS)
+    # Generate base schedules for required courses only.
+    required_schedules = backtrack_schedules(VARIABLES, DOMAINS)
 
-    # Add average professor rating to each schedule
-    for sched in schedules:
-        avg_schedule_prof_rating = 0
+    course_min_credits = _get_course_min_credits_map(
+        list(required_courses) + normalized_optional
+    )
+
+    # Expand each required-only schedule by optionally including extra courses.
+    expanded_schedules: List[Dict[str, Dict]] = []
+    for base_schedule in required_schedules:
+        if normalized_optional:
+            expanded_schedules.extend(
+                _expand_schedule_with_optional_courses(
+                    base_schedule=base_schedule,
+                    optional_course_codes=normalized_optional,
+                    optional_domains=OPTIONAL_DOMAINS,
+                    course_min_credits=course_min_credits,
+                    max_credits=max_credits,
+                )
+            )
+        else:
+            expanded_schedules.append(base_schedule.copy())
+
+    # Dedupe expanded schedules across base schedules.
+    seen = set()
+    unique_schedules = []
+    for schedule in expanded_schedules:
+        signature = _schedule_signature(schedule)
+        if signature in seen:
+            continue
+        seen.add(signature)
+        unique_schedules.append(schedule)
+
+    schedule_records = []
+    for unique_schedule in unique_schedules:
+        total_credits = sum(
+            course_min_credits.get(course_code, 0) for course_code in unique_schedule
+        )
+
+        # Defensive filter in case any schedule slipped past expansion checks.
+        if max_credits is not None and total_credits > max_credits:
+            continue
+        if min_credits is not None and total_credits < min_credits:
+            continue
+
+        avg_schedule_prof_rating = 0.0
         total_instructors = 0
-        for course in sched:
-            section = sched[course]
+        for section in unique_schedule.values():
             instructors = section.get("instructors", [])
             for instructor in instructors:
-                avg_schedule_prof_rating += prof_ratings[instructor]
-                total_instructors += 1
+                try:
+                    avg_schedule_prof_rating += prof_ratings.get(instructor, 0)
+                    total_instructors += 1
+                except Exception as e:
+                    print(f"Error adding rating for professor {instructor}: {e}")
+                    continue
+
         if total_instructors > 0:
-            avg_schedule_prof_rating /= total_instructors
-            avg_schedule_prof_rating = round(avg_schedule_prof_rating, 2)
-        else:
-            avg_schedule_prof_rating = None
-        sched["average_professor_rating"] = avg_schedule_prof_rating
+            avg_schedule_prof_rating = round(
+                avg_schedule_prof_rating / total_instructors,
+                2,
+            )
+        # else:
+        #     avg_schedule_prof_rating = None
+
+        included_optional_courses = sorted(
+            [
+                course_code
+                for course_code in normalized_optional
+                if course_code in unique_schedule
+            ]
+        )
+
+        schedule_records.append(
+            {
+                "schedule": unique_schedule,
+                "average_professor_rating": avg_schedule_prof_rating,
+                "total_credits": total_credits,
+                "included_optional_courses": included_optional_courses,
+            }
+        )
+
+    schedule_records.sort(
+        key=lambda record: (
+            record["total_credits"],
+            record["average_professor_rating"]
+            if record["average_professor_rating"] is not None
+            else -1,
+        ),
+        reverse=True,
+    )
 
     api_schedules = []
-    for sched in schedules[:max_schedules]:
+    for record in schedule_records[:max_schedules]:
+        record_schedule: Dict[str, Dict[Any, Any]] = record["schedule"]
         sections = []
-        for course_code, section in sched.items():
-            if course_code == "average_professor_rating":
-                continue
+        for course_code, section in sorted(
+            record_schedule.items(), key=lambda item: item[0]
+        ):
             section_payload = {
                 "course_code": course_code,
                 "section_code": section.get("section_code"),
@@ -497,7 +721,9 @@ def build_schedules(
         api_schedules.append(
             {
                 "sections": sections,
-                "average_professor_rating": sched.get("average_professor_rating"),
+                "average_professor_rating": record["average_professor_rating"],
+                "total_credits": record["total_credits"],
+                "included_optional_courses": record["included_optional_courses"],
             }
         )
 

@@ -1,4 +1,5 @@
-from typing import List, Optional
+import re
+from typing import Dict, List, Optional, Sequence
 
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,6 +63,54 @@ def _resolve_semester(cursor, semester: Optional[str]) -> str:
     if not resolved:
         raise HTTPException(status_code=404, detail="No semester data available")
     return resolved
+
+
+def _normalize_course_codes(course_codes: Sequence[str]) -> List[str]:
+    normalized = []
+    seen = set()
+    for course_code in course_codes:
+        cleaned = course_code.strip().upper()
+        if not cleaned or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        normalized.append(cleaned)
+    return normalized
+
+
+def _parse_min_credits(credits_value: Optional[str]) -> int:
+    if credits_value is None:
+        return 0
+
+    credits_text = str(credits_value).strip()
+    if not credits_text:
+        return 0
+
+    match = re.match(r"^(\d+)(?:\s*-\s*(\d+))?$", credits_text)
+    if not match:
+        return 0
+
+    first = int(match.group(1))
+    second = match.group(2)
+    if second is None:
+        return first
+    return min(first, int(second))
+
+
+def _get_course_min_credits_map(cursor, course_codes: Sequence[str]) -> Dict[str, int]:
+    if not course_codes:
+        return {}
+
+    cursor.execute(
+        """
+        SELECT course_code, credits
+        FROM courses
+        WHERE course_code = ANY(%s)
+    """,
+        (list(course_codes),),
+    )
+
+    rows = cursor.fetchall()
+    return {row["course_code"]: _parse_min_credits(row.get("credits")) for row in rows}
 
 
 @app.get("/api/v1/status", response_model=StatusResponse)
@@ -342,17 +391,60 @@ def generate_schedules(payload: ScheduleRequest):
             detail="required_courses must include at least one course code.",
         )
 
-    normalized_courses = [
-        c.strip().upper() for c in payload.required_courses if c.strip()
-    ]
+    normalized_courses = _normalize_course_codes(payload.required_courses)
     if not normalized_courses:
         raise HTTPException(
             status_code=422,
             detail="required_courses must include at least one non-empty course code.",
         )
+    normalized_optional = _normalize_course_codes(payload.optional_courses)
+    required_set = set(normalized_courses)
+    normalized_optional = [
+        course_code
+        for course_code in normalized_optional
+        if course_code not in required_set
+    ]
+
+    if (
+        payload.min_credits is not None
+        and payload.max_credits is not None
+        and payload.min_credits > payload.max_credits
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="min_credits cannot be greater than max_credits.",
+        )
 
     with get_db_connection() as cursor:
         resolved_semester = _resolve_semester(cursor, payload.semester)
+
+        if payload.max_credits is not None:
+            required_credits_by_course = _get_course_min_credits_map(
+                cursor, normalized_courses
+            )
+            missing_courses = [
+                course_code
+                for course_code in normalized_courses
+                if course_code not in required_credits_by_course
+            ]
+            if missing_courses:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Course(s) not found in the database: {', '.join(missing_courses)}",
+                )
+
+            total_required_credits = sum(
+                required_credits_by_course.get(course_code, 0)
+                for course_code in normalized_courses
+            )
+            if total_required_credits > payload.max_credits:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "required courses exceed max_credits "
+                        f"({total_required_credits} > {payload.max_credits})."
+                    ),
+                )
 
     parsed_time_constraints = [
         (tc.day, tc.start_time, tc.end_time) for tc in payload.time_constraints
@@ -364,4 +456,8 @@ def generate_schedules(payload: ScheduleRequest):
         excluded_profs=payload.excluded_profs,
         time_constraints=parsed_time_constraints,
         max_schedules=payload.max_schedules,
+        optional_courses=normalized_optional,
+        max_credits=payload.max_credits,
+        min_credits=payload.min_credits,
+        only_open_seats=payload.only_open_seats,
     )
