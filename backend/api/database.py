@@ -1,18 +1,20 @@
-import getpass
+import sys
 from contextlib import contextmanager
+from pathlib import Path
 
-from psycopg2 import pool
+import psycopg2.extras
 
-# 1. Initialize the pool (min 1 connection, max 20 connections)
-db_pool = pool.ThreadedConnectionPool(
-    1,
-    20,
-    dbname="class_api",
-    user=getpass.getuser(),
-    password="",
-    host="localhost",
-    port="5432",
-)
+try:
+    from common.db_config import create_threaded_connection_pool
+except ModuleNotFoundError:
+    backend_root = Path(__file__).resolve().parents[1]
+    if str(backend_root) not in sys.path:
+        sys.path.append(str(backend_root))
+    from common.db_config import create_threaded_connection_pool
+
+
+# Initialize the pool (min 1 connection, max 20 connections)
+db_pool = create_threaded_connection_pool(1, 20)
 
 
 # 2. Dependency Generator: Safely checks out and returns connections
@@ -21,8 +23,6 @@ def get_db_connection():
     conn = db_pool.getconn()
     try:
         # Return the connection as a dictionary, making it much easier to convert to JSON
-        import psycopg2.extras
-
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         yield cursor
     finally:
