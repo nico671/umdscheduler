@@ -23,3 +23,10 @@ dev = [
     "types-psycopg2>=2.9.21.20260223",
     "types-requests>=2.33.0.20260327",
 ]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["api", "common"]
