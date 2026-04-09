@@ -6,6 +6,59 @@ const DEFAULT_WEEKDAY_TOKENS = {
     F: "Friday",
 };
 
+/**
+ * @typedef {{
+ *   days?: string | null,
+ *   start_time?: string | null,
+ *   end_time?: string | null,
+ *   building_code?: string | null,
+ *   room?: string | null,
+ * }} MeetingLike
+ */
+
+/**
+ * @typedef {{
+ *   course_code: string,
+ *   section_code: string,
+ *   instructors?: string[] | null,
+ *   avg_prof_gpa_in_class?: number | null,
+ *   meetings?: MeetingLike[] | null,
+ * }} SectionLike
+ */
+
+/**
+ * @typedef {{
+ *   dayIndex: number,
+ *   day: string,
+ *   courseCode: string,
+ *   sectionCode: string,
+ *   instructors: string[],
+ *   avgProfGpaInClass: number | null,
+ *   location: string,
+ *   color: string,
+ *   startMinutes: number,
+ *   endMinutes: number,
+ *   label: string,
+ * }} RawCalendarEntry
+ */
+
+/**
+ * @typedef {RawCalendarEntry & {
+ *   topPercent: number,
+ *   heightPercent: number,
+ * }} PositionedCalendarEntry
+ */
+
+/**
+ * @typedef {PositionedCalendarEntry & {
+ *   laneIndex: number,
+ *   laneCount: number,
+ *   leftPercent: number,
+ *   widthPercent: number,
+ * }} LaidOutCalendarEntry
+ */
+
+/** @param {number} totalMinutes */
 function formatTimeFromMinutes(totalMinutes) {
     const hour = Math.floor(totalMinutes / 60);
     const minute = totalMinutes % 60;
@@ -14,6 +67,7 @@ function formatTimeFromMinutes(totalMinutes) {
     return `${hour12}:${String(minute).padStart(2, "0")} ${period}`;
 }
 
+/** @param {string | null | undefined} value */
 function parseTimeToMinutes(value) {
     if (!value || typeof value !== "string") return null;
 
@@ -58,6 +112,10 @@ function parseTimeToMinutes(value) {
     return hour * 60 + minute;
 }
 
+/**
+ * @param {PositionedCalendarEntry[]} entries
+ * @returns {LaidOutCalendarEntry[]}
+ */
 function withNonOverlappingLanes(entries) {
     if (entries.length === 0) return [];
 
@@ -69,7 +127,9 @@ function withNonOverlappingLanes(entries) {
         return left.endMinutes - right.endMinutes;
     });
 
+    /** @type {PositionedCalendarEntry[][]} */
     const clusters = [];
+    /** @type {PositionedCalendarEntry[]} */
     let activeCluster = [];
     let activeClusterMaxEnd = -1;
 
@@ -92,11 +152,15 @@ function withNonOverlappingLanes(entries) {
     const laidOutEntries = [];
 
     for (const cluster of clusters) {
+        /** @type {number[]} */
         const laneEndTimes = [];
+        /** @type {(PositionedCalendarEntry & { laneIndex: number })[]} */
         const clusterEntries = [];
 
         for (const entry of cluster) {
+            /** @type {number} */
             let laneIndex = laneEndTimes.findIndex(
+                /** @param {number} laneEnd */
                 (laneEnd) => laneEnd <= entry.startMinutes,
             );
 
@@ -129,6 +193,7 @@ function withNonOverlappingLanes(entries) {
     return laidOutEntries;
 }
 
+/** @param {string | null | undefined} courseCode */
 export function getCourseColor(courseCode) {
     const seedSource = String(courseCode ?? "");
     let hash = 0;
@@ -142,6 +207,7 @@ export function getCourseColor(courseCode) {
     return `hsl(${hue} 68% 46%)`;
 }
 
+/** @param {MeetingLike | null | undefined} meeting */
 export function getMeetingLocation(meeting) {
     const buildingCode = String(meeting?.building_code ?? "").trim();
     const room = String(meeting?.room ?? "").trim();
@@ -158,6 +224,11 @@ export function getMeetingLocation(meeting) {
     return "";
 }
 
+/**
+ * @param {string | null | undefined} daysText
+ * @param {Record<string, string>} weekdayTokens
+ * @returns {string[]}
+ */
 function parseMeetingDaysToWeekdays(daysText, weekdayTokens) {
     if (!daysText || typeof daysText !== "string") return [];
 
@@ -182,17 +253,29 @@ function parseMeetingDaysToWeekdays(daysText, weekdayTokens) {
     return Array.from(new Set(parsedTokens.map((token) => weekdayTokens[token])));
 }
 
+/** @param {{ sections?: SectionLike[] | null } | null | undefined} schedule */
 export function buildScheduleSignature(schedule) {
     if (!Array.isArray(schedule?.sections)) {
         return `schedule-${Math.random().toString(36).slice(2)}`;
     }
 
     return schedule.sections
+        /** @param {SectionLike} section */
         .map((section) => `${section.course_code}-${section.section_code}`)
+        /** @param {string} left @param {string} right */
         .sort((left, right) => left.localeCompare(right))
         .join("|");
 }
 
+/**
+ * @param {{ sections?: SectionLike[] | null } | null | undefined} schedule
+ * @param {{
+ *   weekdays: string[],
+ *   weekdayTokens?: Record<string, string>,
+ *   minimumStartMinutes?: number,
+ *   maximumEndMinutes?: number,
+ * }} options
+ */
 export function mapScheduleToCalendar(
     schedule,
     {
@@ -202,10 +285,12 @@ export function mapScheduleToCalendar(
         maximumEndMinutes = 22 * 60,
     },
 ) {
+    /** @type {{ day: string, entries: PositionedCalendarEntry[] }[]} */
     const dayColumns = weekdays.map((day) => ({ day, entries: [] }));
+    /** @type {RawCalendarEntry[]} */
     const entries = [];
 
-    for (const section of schedule.sections ?? []) {
+    for (const section of schedule?.sections ?? []) {
         for (const meeting of section.meetings ?? []) {
             const meetingStartMinutes = parseTimeToMinutes(meeting.start_time);
             const meetingEndMinutes = parseTimeToMinutes(meeting.end_time);

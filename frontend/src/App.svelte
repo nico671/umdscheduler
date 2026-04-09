@@ -293,13 +293,16 @@
         only_open_seats: onlyOpenSeatsSections,
       };
 
-      const response = await fetch("http://localhost:8000/api/v1/schedules", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${dataClient.backendBaseUrl}/api/v1/schedules`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       if (!response.ok) {
         const errorPayload = await response.json().catch(() => null);

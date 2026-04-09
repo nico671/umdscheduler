@@ -13,8 +13,8 @@ except ModuleNotFoundError:
     from common.db_config import create_threaded_connection_pool
 
 
-# Initialize the pool (min 1 connection, max 20 connections)
-db_pool = create_threaded_connection_pool(1, 20)
+# Initialize the pool using centralized runtime settings.
+db_pool = create_threaded_connection_pool()
 
 
 # 2. Dependency Generator: Safely checks out and returns connections

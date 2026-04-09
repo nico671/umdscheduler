@@ -1,12 +1,8 @@
 import getpass
-import os
 
-import dotenv
 from psycopg2 import pool
 
-dotenv.load_dotenv()
-
-DB_URL = os.getenv("DATABASE_URL")
+from common.settings import get_settings
 
 DB_CREDENTIALS = {
     "dbname": "class_api",
@@ -16,30 +12,38 @@ DB_CREDENTIALS = {
     "port": "5432",
 }
 
-CONNECT_KWARGS = {
-    "connect_timeout": 10,
-    "keepalives": 1,
-    "keepalives_idle": 30,
-    "keepalives_interval": 10,
-    "keepalives_count": 5,
-}
-
 
 def get_db_connect_params():
     """Return psycopg2 connection params for Supabase (preferred) or local Postgres."""
-    if DB_URL:
+    settings = get_settings()
+    connect_kwargs = {
+        "connect_timeout": settings.db_connect_timeout,
+        "keepalives": settings.db_keepalives,
+        "keepalives_idle": settings.db_keepalives_idle,
+        "keepalives_interval": settings.db_keepalives_interval,
+        "keepalives_count": settings.db_keepalives_count,
+    }
+
+    if settings.database_url:
         return {
-            "dsn": DB_URL,
-            "sslmode": "require",
-            **CONNECT_KWARGS,
+            "dsn": settings.database_url,
+            "sslmode": settings.db_ssl_mode,
+            **connect_kwargs,
         }
 
     return {
         **DB_CREDENTIALS,
-        **CONNECT_KWARGS,
+        **connect_kwargs,
     }
 
 
-def create_threaded_connection_pool(minconn=1, maxconn=20):
+def create_threaded_connection_pool(minconn=None, maxconn=None):
     """Create a ThreadedConnectionPool using shared DB config."""
-    return pool.ThreadedConnectionPool(minconn, maxconn, **get_db_connect_params())
+    settings = get_settings()
+    resolved_minconn = settings.db_pool_min if minconn is None else minconn
+    resolved_maxconn = settings.db_pool_max if maxconn is None else maxconn
+    return pool.ThreadedConnectionPool(
+        resolved_minconn,
+        resolved_maxconn,
+        **get_db_connect_params(),
+    )

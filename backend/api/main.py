@@ -1,10 +1,16 @@
 import re
 from typing import Dict, List, Optional, Sequence
 
+from common.settings import get_settings
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.database import get_db_connection
+from api.middleware import (
+    APIBudgetMiddleware,
+    InMemoryFixedWindowLimiter,
+    ScheduleBodySizeGuardMiddleware,
+)
 from api.scheduler import build_schedules
 from api.schemas import (
     CourseDetail,
@@ -19,13 +25,40 @@ from api.schemas import (
 
 app = FastAPI(title="UMD API", version="0.0.1")
 
+settings = get_settings()
+
+global_limiter = InMemoryFixedWindowLimiter(
+    limit=settings.api_rate_limit_global_per_ip,
+    window_seconds=settings.api_rate_limit_window_seconds,
+    burst=settings.api_rate_limit_global_burst,
+)
+
+schedule_limiter = InMemoryFixedWindowLimiter(
+    limit=settings.api_rate_limit_schedules_per_ip,
+    window_seconds=settings.api_rate_limit_window_seconds,
+    burst=settings.api_rate_limit_schedules_burst,
+)
+
+
+app.add_middleware(
+    ScheduleBodySizeGuardMiddleware,
+    max_body_bytes=settings.api_schedule_max_body_bytes,
+)
+
+app.add_middleware(
+    APIBudgetMiddleware,
+    global_limiter=global_limiter,
+    schedule_limiter=schedule_limiter,
+)
+
+
 # Add this block:
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace "*" with your frontend's actual URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.cors_origins,
+    allow_credentials=settings.cors_allow_credentials,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 

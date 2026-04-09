@@ -1,3 +1,5 @@
+import { runtimeConfig } from "../config/runtimeConfig.js";
+
 const COURSE_PAGE_SIZE = 200;
 const PLANETTERP_COURSE_URL = "https://planetterp.com/api/v1/course";
 const PLANETTERP_PROFESSOR_URL = "https://planetterp.com/api/v1/professor";
@@ -9,13 +11,33 @@ const CACHE_TTL_PLANETTERP_PROFESSOR_MS = 24 * 60 * 60 * 1000;
 const CACHE_TTL_PLANETTERP_GRADES_MS = 24 * 60 * 60 * 1000;
 const CACHE_TTL_PLANETTERP_COURSE_MS = 24 * 60 * 60 * 1000;
 
-export function createDataClient(memoryCache, options = {}) {
-    const backendBaseUrl = options.backendBaseUrl ?? "http://localhost:8000";
+/**
+ * @typedef {{ timestamp: number, value: any }} CacheEntry
+ * @typedef {{ backendBaseUrl?: string }} DataClientOptions
+ */
 
+/**
+ * @param {Map<string, CacheEntry>} memoryCache
+ * @param {DataClientOptions} [options]
+ */
+export function createDataClient(memoryCache, options = {}) {
+    const backendBaseUrl = String(
+        options.backendBaseUrl ?? runtimeConfig.backendBaseUrl,
+    ).replace(
+        /\/+$/,
+        "",
+    );
+
+    /** @param {...string} parts */
     function createCacheKey(...parts) {
         return `${LOCAL_CACHE_PREFIX}:${parts.join(":")}`;
     }
 
+    /**
+     * @param {string} cacheKey
+     * @param {number} ttlMs
+     * @returns {any}
+     */
     function safeReadCache(cacheKey, ttlMs) {
         const now = Date.now();
         const memoryEntry = memoryCache.get(cacheKey);
@@ -51,6 +73,10 @@ export function createDataClient(memoryCache, options = {}) {
         }
     }
 
+    /**
+     * @param {string} cacheKey
+     * @param {any} value
+     */
     function safeWriteCache(cacheKey, value) {
         const payload = {
             timestamp: Date.now(),
@@ -68,6 +94,13 @@ export function createDataClient(memoryCache, options = {}) {
         }
     }
 
+    /**
+     * @template T
+     * @param {string} cacheKey
+     * @param {number} ttlMs
+     * @param {() => Promise<T>} fetcher
+     * @returns {Promise<T>}
+     */
     async function fetchWithLocalCache(cacheKey, ttlMs, fetcher) {
         const cachedValue = safeReadCache(cacheKey, ttlMs);
         if (cachedValue !== null) return cachedValue;
@@ -85,11 +118,13 @@ export function createDataClient(memoryCache, options = {}) {
         return safeReadCache(catalogCacheKey, CACHE_TTL_COURSE_CATALOG_MS);
     }
 
+    /** @param {Array<any>} normalizedCatalog */
     function writeCourseCatalogCache(normalizedCatalog) {
         const catalogCacheKey = createCacheKey("backend", "course-catalog");
         safeWriteCache(catalogCacheKey, normalizedCatalog);
     }
 
+    /** @param {number} offset @param {number} [pageSize] */
     async function loadCoursesPage(offset, pageSize = COURSE_PAGE_SIZE) {
         const response = await fetch(
             `${backendBaseUrl}/api/v1/courses?limit=${pageSize}&offset=${offset}`,
@@ -102,6 +137,7 @@ export function createDataClient(memoryCache, options = {}) {
         return response.json();
     }
 
+    /** @param {string} professorName */
     async function fetchProfessorRating(professorName) {
         const professorCacheKey = createCacheKey(
             "planetterp",
@@ -136,6 +172,7 @@ export function createDataClient(memoryCache, options = {}) {
         );
     }
 
+    /** @param {string} professorName @param {string} courseCode */
     async function fetchProfessorCourseGradeCounts(professorName, courseCode) {
         const gradesCacheKey = createCacheKey(
             "planetterp",
@@ -200,6 +237,7 @@ export function createDataClient(memoryCache, options = {}) {
         );
     }
 
+    /** @param {string} courseCode */
     async function fetchCourseAverageGpa(courseCode) {
         const courseGpaCacheKey = createCacheKey(
             "planetterp",
@@ -230,6 +268,7 @@ export function createDataClient(memoryCache, options = {}) {
         );
     }
 
+    /** @param {string} courseCode */
     async function fetchBackendCourseDetail(courseCode) {
         const backendCourseCacheKey = createCacheKey(
             "backend",
@@ -258,6 +297,7 @@ export function createDataClient(memoryCache, options = {}) {
 
     return {
         coursePageSize: COURSE_PAGE_SIZE,
+        backendBaseUrl,
         readCourseCatalogCache,
         writeCourseCatalogCache,
         loadCoursesPage,
