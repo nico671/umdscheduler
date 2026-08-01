@@ -348,6 +348,9 @@ export function mapScheduleToCalendar(
     const hourMarkers = Array.from(
         { length: endHour - startHour + 1 },
         (_, idx) => startHour + idx,
+    ).filter(
+        (hour) =>
+            hour * 60 > visibleStartMinutes && hour * 60 < visibleEndMinutes,
     );
 
     for (const entry of entries) {
