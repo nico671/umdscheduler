@@ -2,10 +2,11 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import dbmanager
 import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
+
+import dbmanager
 
 TESTUDO_HOME_URL = "https://app.testudo.umd.edu/soc/"
 TESTUDO_DEPT_URL = "https://app.testudo.umd.edu/soc/{current_semester}/{dept_abbr}"
@@ -34,6 +35,7 @@ def scrape_all_available_semesters():
 
     semesters_select_elt = soup.find("select", {"id": "term-id-input"})
     semesters = []
+    assert semesters_select_elt, "Semesters select element not found on the page"
     for option in semesters_select_elt.find_all("option"):
         sem_name = option.text.strip()
         sem_code = option["value"]
@@ -46,7 +48,6 @@ def scrape_all_available_departments_for_current_semester():
     soup = BeautifulSoup(resp.text, "lxml")
 
     curr_sem_code = None
-    curr_sem_name = None
     semesters_select_elt = soup.find("select", {"id": "term-id-input"})
     for option in semesters_select_elt.find_all("option"):
         if "selected" in option.attrs:

@@ -94,6 +94,17 @@ def create_tables():
     CREATE INDEX IF NOT EXISTS idx_section_meetings_section_id
         ON section_meetings(section_id);
 
+    DELETE FROM section_meetings AS duplicate
+    USING section_meetings AS original
+    WHERE duplicate.id > original.id
+      AND duplicate.section_id = original.section_id
+      AND duplicate.days IS NOT DISTINCT FROM original.days
+      AND duplicate.start_time IS NOT DISTINCT FROM original.start_time
+      AND duplicate.end_time IS NOT DISTINCT FROM original.end_time
+      AND duplicate.building_code IS NOT DISTINCT FROM original.building_code
+      AND duplicate.room IS NOT DISTINCT FROM original.room
+      AND duplicate.class_type IS NOT DISTINCT FROM original.class_type;
+
     CREATE UNIQUE INDEX IF NOT EXISTS idx_section_meetings_identity
         ON section_meetings(
             section_id,

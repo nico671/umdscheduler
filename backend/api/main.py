@@ -1,7 +1,6 @@
 import re
 from typing import Dict, List, Optional, Sequence
 
-from common.settings import get_settings
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -22,6 +21,7 @@ from api.schemas import (
     Semester,
     StatusResponse,
 )
+from common.settings import get_settings
 
 app = FastAPI(title="UMD API", version="0.0.1")
 
@@ -144,6 +144,16 @@ def _get_course_min_credits_map(cursor, course_codes: Sequence[str]) -> Dict[str
 
     rows = cursor.fetchall()
     return {row["course_code"]: _parse_min_credits(row.get("credits")) for row in rows}
+
+
+@app.get("/", include_in_schema=False)
+def get_root():
+    return {"message": "UMD Scheduler API", "docs": "/docs"}
+
+
+@app.get("/favicon.ico", include_in_schema=False, status_code=204)
+def get_favicon():
+    return Response(status_code=204)
 
 
 @app.get("/api/v1/status", response_model=StatusResponse)

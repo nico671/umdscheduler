@@ -1,0 +1,22 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/bin/python",
+    "ruff.nativeServer": "on",
+    "ruff.configurationPreference": "filesystemFirst",
+    "ruff.interpreter": [
+        "${workspaceFolder}/backend/.venv/bin/python"
+    ],
+    "ty.importStrategy": "fromEnvironment",
+    "ty.interpreter": "${workspaceFolder}/backend/.venv/bin/python",
+    "ty.diagnosticMode": "workspace",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+    "explorer.excludeGitIgnore": false,
+    "python.terminal.useEnvFile": true,
+    "python.envFile": "${workspaceFolder}/backend/.env"
+}
