@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests.adapters import HTTPAdapter
 
-import dbmanager
+from . import dbmanager
 
 TESTUDO_HOME_URL = "https://app.testudo.umd.edu/soc/"
 TESTUDO_DEPT_URL = "https://app.testudo.umd.edu/soc/{current_semester}/{dept_abbr}"
