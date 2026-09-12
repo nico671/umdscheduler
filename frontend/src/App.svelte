@@ -16,7 +16,7 @@
 
   const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   const startHours = Array.from({ length: 12 }, (_, i) => i + 8);
-  const maxCreditsOptions = Array.from({ length: 28 }, (_, i) => i + 3);
+  const maxCreditsOptions = Array.from({ length: 20 }, (_, i) => i + 3);
 
   let courseCatalog = $state([]);
   let query = $state("");
@@ -40,6 +40,8 @@
   let isLoadingActiveCourseAverageGpa = $state(false);
   let professorRatingsByName = $state({});
   let generatedSchedules = $state([]);
+  let visibleScheduleCount = $state(10);
+  let schedulesTruncated = $state(false);
   let isLoadingSchedules = $state(false);
   let schedulesLoadError = $state("");
   let hasGeneratedSchedules = $state(false);
@@ -56,6 +58,9 @@
   let isLoadingActiveScheduleEntrySectionGpa = $state(false);
   let scheduleEntryProfessorRatingsByName = $state({});
   let isLoadingScheduleEntryRatings = $state(false);
+  const visibleGeneratedSchedules = $derived(
+    generatedSchedules.slice(0, visibleScheduleCount),
+  );
   const memoryCache = new SvelteMap();
   const dataClient = createDataClient(memoryCache);
 
@@ -213,7 +218,7 @@
     if (normalized.length === 0) return 18;
 
     const parsed = Number(normalized);
-    if (!Number.isInteger(parsed) || parsed < 3 || parsed > 30) {
+    if (!Number.isInteger(parsed) || parsed < 3 || parsed > 22) {
       return 18;
     }
 
@@ -227,7 +232,7 @@
     if (normalized.length === 0 || normalized === "none") return null;
 
     const parsed = Number(normalized);
-    if (!Number.isInteger(parsed) || parsed < 3 || parsed > 30) {
+    if (!Number.isInteger(parsed) || parsed < 3 || parsed > 22) {
       return null;
     }
 
@@ -278,6 +283,8 @@
     schedulesLoadError = "";
     hasGeneratedSchedules = true;
     generatedSchedules = [];
+    visibleScheduleCount = 10;
+    schedulesTruncated = false;
 
     try {
       const parsedMinCredits = parseMinCreditsInput(minCreditsInput);
@@ -287,7 +294,7 @@
         optional_courses: optionalCourses.map((course) => course.id),
         excluded_profs: prohibitedProfessors,
         time_constraints: mapRestrictionsForPayload(),
-        max_schedules: 100,
+        max_schedules: 50,
         min_credits: parsedMinCredits,
         max_credits: parsedMaxCredits,
         only_open_seats: onlyOpenSeatsSections,
@@ -313,8 +320,9 @@
         );
       }
 
-      const scheduleResults = await response.json();
-      generatedSchedules = sortSchedulesByRating(scheduleResults).map(
+      const schedulePayload = await response.json();
+      schedulesTruncated = schedulePayload.truncated === true;
+      generatedSchedules = sortSchedulesByRating(schedulePayload.schedules ?? []).map(
         (schedule) => ({
           ...schedule,
           scheduleKey: buildScheduleSignature(schedule),
@@ -327,6 +335,7 @@
           ? error.message
           : "Unexpected error while generating schedules.";
       generatedSchedules = [];
+      schedulesTruncated = false;
     } finally {
       isLoadingSchedules = false;
     }
@@ -942,9 +951,7 @@
       <div class="schedule-results-header">
         <h2>Generated Schedules</h2>
         <p class="restriction-count" aria-live="polite">
-          {generatedSchedules.length} schedule{generatedSchedules.length === 1
-            ? ""
-            : "s"}
+          Showing {Math.min(visibleScheduleCount, generatedSchedules.length)} of {generatedSchedules.length} schedules
         </p>
       </div>
 
@@ -952,42 +959,59 @@
         <div class="modal-state">{schedulesLoadError}</div>
       {:else if isLoadingSchedules}
         <div class="modal-state">Building conflict-free schedules…</div>
-      {:else if generatedSchedules.length === 0}
-        <div class="placeholder-block schedule-placeholder">
-          No valid schedules found for the current requirements and constraints.
-        </div>
       {:else}
-        <ol class="schedule-results-list">
-          {#each generatedSchedules as schedule, index (schedule.scheduleKey)}
-            <li class="schedule-result-item">
-              <header class="schedule-result-header">
-                <div>
-                  <p class="course-id">Schedule #{index + 1}</p>
-                  <h3>{schedule.total_credits} total credits</h3>
-                </div>
-                <p class="schedule-rating-chip">
-                  Avg rating: {formatScheduleAverageRating(
-                    schedule.average_professor_rating,
-                  )}
-                </p>
-              </header>
+        {#if schedulesTruncated}
+          <div class="modal-state">
+            The search reached its limit. Add more constraints to narrow the
+            results.
+          </div>
+        {/if}
+        {#if generatedSchedules.length === 0}
+          <div class="placeholder-block schedule-placeholder">
+            No valid schedules found for the current requirements and constraints.
+          </div>
+        {:else}
+          <ol class="schedule-results-list">
+            {#each visibleGeneratedSchedules as schedule, index (schedule.scheduleKey)}
+              <li class="schedule-result-item">
+                <header class="schedule-result-header">
+                  <div>
+                    <p class="course-id">Schedule #{index + 1}</p>
+                    <h3>{schedule.total_credits} total credits</h3>
+                  </div>
+                  <p class="schedule-rating-chip">
+                    Avg rating: {formatScheduleAverageRating(
+                      schedule.average_professor_rating,
+                    )}
+                  </p>
+                </header>
 
-              {#if schedule.included_optional_courses?.length}
-                <p class="modal-item-copy">
-                  Includes optional courses:
-                  {schedule.included_optional_courses.join(", ")}
-                </p>
-              {/if}
+                {#if schedule.included_optional_courses?.length}
+                  <p class="modal-item-copy">
+                    Includes optional courses:
+                    {schedule.included_optional_courses.join(", ")}
+                  </p>
+                {/if}
 
-              <ScheduleCalendar
-                {schedule}
-                {weekdays}
-                {formatHour}
-                onEntrySelect={openScheduleEntryModal}
-              />
-            </li>
-          {/each}
-        </ol>
+                <ScheduleCalendar
+                  {schedule}
+                  {weekdays}
+                  {formatHour}
+                  onEntrySelect={openScheduleEntryModal}
+                />
+              </li>
+            {/each}
+          </ol>
+          {#if visibleScheduleCount < generatedSchedules.length}
+            <button
+              class="add-button"
+              type="button"
+              onclick={() => (visibleScheduleCount += 10)}
+            >
+              Show 10 more
+            </button>
+          {/if}
+        {/if}
       {/if}
     </section>
   {/if}

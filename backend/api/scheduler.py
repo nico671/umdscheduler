@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from time import monotonic
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Set, Tuple
 
 import requests
 
@@ -12,10 +12,43 @@ P_TERP_PROF_GRADES_CLASS_URL = "https://planetterp.com/api/v1/grades"
 PLANETTERP_TIMEOUT = (2, 5)
 PLANETTERP_CACHE_TTL_SECONDS = 300
 PLANETTERP_CACHE_MAX_ENTRIES = 256
+MAX_CANDIDATE_SCHEDULES = 250
+MAX_SEARCH_NODES = 50_000
 
 _CACHE_MISS = object()
 _professor_rating_cache = {}
 _professor_gpa_cache = {}
+
+
+class SearchBudget:
+    def __init__(
+        self,
+        candidate_limit: Optional[int] = None,
+        node_limit: Optional[int] = None,
+    ):
+        self.candidate_limit = (
+            MAX_CANDIDATE_SCHEDULES if candidate_limit is None else candidate_limit
+        )
+        self.node_limit = MAX_SEARCH_NODES if node_limit is None else node_limit
+        self.nodes_visited = 0
+        self.candidates_collected = 0
+        self.truncated = False
+
+    def visit_node(self) -> bool:
+        if self.truncated or self.nodes_visited >= self.node_limit:
+            self.truncated = True
+            return False
+        self.nodes_visited += 1
+        return True
+
+    def add_candidate(self) -> bool:
+        if self.candidates_collected >= self.candidate_limit:
+            self.truncated = True
+            return False
+        self.candidates_collected += 1
+        if self.candidates_collected >= self.candidate_limit:
+            self.truncated = True
+        return True
 
 
 def _get_cached(cache, key):
@@ -248,25 +281,27 @@ def _expand_schedule_with_optional_courses(
     optional_domains: Dict[str, List[Dict]],
     course_min_credits: Dict[str, int],
     max_credits: Optional[int],
-) -> List[Dict[str, Dict]]:
+    budget: SearchBudget,
+) -> Iterator[Dict[str, Dict]]:
     base = dict(base_schedule)
     base_credits = sum(course_min_credits.get(course_code, 0) for course_code in base)
 
     if max_credits is not None and base_credits > max_credits:
-        return []
-
-    expanded: List[Dict[str, Dict]] = []
+        return
 
     def _dfs_optional(idx: int, current: Dict[str, Dict], current_credits: int):
+        if not budget.visit_node():
+            return
+
         if idx >= len(optional_course_codes):
-            expanded.append(current.copy())
+            yield current.copy()
             return
 
         course_code = optional_course_codes[idx]
         sections = optional_domains.get(course_code, [])
 
         # Option 1: skip this optional course.
-        _dfs_optional(idx + 1, current, current_credits)
+        yield from _dfs_optional(idx + 1, current, current_credits)
 
         # Option 2: include one viable section from this optional course.
         course_credits = course_min_credits.get(course_code, 0)
@@ -283,11 +318,10 @@ def _expand_schedule_with_optional_courses(
                 continue
 
             current[course_code] = section
-            _dfs_optional(idx + 1, current, current_credits + course_credits)
+            yield from _dfs_optional(idx + 1, current, current_credits + course_credits)
             del current[course_code]
 
-    _dfs_optional(0, base, base_credits)
-    return expanded
+    yield from _dfs_optional(0, base, base_credits)
 
 
 def preprocess_restrictions(
@@ -354,18 +388,26 @@ def preprocess_restrictions(
     return VARIABLES, DOMAINS
 
 
-def backtrack_schedules(variables, domains, assignment=None):
+def backtrack_schedules(variables, domains, assignment=None, budget=None):
     if assignment is None:
         assignment = {}
+    if budget is None:
+        budget = SearchBudget()
+
+    if not budget.visit_node():
+        return
 
     if len(assignment) == len(variables):
-        return [assignment.copy()]
+        yield assignment.copy()
+        return
 
     unassigned_vars = [v for v in variables if v not in assignment]
     first_var = unassigned_vars[0]
-    schedules = []
 
     for value in domains[first_var]:
+        if budget.truncated:
+            return
+
         # Check if this new section conflicts with existing assignments
         conflict = False
         for assigned_var in assignment:
@@ -406,21 +448,8 @@ def backtrack_schedules(variables, domains, assignment=None):
 
         # No conflict, assign and recurse
         assignment[first_var] = value
-        result = backtrack_schedules(variables, domains, assignment)
-        schedules.extend(result)
+        yield from backtrack_schedules(variables, domains, assignment, budget)
         del assignment[first_var]
-
-    # Deduplicate schedules
-    seen = set()
-    unique_schedules = []
-    for sched in schedules:
-        sched_tuple = tuple(
-            (course, section["section_code"]) for course, section in sched.items()
-        )
-        if sched_tuple not in seen:
-            seen.add(sched_tuple)
-            unique_schedules.append(sched)
-    return unique_schedules
 
 
 def get_prof_ratings(professors, excluded_profs):
@@ -610,10 +639,11 @@ def build_schedules(
     )
 
     ALL_DOMAINS = {**DOMAINS, **OPTIONAL_DOMAINS}
+    budget = SearchBudget()
 
     # If any required course has no viable sections, no schedules are possible.
     if any(len(DOMAINS.get(course, [])) == 0 for course in required_courses):
-        return []
+        return {"schedules": [], "truncated": False}
 
     # Collect all professors from all sections
     full_profs = []
@@ -652,54 +682,34 @@ def build_schedules(
     # Get professor ratings
     prof_ratings = get_prof_ratings(full_profs, excluded_profs)
 
-    # Generate base schedules for required courses only.
-    required_schedules = backtrack_schedules(VARIABLES, DOMAINS)
-
     course_min_credits = _get_course_min_credits_map(
         list(required_courses) + normalized_optional
     )
 
-    # Expand each required-only schedule by optionally including extra courses.
-    expanded_schedules: List[Dict[str, Dict]] = []
-    for base_schedule in required_schedules:
-        if normalized_optional:
-            expanded_schedules.extend(
-                _expand_schedule_with_optional_courses(
-                    base_schedule=base_schedule,
-                    optional_course_codes=normalized_optional,
-                    optional_domains=OPTIONAL_DOMAINS,
-                    course_min_credits=course_min_credits,
-                    max_credits=max_credits,
-                )
-            )
-        else:
-            expanded_schedules.append(base_schedule.copy())
-
-    # Dedupe expanded schedules across base schedules.
+    # Generate and rank only a bounded set of valid candidate schedules.
     seen = set()
-    unique_schedules = []
-    for schedule in expanded_schedules:
-        signature = _schedule_signature(schedule)
-        if signature in seen:
-            continue
-        seen.add(signature)
-        unique_schedules.append(schedule)
-
     schedule_records = []
-    for unique_schedule in unique_schedules:
+
+    def collect_candidate(schedule: Dict[str, Dict]) -> bool:
         total_credits = sum(
-            course_min_credits.get(course_code, 0) for course_code in unique_schedule
+            course_min_credits.get(course_code, 0) for course_code in schedule
         )
 
-        # Defensive filter in case any schedule slipped past expansion checks.
         if max_credits is not None and total_credits > max_credits:
-            continue
+            return True
         if min_credits is not None and total_credits < min_credits:
-            continue
+            return True
+
+        signature = _schedule_signature(schedule)
+        if signature in seen:
+            return True
+        if not budget.add_candidate():
+            return False
+        seen.add(signature)
 
         rating_sum = 0.0
         rated_instructors = 0
-        for section in unique_schedule.values():
+        for section in schedule.values():
             instructors = section.get("instructors", [])
             for instructor in instructors:
                 try:
@@ -722,18 +732,38 @@ def build_schedules(
             [
                 course_code
                 for course_code in normalized_optional
-                if course_code in unique_schedule
+                if course_code in schedule
             ]
         )
 
         schedule_records.append(
             {
-                "schedule": unique_schedule,
+                "schedule": schedule,
                 "average_professor_rating": avg_schedule_prof_rating,
                 "total_credits": total_credits,
                 "included_optional_courses": included_optional_courses,
             }
         )
+        return not budget.truncated
+
+    for base_schedule in backtrack_schedules(VARIABLES, DOMAINS, budget=budget):
+        if normalized_optional:
+            expanded_schedules = _expand_schedule_with_optional_courses(
+                base_schedule=base_schedule,
+                optional_course_codes=normalized_optional,
+                optional_domains=OPTIONAL_DOMAINS,
+                course_min_credits=course_min_credits,
+                max_credits=max_credits,
+                budget=budget,
+            )
+        else:
+            expanded_schedules = iter((base_schedule.copy(),))
+
+        for schedule in expanded_schedules:
+            if not collect_candidate(schedule):
+                break
+        if budget.truncated:
+            break
 
     schedule_records.sort(
         key=lambda record: (
@@ -773,4 +803,4 @@ def build_schedules(
             }
         )
 
-    return api_schedules
+    return {"schedules": api_schedules, "truncated": budget.truncated}

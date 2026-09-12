@@ -83,10 +83,10 @@ class ScheduleRequest(BaseModel):
     semester: Optional[str] = None
     excluded_profs: List[str] = Field(default_factory=list)
     time_constraints: List[TimeConstraint] = Field(default_factory=list)
-    max_schedules: int = Field(default=50, ge=1, le=500)
+    max_schedules: int = Field(default=50, ge=1, le=50)
     optional_courses: List[str] = Field(default_factory=list)
-    max_credits: Optional[int] = Field(default=None, ge=1, le=30)
-    min_credits: Optional[int] = Field(default=None, ge=1, le=30)
+    max_credits: int = Field(default=22, ge=1, le=22)
+    min_credits: Optional[int] = Field(default=None, ge=1, le=22)
     only_open_seats: bool = True
 
 
@@ -100,3 +100,8 @@ class ScheduleResult(BaseModel):
     average_professor_rating: Optional[float] = None
     total_credits: int = 0
     included_optional_courses: List[str] = Field(default_factory=list)
+
+
+class ScheduleGenerationResponse(BaseModel):
+    schedules: List[ScheduleResult] = Field(default_factory=list)
+    truncated: bool = False

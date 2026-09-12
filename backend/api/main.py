@@ -15,8 +15,8 @@ from api.schemas import (
     CourseDetail,
     CourseSummary,
     Department,
+    ScheduleGenerationResponse,
     ScheduleRequest,
-    ScheduleResult,
     SectionSearchResult,
     Semester,
     StatusResponse,
@@ -422,7 +422,7 @@ def search_sections(
         return cursor.fetchall()
 
 
-@app.post("/api/v1/schedules", response_model=List[ScheduleResult])
+@app.post("/api/v1/schedules", response_model=ScheduleGenerationResponse)
 def generate_schedules(payload: ScheduleRequest):
     """
     Builds conflict-free schedules for required courses in a semester,
@@ -447,6 +447,12 @@ def generate_schedules(payload: ScheduleRequest):
         for course_code in normalized_optional
         if course_code not in required_set
     ]
+
+    if len(normalized_courses) + len(normalized_optional) > 10:
+        raise HTTPException(
+            status_code=422,
+            detail="required_courses and optional_courses cannot contain more than 10 unique course codes.",
+        )
 
     if (
         payload.min_credits is not None
