@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from time import monotonic
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import requests
@@ -8,6 +9,32 @@ from api.database import get_db_connection
 
 P_TERP_PROF_URL = "https://planetterp.com/api/v1/professor"
 P_TERP_PROF_GRADES_CLASS_URL = "https://planetterp.com/api/v1/grades"
+PLANETTERP_TIMEOUT = (2, 5)
+PLANETTERP_CACHE_TTL_SECONDS = 300
+PLANETTERP_CACHE_MAX_ENTRIES = 256
+
+_CACHE_MISS = object()
+_professor_rating_cache = {}
+_professor_gpa_cache = {}
+
+
+def _get_cached(cache, key):
+    entry = cache.get(key)
+    if entry is None:
+        return _CACHE_MISS
+
+    value, expires_at = entry
+    if monotonic() >= expires_at:
+        cache.pop(key, None)
+        return _CACHE_MISS
+
+    return value
+
+
+def _set_cached(cache, key, value):
+    if key not in cache and len(cache) >= PLANETTERP_CACHE_MAX_ENTRIES:
+        del cache[next(iter(cache))]
+    cache[key] = (value, monotonic() + PLANETTERP_CACHE_TTL_SECONDS)
 
 
 def _parse_time_to_minutes(t: str):
@@ -400,21 +427,32 @@ def get_prof_ratings(professors, excluded_profs):
     needed_profs = set(professors) - set(excluded_profs or [])
     prof_ratings = {}
     for prof in needed_profs:
+        cached_rating = _get_cached(_professor_rating_cache, prof)
+        if cached_rating is not _CACHE_MISS:
+            prof_ratings[prof] = cached_rating
+            continue
+
         try:
             response = requests.get(
                 P_TERP_PROF_URL + f"?name={prof.replace(' ', '%20')}",
+                timeout=PLANETTERP_TIMEOUT,
             )
+            response.raise_for_status()
             data = response.json()
             if "error" in data:
-                prof_ratings[prof] = 0
+                rating = None
             elif data["average_rating"] is None:
-                prof_ratings[prof] = 0  # default to 0
+                rating = None
             else:
-                prof_ratings[prof] = data["average_rating"]
+                rating = data["average_rating"]
         except Exception as e:
             print(f"Error fetching rating for professor {prof}: {e}")
-            prof_ratings[prof] = 0
-    prof_ratings["Instructor: TBA"] = 0  # assign average rating for TBA instructors
+            rating = None
+
+        _set_cached(_professor_rating_cache, prof, rating)
+        prof_ratings[prof] = rating
+
+    prof_ratings["Instructor: TBA"] = None
     return prof_ratings
 
 
@@ -424,13 +462,18 @@ def get_prof_grades_for_course(professor, course_code):
     Returns:
         dict: Grade counts by letter grade, or None if data unavailable
     """
+    cache_key = (professor, course_code)
+    cached_grades = _get_cached(_professor_gpa_cache, cache_key)
+    if cached_grades is not _CACHE_MISS:
+        return cached_grades
+
     try:
         response = requests.get(
             P_TERP_PROF_GRADES_CLASS_URL
-            + f"?professor={professor.replace(' ', '%20')}&course={course_code}"
+            + f"?professor={professor.replace(' ', '%20')}&course={course_code}",
+            timeout=PLANETTERP_TIMEOUT,
         )
-        if response.status_code == 400:
-            return None
+        response.raise_for_status()
 
         grades_data = response.json()
 
@@ -465,9 +508,11 @@ def get_prof_grades_for_course(professor, course_code):
                 if grade in semester_data:
                     grade_counts[grade] += semester_data[grade]
 
+        _set_cached(_professor_gpa_cache, cache_key, grade_counts)
         return grade_counts
     except Exception as e:
         print(f"Error fetching grades for {professor} in {course_code}: {e}")
+        _set_cached(_professor_gpa_cache, cache_key, None)
         return None
 
 
@@ -652,25 +697,26 @@ def build_schedules(
         if min_credits is not None and total_credits < min_credits:
             continue
 
-        avg_schedule_prof_rating = 0.0
-        total_instructors = 0
+        rating_sum = 0.0
+        rated_instructors = 0
         for section in unique_schedule.values():
             instructors = section.get("instructors", [])
             for instructor in instructors:
                 try:
-                    avg_schedule_prof_rating += prof_ratings.get(instructor, 0)
-                    total_instructors += 1
+                    rating = prof_ratings.get(instructor)
+                    if rating is not None:
+                        rating_sum += rating
+                        rated_instructors += 1
                 except Exception as e:
                     print(f"Error adding rating for professor {instructor}: {e}")
                     continue
 
-        if total_instructors > 0:
+        avg_schedule_prof_rating = None
+        if rated_instructors > 0:
             avg_schedule_prof_rating = round(
-                avg_schedule_prof_rating / total_instructors,
+                rating_sum / rated_instructors,
                 2,
             )
-        # else:
-        #     avg_schedule_prof_rating = None
 
         included_optional_courses = sorted(
             [
