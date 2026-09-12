@@ -211,8 +211,10 @@ def _replace_sections(cursor, courses, semester_code):
                 )
             )
             meetings_by_section[section_key] = sorted(
-                _normalize_meeting_tuple(meeting)
-                for meeting in section.get("time_info", [])
+                {
+                    _normalize_meeting_tuple(meeting)
+                    for meeting in section.get("time_info", [])
+                }
             )
 
     if not section_rows:

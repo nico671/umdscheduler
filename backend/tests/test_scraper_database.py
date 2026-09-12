@@ -126,6 +126,42 @@ class ScraperDatabaseUnitTests(unittest.TestCase):
         source = inspect.getsource(dbmanager.sync_scraped_data)
         self.assertEqual(source.count("conn.commit()"), 1)
 
+    def test_duplicate_meetings_are_deduplicated_before_insert(self):
+        courses = sample_courses()
+        courses[0]["sections"][0]["time_info"] = [
+            {
+                "days": "MWF",
+                "start_time": "9:00am",
+                "end_time": "9:50am",
+                "building_code": "IRB",
+                "room": "0324",
+                "class_type": "Lecture",
+            },
+            {
+                "days": "MWF",
+                "start_time": "9:00am",
+                "end_time": "9:50am",
+                "building_code": "IRB",
+                "room": "0324",
+                "class_type": "Lecture",
+            },
+        ]
+        cursor = FakeCursor()
+        with patch.object(
+            dbmanager,
+            "execute_values",
+            return_value=self.execute_values_rows,
+        ), patch.object(dbmanager, "execute_batch") as execute_batch:
+            section_count, meeting_count = dbmanager._replace_sections(
+                cursor, courses, "202601"
+            )
+
+        self.assertEqual((section_count, meeting_count), (1, 1))
+        self.assertEqual(
+            execute_batch.call_args.args[2],
+            [(1, "MWF", "9:00am", "9:50am", "IRB", "0324", "Lecture")],
+        )
+
 
 @unittest.skipUnless(
     os.environ.get("TEST_DATABASE_URL"),

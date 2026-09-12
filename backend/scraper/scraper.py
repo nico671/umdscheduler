@@ -14,6 +14,9 @@ TESTUDO_DEPT_URL = "https://app.testudo.umd.edu/soc/{current_semester}/{dept_abb
 TESTUDO_SPEC_COURSE_URL = "https://app.testudo.umd.edu/soc/search?courseId={course_code}&sectionId=&termId={current_semester}&_openSectionsOnly=on&creditCompare=%3E%3D&credits=0.0&courseLevelFilter=ALL&instructor=&_facetoface=on&_blended=on&_online=on&courseStartCompare=&courseStartHour=&courseStartMin=&courseStartAM=&courseEndHour=&courseEndMin=&courseEndAM=&teachingCenter=ALL&_classDay1=on&_classDay2=on&_classDay3=on&_classDay4=on&_classDay5=on"
 
 REQUEST_TIMEOUT_SECONDS = 20
+REQUEST_MAX_ATTEMPTS = 3
+REQUEST_RETRY_BACKOFF_SECONDS = 1
+RETRYABLE_STATUS_CODES = frozenset({429})
 
 MAX_WORKERS = 25
 COURSE_CODE_RE = re.compile(r"^(?P<department>[A-Z]{4})(?P<number>\d{3,4}[A-Z]?)$")
@@ -27,9 +30,30 @@ class ScrapeError(RuntimeError):
 
 def _request(url, session=None):
     client = session or requests
-    response = client.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
-    response.raise_for_status()
-    return response
+    for attempt in range(REQUEST_MAX_ATTEMPTS):
+        response = None
+        try:
+            response = client.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
+            response.raise_for_status()
+        except requests.Timeout:
+            if attempt == REQUEST_MAX_ATTEMPTS - 1:
+                raise
+        except requests.HTTPError:
+            if (
+                response is None
+                or (
+                    response.status_code not in RETRYABLE_STATUS_CODES
+                    and response.status_code < 500
+                )
+                or attempt == REQUEST_MAX_ATTEMPTS - 1
+            ):
+                raise
+        else:
+            return response
+
+        time.sleep(REQUEST_RETRY_BACKOFF_SECONDS * (2**attempt))
+
+    raise RuntimeError("Request retry loop ended unexpectedly")
 
 
 def _parse_course_code(course_code):
@@ -322,7 +346,8 @@ def scrape_section_info_from_section_div(section_div):
                 class_type_span.text.strip() if class_type_span else ""
             )
 
-            meeting_times.append(meeting_info)
+            if any(meeting_info.values()):
+                meeting_times.append(meeting_info)
 
     section_data["time_info"] = meeting_times
     return section_data

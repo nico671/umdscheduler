@@ -47,35 +47,78 @@ class ScraperTests(unittest.TestCase):
                 scraper.requests,
                 "get",
                 return_value=FakeResponse(status_code=status_code),
-            ):
+            ), patch.object(scraper.time, "sleep"):
                 with self.assertRaises(requests.HTTPError):
                     scraper.scrape_all_available_semesters()
 
     def test_department_and_course_http_errors_fail_scrape(self):
-        with patch.object(
-            scraper,
-            "get_thread_session",
-            return_value=FakeSession(FakeResponse(status_code=429)),
-        ):
-            with self.assertRaises(requests.HTTPError):
-                scraper.scrape_available_course_codes_for_dept("CMSC", "Computer", "202601")
+        with patch.object(scraper.time, "sleep"):
+            with patch.object(
+                scraper,
+                "get_thread_session",
+                return_value=FakeSession(FakeResponse(status_code=429)),
+            ):
+                with self.assertRaises(requests.HTTPError):
+                    scraper.scrape_available_course_codes_for_dept(
+                        "CMSC", "Computer", "202601"
+                    )
 
-        with patch.object(
-            scraper,
-            "get_thread_session",
-            return_value=FakeSession(FakeResponse(status_code=500)),
-        ):
-            with self.assertRaises(requests.HTTPError):
-                scraper.scrape_course_info_for_course_code_with_sections(
-                    "CMSC131", "202601"
-                )
+            with patch.object(
+                scraper,
+                "get_thread_session",
+                return_value=FakeSession(FakeResponse(status_code=500)),
+            ):
+                with self.assertRaises(requests.HTTPError):
+                    scraper.scrape_course_info_for_course_code_with_sections(
+                        "CMSC131", "202601"
+                    )
 
     def test_request_timeout_fails_scrape(self):
         with patch.object(
             scraper.requests, "get", side_effect=requests.Timeout("timed out")
-        ):
+        ) as get, patch.object(scraper.time, "sleep") as sleep:
             with self.assertRaises(requests.Timeout):
                 scraper.scrape_all_available_semesters()
+        self.assertEqual(get.call_count, scraper.REQUEST_MAX_ATTEMPTS)
+        self.assertEqual(sleep.call_count, scraper.REQUEST_MAX_ATTEMPTS - 1)
+
+    def test_transient_timeout_is_retried(self):
+        homepage = (
+            '<select id="term-id-input">'
+            '<option value="202601">Spring 2026</option>'
+            "</select>"
+        )
+        with patch.object(
+            scraper.requests,
+            "get",
+            side_effect=[requests.Timeout("timed out"), FakeResponse(homepage)],
+        ) as get, patch.object(scraper.time, "sleep") as sleep:
+            self.assertEqual(
+                scraper.scrape_all_available_semesters(),
+                [("Spring 2026", "202601")],
+            )
+
+        self.assertEqual(get.call_count, 2)
+        sleep.assert_called_once_with(scraper.REQUEST_RETRY_BACKOFF_SECONDS)
+
+    def test_transient_http_error_is_retried(self):
+        homepage = (
+            '<select id="term-id-input">'
+            '<option value="202601">Spring 2026</option>'
+            "</select>"
+        )
+        with patch.object(
+            scraper.requests,
+            "get",
+            side_effect=[FakeResponse(status_code=503), FakeResponse(homepage)],
+        ) as get, patch.object(scraper.time, "sleep") as sleep:
+            self.assertEqual(
+                scraper.scrape_all_available_semesters(),
+                [("Spring 2026", "202601")],
+            )
+
+        self.assertEqual(get.call_count, 2)
+        sleep.assert_called_once_with(scraper.REQUEST_RETRY_BACKOFF_SECONDS)
 
     def test_missing_required_homepage_html_fails_scrape(self):
         cases = (
@@ -118,6 +161,43 @@ class ScraperTests(unittest.TestCase):
                     scraper.scrape_available_course_codes_for_dept(
                         "CMSC", "Computer", "202601"
                     )
+
+    def test_empty_section_meeting_rows_are_discarded(self):
+        section_div = scraper.BeautifulSoup(
+            """
+            <div class="section">
+              <span class="section-id">0101</span>
+              <div class="class-days-container">
+                <div class="row"></div>
+                <div class="row">
+                  <span class="section-days">MWF</span>
+                  <span class="class-start-time">9:00am</span>
+                  <span class="class-end-time">9:50am</span>
+                  <span class="class-building">
+                    <span class="building-code">IRB</span>
+                    <span class="class-room">0324</span>
+                  </span>
+                  <span class="class-type">Lecture</span>
+                </div>
+              </div>
+            </div>
+            """,
+            "lxml",
+        ).find("div", class_="section")
+
+        self.assertEqual(
+            scraper.scrape_section_info_from_section_div(section_div)["time_info"],
+            [
+                {
+                    "days": "MWF",
+                    "start_time": "9:00am",
+                    "end_time": "9:50am",
+                    "building_code": "IRB",
+                    "room": "0324",
+                    "class_type": "Lecture",
+                }
+            ],
+        )
 
     def test_one_department_worker_failure_fails_complete_collection(self):
         def scrape_department(dept_code, _dept_name, _semester):
