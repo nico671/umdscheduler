@@ -216,7 +216,7 @@ def _replace_sections(cursor, courses, semester_code):
             )
 
     if not section_rows:
-        return
+        return 0, 0
 
     section_rows = execute_values(
         cursor,
@@ -254,6 +254,8 @@ def _replace_sections(cursor, courses, semester_code):
         page_size=500,
     )
 
+    return len(section_id_map), len(meeting_rows)
+
 
 def sync_scraped_data(available_departments, semester_code, courses):
     """Publish one complete scrape as one transaction."""
@@ -276,9 +278,17 @@ def sync_scraped_data(available_departments, semester_code, courses):
             _create_schema(cursor)
             _upsert_system_data(cursor, available_departments, semester_code)
             _upsert_courses(cursor, courses)
-            _replace_sections(cursor, courses, semester_code)
+            section_count, meeting_count = _replace_sections(
+                cursor, courses, semester_code
+            )
 
         conn.commit()
+        print(
+            "SCRAPE_COUNTS "
+            f"courses={len(courses)} "
+            f"sections={section_count} "
+            f"meetings={meeting_count}"
+        )
     except Exception:
         conn.rollback()
         raise

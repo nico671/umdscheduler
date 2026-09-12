@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 
 fake_database = types.ModuleType("api.database")
-fake_database.get_db_connection = None
+setattr(fake_database, "get_db_connection", None)
 sys.modules.setdefault("api.database", fake_database)
 
 from api import main, scheduler  # noqa: E402

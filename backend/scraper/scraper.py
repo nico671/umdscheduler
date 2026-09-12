@@ -177,11 +177,11 @@ def scrape_course_info_for_course_code_with_sections(course_code, curr_sem_code)
         print(f"Course credits not found for {course_code}")
 
     grading_methods_span = course_div.find("span", {"class": "grading-method"})
-    grading_options = (
-        grading_methods_span.find("abbr")["title"].strip().split(", ")
-        if grading_methods_span and grading_methods_span.find("abbr")
-        else []
+    grading_abbr = (
+        grading_methods_span.find("abbr") if grading_methods_span else None
     )
+    grading_title = grading_abbr.get("title") if grading_abbr else None
+    grading_options = str(grading_title).strip().split(", ") if grading_title else []
     course_info["grading_options"] = grading_options
 
     gened_codes = []
@@ -233,13 +233,14 @@ def scrape_course_info_for_course_code_with_sections(course_code, curr_sem_code)
     sections_container = course_page_soup.find("div", class_="sections-container")
     section_data = []
     if not sections_container:
-        if not course_page_soup.find("div", class_="individual-instruction-message"):
+        instruction_message = course_page_soup.find(
+            "div", class_="individual-instruction-message"
+        )
+        if instruction_message is None:
             print(f"Sections container not found for {course_code}")
         else:
             course_info["attributes"]["Individual Instruction Message"] = (
-                course_page_soup.find(
-                    "div", class_="individual-instruction-message"
-                ).text.strip()
+                instruction_message.get_text(strip=True)
             )
     else:
         for section_div in sections_container.find_all("div", class_="section"):
