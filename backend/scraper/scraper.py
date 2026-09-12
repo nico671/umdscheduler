@@ -1,3 +1,4 @@
+import re
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -15,8 +16,36 @@ TESTUDO_SPEC_COURSE_URL = "https://app.testudo.umd.edu/soc/search?courseId={cour
 REQUEST_TIMEOUT_SECONDS = 20
 
 MAX_WORKERS = 25
+COURSE_CODE_RE = re.compile(r"^(?P<department>[A-Z]{4})(?P<number>\d{3,4}[A-Z]?)$")
 
 _thread_local = threading.local()
+
+
+class ScrapeError(RuntimeError):
+    """Raised when Testudo data is incomplete or cannot be parsed."""
+
+
+def _request(url, session=None):
+    client = session or requests
+    response = client.get(url, timeout=REQUEST_TIMEOUT_SECONDS)
+    response.raise_for_status()
+    return response
+
+
+def _parse_course_code(course_code):
+    normalized = str(course_code or "").strip().upper()
+    if COURSE_CODE_RE.fullmatch(normalized) is None:
+        raise ScrapeError(
+            f"Cannot parse course code discovered from Testudo: {course_code!r}"
+        )
+    return normalized
+
+
+def _raise_worker_failures(kind, failures):
+    if not failures:
+        return
+    sample = ", ".join(f"{identifier}: {error}" for identifier, error in failures[:3])
+    raise ScrapeError(f"{len(failures)} {kind} worker failure(s); sample: {sample}")
 
 
 def get_thread_session():
@@ -30,33 +59,44 @@ def get_thread_session():
 
 
 def scrape_all_available_semesters():
-    resp = requests.get(TESTUDO_HOME_URL)
+    resp = _request(TESTUDO_HOME_URL)
     soup = BeautifulSoup(resp.text, "lxml")
 
     semesters_select_elt = soup.find("select", {"id": "term-id-input"})
     semesters = []
-    assert semesters_select_elt, "Semesters select element not found on the page"
+    if semesters_select_elt is None:
+        raise ScrapeError("Missing semester selector on the Testudo homepage")
     for option in semesters_select_elt.find_all("option"):
         sem_name = option.text.strip()
         sem_code = option["value"]
         semesters.append((sem_name, sem_code))
+    if not semesters:
+        raise ScrapeError("Semester selector on the Testudo homepage is empty")
     return semesters
 
 
 def scrape_all_available_departments_for_current_semester():
-    resp = requests.get(TESTUDO_HOME_URL)
+    resp = _request(TESTUDO_HOME_URL)
     soup = BeautifulSoup(resp.text, "lxml")
 
     curr_sem_code = None
     semesters_select_elt = soup.find("select", {"id": "term-id-input"})
+    if semesters_select_elt is None:
+        raise ScrapeError("Missing semester selector on the Testudo homepage")
     for option in semesters_select_elt.find_all("option"):
         if "selected" in option.attrs:
-            curr_sem_name = option.text.strip()
             curr_sem_code = option["value"]
-            print(curr_sem_name, curr_sem_code)
+            print(option.text.strip(), curr_sem_code)
+
+    if not curr_sem_code:
+        raise ScrapeError("Missing current semester on the Testudo homepage")
 
     course_prefix_div = soup.find("div", {"id": "course-prefixes-page"})
+    if course_prefix_div is None:
+        raise ScrapeError("Missing department container on the Testudo homepage")
     dept_entries = course_prefix_div.find_all("div", {"class": "course-prefix row"})
+    if not dept_entries:
+        raise ScrapeError("Testudo returned an empty department list")
     available_depts = []
     for course_entry in dept_entries:
         dept_abbr_name = None
@@ -70,11 +110,14 @@ def scrape_all_available_departments_for_current_semester():
             available_depts.append((dept_abbr_name, dept_full_name))
         else:
             print(dept_abbr_name, dept_full_name)
+    if not available_depts:
+        raise ScrapeError("Testudo returned no usable departments")
     return available_depts, curr_sem_code
 
 
 def scrape_all_courses_with_sections(course_codes, curr_sem_code):
     all_course_info = []
+    failures = []
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
             executor.submit(
@@ -92,26 +135,29 @@ def scrape_all_courses_with_sections(course_codes, curr_sem_code):
                 if course_data:
                     all_course_info.append(course_data)
                 else:
-                    print(f"No course data found for {course_code}")
+                    failures.append((course_code, "no course data returned"))
             except Exception as e:
-                print(f"Error scraping {course_code}: {e}")
+                failures.append((course_code, e))
 
+    _raise_worker_failures("course", failures)
+    if not all_course_info:
+        raise ScrapeError("Testudo returned an empty course list")
     return all_course_info
 
 
 def scrape_course_info_for_course_code_with_sections(course_code, curr_sem_code):
+    course_code = _parse_course_code(course_code)
     print(f"Scraping {course_code}")
     session = get_thread_session()
     course_url = TESTUDO_SPEC_COURSE_URL.format(
         course_code=course_code, current_semester=curr_sem_code
     )
-    course_resp = session.get(course_url, timeout=REQUEST_TIMEOUT_SECONDS)
+    course_resp = _request(course_url, session=session)
     course_page_soup = BeautifulSoup(course_resp.text, "lxml")
 
     course_div = course_page_soup.find("div", {"class": "course", "id": course_code})
     if course_div is None:
-        print(f"Course div not found for {course_code} at URL: {course_url}")
-        return None
+        raise ScrapeError(f"Course {course_code} is missing from Testudo response")
 
     course_info = {
         "course_code": course_code,
@@ -284,6 +330,7 @@ def scrape_section_info_from_section_div(section_div):
 def scrape_available_course_codes_for_all_depts(available_depts, curr_sem_code):
     # use thread pool to scrape all departments in parallel
     all_course_codes = set()
+    failures = []
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
             executor.submit(
@@ -301,7 +348,10 @@ def scrape_available_course_codes_for_all_depts(available_depts, curr_sem_code):
                 dept_course_codes = future.result()
                 all_course_codes.update(dept_course_codes)
             except Exception as e:
-                print(f"Error scraping course codes for {dept_code} - {dept_name}: {e}")
+                failures.append((dept_code, e))
+    _raise_worker_failures("department", failures)
+    if not all_course_codes:
+        raise ScrapeError("Testudo returned an empty course-code list")
     return all_course_codes
 
 
@@ -311,37 +361,48 @@ def scrape_available_course_codes_for_dept(dept_code, dept_name, curr_sem_code):
     )
     print(f"Scraping course codes for {dept_code} - {dept_name}")
     session = get_thread_session()
-    dept_resp = session.get(dept_url, timeout=REQUEST_TIMEOUT_SECONDS)
+    dept_resp = _request(dept_url, session=session)
     soup = BeautifulSoup(dept_resp.text, "lxml")
 
     all_dept_course_codes = {
-        course_div["id"]
+        _parse_course_code(course_div.get("id"))
         for course_div in soup.find_all("div", {"class": "course"})
         if course_div.get("id")
     }
-    return sorted(list(all_dept_course_codes))
+    if not all_dept_course_codes:
+        raise ScrapeError(f"Department {dept_code} returned an empty course-code list")
+    return sorted(all_dept_course_codes)
 
 
-if __name__ == "__main__":
-    start_time = time.time()
+def collect_scraped_data():
     available_depts, curr_sem_code = (
         scrape_all_available_departments_for_current_semester()
     )
     all_course_codes = scrape_available_course_codes_for_all_depts(
         available_depts, curr_sem_code
     )
-
     scraped_course_info = scrape_all_courses_with_sections(
         all_course_codes, curr_sem_code
     )
+    return available_depts, curr_sem_code, scraped_course_info
+
+
+def run_scrape():
+    start_time = time.time()
+    available_depts, curr_sem_code, scraped_course_info = collect_scraped_data()
     print(f"Scraped info for {len(scraped_course_info)} courses")
 
-    # write to db
     print("Saving to database...")
-    dbmanager.create_tables()
-    dbmanager.upsert_system_data(available_depts, curr_sem_code)
-    dbmanager.upsert_courses_and_sections(scraped_course_info, curr_sem_code)
+    dbmanager.sync_scraped_data(
+        available_depts,
+        curr_sem_code,
+        scraped_course_info,
+    )
     print("Database sync complete!")
 
     end_time = time.time()
     print(f"Scraping completed in {end_time - start_time:.2f} seconds")
+
+
+if __name__ == "__main__":
+    run_scrape()
