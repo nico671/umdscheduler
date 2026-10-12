@@ -120,6 +120,55 @@ class ScraperTests(unittest.TestCase):
         self.assertEqual(get.call_count, 2)
         sleep.assert_called_once_with(scraper.REQUEST_RETRY_BACKOFF_SECONDS)
 
+    def test_missing_course_response_is_retried(self):
+        course_html = (
+            '<div class="course" id="GEOG797">'
+            '<span class="course-title">Professional Project</span>'
+            '<span class="course-min-credits">3</span>'
+            '</div>'
+        )
+        with patch.object(
+            scraper,
+            "_request",
+            side_effect=[FakeResponse("<html></html>"), FakeResponse(course_html)],
+        ) as request, patch.object(scraper.time, "sleep") as sleep:
+            course = scraper.scrape_course_info_for_course_code_with_sections(
+                "GEOG797", "202701"
+            )
+
+        self.assertEqual(course["course_code"], "GEOG797")
+        self.assertEqual(course["course_name"], "Professional Project")
+        self.assertEqual(request.call_count, 2)
+        sleep.assert_called_once_with(scraper.REQUEST_RETRY_BACKOFF_SECONDS)
+
+    def test_missing_course_exhausts_retries_without_database_sync(self):
+        with patch.object(
+            scraper, "_request", return_value=FakeResponse("<html></html>")
+        ) as request, patch.object(scraper.time, "sleep") as sleep, patch.object(
+            scraper,
+            "scrape_all_available_departments_for_current_semester",
+            return_value=([("SOCY", "Sociology")], "202701"),
+        ), patch.object(
+            scraper,
+            "scrape_available_course_codes_for_all_depts",
+            return_value=["SOCY451"],
+        ), patch.object(scraper.dbmanager, "sync_scraped_data") as sync:
+            with self.assertRaisesRegex(
+                scraper.ScrapeError,
+                "1 course worker failure.*SOCY451 is missing from Testudo response",
+            ):
+                scraper.run_scrape()
+
+        self.assertEqual(request.call_count, scraper.REQUEST_MAX_ATTEMPTS)
+        self.assertEqual(
+            [call.args[0] for call in sleep.call_args_list],
+            [
+                scraper.REQUEST_RETRY_BACKOFF_SECONDS * (2**attempt)
+                for attempt in range(scraper.REQUEST_MAX_ATTEMPTS - 1)
+            ],
+        )
+        sync.assert_not_called()
+
     def test_missing_required_homepage_html_fails_scrape(self):
         cases = (
             ("missing selector", "<html></html>", "semester selector"),

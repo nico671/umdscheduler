@@ -176,12 +176,22 @@ def scrape_course_info_for_course_code_with_sections(course_code, curr_sem_code)
     course_url = TESTUDO_SPEC_COURSE_URL.format(
         course_code=course_code, current_semester=curr_sem_code
     )
-    course_resp = _request(course_url, session=session)
-    course_page_soup = BeautifulSoup(course_resp.text, "lxml")
+    for attempt in range(REQUEST_MAX_ATTEMPTS):
+        course_resp = _request(course_url, session=session)
+        course_page_soup = BeautifulSoup(course_resp.text, "lxml")
+        course_div = course_page_soup.find(
+            "div", {"class": "course", "id": course_code}
+        )
+        if course_div is not None:
+            break
+        if attempt < REQUEST_MAX_ATTEMPTS - 1:
+            print(f"Missing {course_code}; retrying {course_url}")
+            time.sleep(REQUEST_RETRY_BACKOFF_SECONDS * (2**attempt))
 
-    course_div = course_page_soup.find("div", {"class": "course", "id": course_code})
     if course_div is None:
-        raise ScrapeError(f"Course {course_code} is missing from Testudo response")
+        raise ScrapeError(
+            f"Course {course_code} is missing from Testudo response: {course_url}"
+        )
 
     course_info = {
         "course_code": course_code,
