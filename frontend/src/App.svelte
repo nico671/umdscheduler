@@ -62,7 +62,14 @@
     generatedSchedules.slice(0, visibleScheduleCount),
   );
   const memoryCache = new SvelteMap();
-  const dataClient = createDataClient(memoryCache);
+  let isBackendDelayed = $state(false);
+  let isBackendNoticeDismissed = $state(false);
+  const dataClient = createDataClient(memoryCache, {
+    onBackendDelayChange(isDelayed) {
+      isBackendDelayed = isDelayed;
+      if (!isDelayed) isBackendNoticeDismissed = false;
+    },
+  });
 
   const normalizedQuery = $derived(query.trim().toLowerCase());
   const sortedCatalog = $derived(
@@ -300,27 +307,7 @@
         only_open_seats: onlyOpenSeatsSections,
       };
 
-      const response = await fetch(
-        `${dataClient.backendBaseUrl}/api/v1/schedules`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        },
-      );
-
-      if (!response.ok) {
-        const errorPayload = await response.json().catch(() => null);
-        const detail =
-          typeof errorPayload?.detail === "string" ? errorPayload.detail : null;
-        throw new Error(
-          detail || `Failed to generate schedules (status ${response.status})`,
-        );
-      }
-
-      const schedulePayload = await response.json();
+      const schedulePayload = await dataClient.generateSchedules(payload);
       schedulesTruncated = schedulePayload.truncated === true;
       generatedSchedules = sortSchedulesByRating(schedulePayload.schedules ?? []).map(
         (schedule) => ({
@@ -780,6 +767,7 @@
 
   onMount(() => {
     void loadAllCourses();
+    return () => dataClient.dispose();
   });
 </script>
 
@@ -1079,3 +1067,22 @@
     {getMeetingLocation}
   />
 </main>
+
+<div class="backend-delay-notice-container">
+  <div role="status" aria-live="polite" aria-atomic="true">
+    {#if isBackendDelayed && !isBackendNoticeDismissed}
+      <p class="backend-delay-message">
+        This is taking longer than usual. Render may have paused the backend while
+        it was idle. Your request is still running.
+      </p>
+    {/if}
+  </div>
+  {#if isBackendDelayed && !isBackendNoticeDismissed}
+    <button
+      class="backend-delay-close"
+      type="button"
+      aria-label="Dismiss backend delay notice"
+      onclick={() => (isBackendNoticeDismissed = true)}
+    >×</button>
+  {/if}
+</div>

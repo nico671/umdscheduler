@@ -1,6 +1,7 @@
 import { runtimeConfig } from "../config/runtimeConfig.js";
 
 const COURSE_PAGE_SIZE = 200;
+const BACKEND_DELAY_MS = 3000;
 const PLANETTERP_COURSE_URL = "https://planetterp.com/api/v1/course";
 const PLANETTERP_PROFESSOR_URL = "https://planetterp.com/api/v1/professor";
 const PLANETTERP_GRADES_URL = "https://planetterp.com/api/v1/grades";
@@ -13,7 +14,7 @@ const CACHE_TTL_PLANETTERP_COURSE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * @typedef {{ timestamp: number, value: any }} CacheEntry
- * @typedef {{ backendBaseUrl?: string }} DataClientOptions
+ * @typedef {{ backendBaseUrl?: string, onBackendDelayChange?: (isDelayed: boolean) => void }} DataClientOptions
  */
 
 /**
@@ -27,6 +28,54 @@ export function createDataClient(memoryCache, options = {}) {
         /\/+$/,
         "",
     );
+
+    const pendingRequests = new Set();
+    let slowRequestCount = 0;
+    let disposed = false;
+
+    /**
+     * @param {string} path
+     * @param {string} errorMessage
+     * @param {RequestInit} [init]
+     * @param {boolean} [useErrorDetail]
+     */
+    async function requestBackend(path, errorMessage, init = {}, useErrorDetail = false) {
+        const request = { timer: null, slow: false };
+        if (!disposed) {
+            pendingRequests.add(request);
+            request.timer = setTimeout(() => {
+                request.slow = true;
+                slowRequestCount += 1;
+                if (slowRequestCount === 1) options.onBackendDelayChange?.(true);
+            }, BACKEND_DELAY_MS);
+        }
+
+        try {
+            const response = await fetch(`${backendBaseUrl}${path}`, init);
+            if (!response.ok) {
+                const payload = useErrorDetail
+                    ? await response.json().catch(() => null)
+                    : null;
+                const detail = typeof payload?.detail === "string" ? payload.detail : null;
+                throw new Error(detail || `${errorMessage} (status ${response.status})`);
+            }
+            return await response.json();
+        } finally {
+            clearTimeout(request.timer);
+            pendingRequests.delete(request);
+            if (request.slow && !disposed) {
+                slowRequestCount -= 1;
+                if (slowRequestCount === 0) options.onBackendDelayChange?.(false);
+            }
+        }
+    }
+
+    function dispose() {
+        disposed = true;
+        for (const request of pendingRequests) clearTimeout(request.timer);
+        pendingRequests.clear();
+        slowRequestCount = 0;
+    }
 
     /** @param {...string} parts */
     function createCacheKey(...parts) {
@@ -126,15 +175,24 @@ export function createDataClient(memoryCache, options = {}) {
 
     /** @param {number} offset @param {number} [pageSize] */
     async function loadCoursesPage(offset, pageSize = COURSE_PAGE_SIZE) {
-        const response = await fetch(
-            `${backendBaseUrl}/api/v1/courses?limit=${pageSize}&offset=${offset}`,
+        return requestBackend(
+            `/api/v1/courses?limit=${pageSize}&offset=${offset}`,
+            "Failed to load courses",
         );
+    }
 
-        if (!response.ok) {
-            throw new Error(`Failed to load courses (status ${response.status})`);
-        }
-
-        return response.json();
+    /** @param {object} payload */
+    async function generateSchedules(payload) {
+        return requestBackend(
+            "/api/v1/schedules",
+            "Failed to generate schedules",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            },
+            true,
+        );
     }
 
     /** @param {string} professorName */
@@ -279,19 +337,10 @@ export function createDataClient(memoryCache, options = {}) {
         return fetchWithLocalCache(
             backendCourseCacheKey,
             CACHE_TTL_COURSE_DETAIL_MS,
-            async () => {
-                const response = await fetch(
-                    `${backendBaseUrl}/api/v1/courses/${encodeURIComponent(courseCode)}`,
-                );
-
-                if (!response.ok) {
-                    throw new Error(
-                        `Failed to load course details (status ${response.status})`,
-                    );
-                }
-
-                return response.json();
-            },
+            () => requestBackend(
+                `/api/v1/courses/${encodeURIComponent(courseCode)}`,
+                "Failed to load course details",
+            ),
         );
     }
 
@@ -301,6 +350,8 @@ export function createDataClient(memoryCache, options = {}) {
         readCourseCatalogCache,
         writeCourseCatalogCache,
         loadCoursesPage,
+        generateSchedules,
+        dispose,
         fetchProfessorRating,
         fetchProfessorCourseGradeCounts,
         fetchCourseAverageGpa,

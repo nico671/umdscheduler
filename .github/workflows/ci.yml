@@ -55,5 +55,8 @@ jobs:
       - name: Clean install frontend dependencies
         run: npm ci
 
+      - name: Test frontend request behavior
+        run: npm test
+
       - name: Build frontend for production
         run: npm run build
