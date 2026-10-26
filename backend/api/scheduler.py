@@ -324,6 +324,62 @@ def _expand_schedule_with_optional_courses(
     yield from _dfs_optional(0, base, base_credits)
 
 
+def _group_equivalent_sections(sections: List[Dict]) -> List[Dict]:
+    meeting_fields = (
+        "days",
+        "start_time",
+        "end_time",
+        "building_code",
+        "room",
+        "class_type",
+    )
+    groups = {}
+    for section in sections:
+        instructors = section.get("instructors", [])
+        meetings = section.get("meetings", [])
+        # Missing details cannot establish that two sections are equivalent.
+        complete = (
+            bool(instructors)
+            and all(
+                name and name.strip().lower() not in ("", "tba") for name in instructors
+            )
+            and bool(meetings)
+            and all(
+                all(meeting.get(field) for field in meeting_fields)
+                and _parse_days_to_tokens(meeting["days"])
+                and _parse_time_to_minutes(meeting["start_time"]) is not None
+                and _parse_time_to_minutes(meeting["end_time"]) is not None
+                for meeting in meetings
+            )
+        )
+        key = (
+            (
+                tuple(sorted(instructors)),
+                tuple(
+                    sorted(
+                        tuple(meeting[field] for field in meeting_fields)
+                        for meeting in meetings
+                    )
+                ),
+            )
+            if complete
+            else (section["section_code"],)
+        )
+        groups.setdefault(key, []).append(section)
+
+    representatives = []
+    for group in groups.values():
+        ranked = sorted(
+            group,
+            key=lambda section: (
+                -section.get("open_seats", 0),
+                section["section_code"],
+            ),
+        )
+        representatives.append({**ranked[0], "equivalent_sections": ranked[1:]})
+    return representatives
+
+
 def preprocess_restrictions(
     required_courses,
     excluded_profs,
@@ -384,7 +440,7 @@ def preprocess_restrictions(
 
                 filtered_sections.append(section)
 
-            DOMAINS[course_code] = filtered_sections
+            DOMAINS[course_code] = _group_equivalent_sections(filtered_sections)
     return VARIABLES, DOMAINS
 
 
@@ -791,6 +847,7 @@ def build_schedules(
                 "waitlist": section.get("waitlist", 0),
                 "meetings": section.get("meetings", []),
                 "avg_prof_gpa_in_class": section.get("avg_prof_gpa_in_class"),
+                "equivalent_sections": section.get("equivalent_sections", []),
             }
             sections.append(section_payload)
 

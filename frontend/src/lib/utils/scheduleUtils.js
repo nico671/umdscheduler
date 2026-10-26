@@ -23,6 +23,7 @@ const DEFAULT_WEEKDAY_TOKENS = {
  *   instructors?: string[] | null,
  *   avg_prof_gpa_in_class?: number | null,
  *   meetings?: MeetingLike[] | null,
+ *   equivalent_sections?: SectionLike[],
  * }} SectionLike
  */
 
@@ -32,6 +33,7 @@ const DEFAULT_WEEKDAY_TOKENS = {
  *   day: string,
  *   courseCode: string,
  *   sectionCode: string,
+ *   equivalentSections: SectionLike[],
  *   instructors: string[],
  *   avgProfGpaInClass: number | null,
  *   location: string,
@@ -315,6 +317,7 @@ export function mapScheduleToCalendar(
                     day,
                     courseCode: section.course_code,
                     sectionCode: section.section_code,
+                    equivalentSections: section.equivalent_sections ?? [],
                     instructors: section.instructors ?? [],
                     avgProfGpaInClass:
                         typeof section.avg_prof_gpa_in_class === "number"

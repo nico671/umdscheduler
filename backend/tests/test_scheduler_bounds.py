@@ -4,6 +4,7 @@ import sys
 import types
 import unittest
 from contextlib import contextmanager
+from copy import deepcopy
 from unittest.mock import patch
 
 from pydantic import ValidationError
@@ -14,7 +15,7 @@ setattr(fake_database, "get_db_connection", None)
 sys.modules.setdefault("api.database", fake_database)
 
 from api import main, scheduler  # noqa: E402
-from api.schemas import ScheduleRequest  # noqa: E402
+from api.schemas import ScheduleGenerationResponse, ScheduleRequest  # noqa: E402
 
 
 def section(section_code):
@@ -28,7 +29,133 @@ def section(section_code):
     }
 
 
+def scheduled_section(section_code, open_seats=5):
+    return {
+        **section(section_code),
+        "instructors": ["Test Professor"],
+        "open_seats": open_seats,
+        "meetings": [
+            {
+                "days": "MWF",
+                "start_time": "10:00am",
+                "end_time": "10:50am",
+                "building_code": "IRB",
+                "room": "0324",
+                "class_type": "Lecture",
+            }
+        ],
+    }
+
+
 class SchedulerBoundsTests(unittest.TestCase):
+    def test_equivalent_sections_group_before_search_and_survive_response(self):
+        @contextmanager
+        def fake_connection():
+            yield object()
+
+        sections = [
+            scheduled_section("0101", 2),
+            scheduled_section("0102", 12),
+            scheduled_section("0103", 0),
+            scheduled_section("0104", 12),
+        ]
+        sections[0]["waitlist"] = 3
+        with (
+            patch.object(scheduler, "get_db_connection", fake_connection),
+            patch.object(
+                scheduler, "_get_course_sections_from_db", return_value=sections
+            ),
+            patch.object(
+                scheduler, "_get_course_min_credits_map", return_value={"A": 3}
+            ),
+            patch.object(
+                scheduler, "calculate_weighted_gpa_for_section", return_value=None
+            ),
+            patch.object(scheduler, "get_prof_ratings", return_value={}),
+            patch.object(scheduler, "MAX_CANDIDATE_SCHEDULES", 2),
+        ):
+            for required, optional in [(["A"], []), ([], ["A"])]:
+                for only_open in (True, False):
+                    with self.subTest(required=required, only_open=only_open):
+                        result = scheduler.build_schedules(
+                            required_courses=required,
+                            optional_courses=optional,
+                            semester="202601",
+                            min_credits=3,
+                            only_open_seats=only_open,
+                        )
+                        response = ScheduleGenerationResponse.model_validate(result)
+                        self.assertEqual(len(response.schedules), 1)
+                        self.assertFalse(response.truncated)
+                        selected = response.schedules[0].sections[0]
+                        self.assertEqual(selected.section_code, "0102")
+                        self.assertEqual(selected.open_seats, 12)
+                        self.assertEqual(
+                            [
+                                item.section_code
+                                for item in selected.equivalent_sections
+                            ],
+                            ["0104", "0101"] if only_open else ["0104", "0101", "0103"],
+                        )
+                        alternative = selected.equivalent_sections[1]
+                        self.assertEqual(alternative.open_seats, 2)
+                        self.assertEqual(alternative.waitlist, 3)
+                        self.assertEqual(alternative.meetings, selected.meetings)
+
+    def test_different_or_incomplete_sections_stay_separate(self):
+        original = scheduled_section("0101")
+        changed_meeting = {
+            "days": "T",
+            "start_time": "10:05am",
+            "end_time": "10:55am",
+            "building_code": "CSI",
+            "room": "1121",
+            "class_type": "Discussion",
+        }
+        for field, changed_value in changed_meeting.items():
+            for value in (changed_value, None):
+                with self.subTest(field=field, value=value):
+                    other = deepcopy(original)
+                    other["section_code"] = "0102"
+                    other["meetings"][0][field] = value
+                    self.assertEqual(
+                        len(scheduler._group_equivalent_sections([original, other])), 2
+                    )
+                    incomplete = deepcopy(other)
+                    incomplete["section_code"] = "0103"
+                    if value is None:
+                        self.assertEqual(
+                            len(
+                                scheduler._group_equivalent_sections(
+                                    [other, incomplete]
+                                )
+                            ),
+                            2,
+                        )
+
+        for instructors, meetings in [
+            (["Other Professor"], original["meetings"]),
+            ([], original["meetings"]),
+            (original["instructors"], []),
+            (
+                original["instructors"],
+                original["meetings"]
+                + [
+                    {**original["meetings"][0], "class_type": "Discussion", "days": "T"}
+                ],
+            ),
+        ]:
+            with self.subTest(instructors=instructors, meetings=meetings):
+                other = {
+                    **original,
+                    "section_code": "0102",
+                    "instructors": instructors,
+                    "meetings": meetings,
+                }
+                self.assertEqual(
+                    len(scheduler._group_equivalent_sections([original, other])), 2
+                )
+
     def test_credit_and_schedule_limits(self):
         self.assertEqual(ScheduleRequest(max_credits=22).max_credits, 22)
         self.assertEqual(ScheduleRequest().max_credits, 22)

@@ -93,6 +93,7 @@ class ScheduleRequest(BaseModel):
 class ScheduledSection(Section):
     course_code: str
     avg_prof_gpa_in_class: Optional[float] = None
+    equivalent_sections: List[Section] = Field(default_factory=list)
 
 
 class ScheduleResult(BaseModel):

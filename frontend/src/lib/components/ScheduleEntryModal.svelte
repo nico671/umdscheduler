@@ -107,6 +107,26 @@
                         "No description available."}
                 </p>
 
+                {#if activeScheduleEntry.equivalentSections?.length}
+                    <section class="modal-section">
+                        <h3>Equivalent sections</h3>
+                        <p class="modal-item-copy">
+                            These sections have the same professors and meeting details.
+                        </p>
+                        <ul class="modal-list" aria-label="Equivalent sections">
+                            {#each activeScheduleEntry.equivalentSections as section (section.section_code)}
+                                <li class="modal-item">
+                                    <p class="modal-item-title">Section {section.section_code}</p>
+                                    <p class="modal-item-copy">
+                                        Open seats: {section.open_seats} / {section.total_seats}
+                                        · Waitlist: {section.waitlist}
+                                    </p>
+                                </li>
+                            {/each}
+                        </ul>
+                    </section>
+                {/if}
+
                 <section class="modal-section">
                     <h3>Professors (PlanetTerp ratings)</h3>
                     {#if activeScheduleEntryProfessors.length === 0}
