@@ -77,7 +77,7 @@
                     >
                     <span class="modal-metadata-chip gpa-chip">
                         <span>
-                            Section GPA: {isLoadingActiveScheduleEntrySectionGpa
+                            Professor GPA in this course: {isLoadingActiveScheduleEntrySectionGpa
                                 ? "Loading..."
                                 : formatAverageGpa(
                                       activeScheduleEntrySectionGpa,
@@ -87,15 +87,16 @@
                             <button
                                 type="button"
                                 class="info-tooltip-trigger"
-                                aria-label="How section GPA is calculated"
+                                aria-label="How professor GPA in this course is calculated"
                                 >i</button
                             >
                             <span class="info-tooltip-content" role="tooltip">
-                                Section GPA is a weighted average over A–F
-                                grades from PlanetTerp
-                                <code>/api/v1/grades</code> for the section's listed
-                                instructors in this course. Grade counts are used
-                                as weights.
+                                Average GPA from past grades for the listed
+                                professors in this course, across all available
+                                semesters in PlanetTerp. If multiple professors
+                                are listed, their grades are combined using grade
+                                counts as weights. Withdrawals and other grades
+                                without GPA points are excluded.
                             </span>
                         </span>
                     </span>
